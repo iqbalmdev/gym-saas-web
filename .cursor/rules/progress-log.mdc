@@ -1,0 +1,22 @@
+---
+description: Keep docs/PROGRESS.md current so agents know project stage
+alwaysApply: true
+---
+
+# Progress Log
+
+The running project stage lives in `docs/PROGRESS.md`.
+
+## When to read
+
+At the start of a non-trivial task, read **Current stage** and **Next up** in `docs/PROGRESS.md` before coding. Do not infer stage only from git history.
+
+## When to write
+
+After a meaningful chunk of work (docs landed, scaffold created, feature slice shipped, migration applied):
+
+1. Refresh **Current stage** (table + summary).
+2. Refresh **Next up** if priorities changed.
+3. Prepend a dated entry under **Log** (newest first) with what changed, key paths, and deferred items.
+
+Do not delete or rewrite old log entries. Do not use plan files as the progress source of truth.

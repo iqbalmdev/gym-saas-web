@@ -1,0 +1,16 @@
+---
+description: Next.js App Router conventions for multi-persona Gym web
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js Gym web
+
+- App Router; Server Components by default.
+- `"use client"` only for interactive forms, local table UI state, charts.
+- Persona route groups: `(auth)`, `(admin)` now; `(trainer)` / `(client)` when those surfaces start — do not block future groups with Admin-only global assumptions.
+- Shared code lives in `components/ui` and `lib/*`; persona-specific UI under `components/admin|trainer|client`.
+- Fetch via server components / route handlers + typed `lib/api` — not ad-hoc fetch in JSX.
+- Use `loading.tsx` / calm skeletons and error UI with recovery paths.
+- Theme: consume CSS variables from `docs/ui-theme.md` — no raw brand hex in features.
+- Gate navigation and pages by lane/role from session; never trust client-only role flags.

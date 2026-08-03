@@ -1,0 +1,12 @@
+---
+description: Testing expectations when implementing Admin features
+alwaysApply: false
+---
+
+# Testing
+
+- Prefer vertical-slice tests when implementing features (failing test → implementation → refactor).
+- Cover entitlement display edges: unpaid badge still allows listed actions; missing grant empty states.
+- Prefer testing modules through their public interface (API mappers, date/timezone helpers).
+- Do not add flaky UI-only tests that assert CSS class names.
+- When app scaffold exists, document the test runner in `docs/architecture.md`.

@@ -1,0 +1,15 @@
+---
+description: Client-owned data and DataGrant rules for Admin UI
+alwaysApply: true
+---
+
+# Security & DataGrants
+
+- **Gym-owned** (membership, invites, subscriptions, attendance, leads, plan catalog): affiliation + role; no DataGrant.
+- **Client-owned** (profile, progress, calories, wearables, plan completions): staff need explicit DataGrant. Never copy Client-owned rows into gym tables.
+- Missing grant → calm empty state: "Member has not shared X" — never crash blank or fake data.
+- Offboard → clear grants for that gym; retain attendance + billing history.
+- Entitlement follows **subscription dates**, not `payment_status`. Unpaid/partial → badges + nudge only; check-in lock is manual **block check-in**.
+- Coaching hard-stop is Trainer addon expiry (or Admin ending addon), not unpaid status.
+- Tenancy: every Admin data path is scoped to the active `gym_org_id`.
+- Auth: email OTP canonical; never invent Facebook/phone OTP login.

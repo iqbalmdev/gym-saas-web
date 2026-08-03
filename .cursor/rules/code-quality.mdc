@@ -1,0 +1,40 @@
+---
+description: Code quality — SOLID, DI/DIP, Clean Architecture for React/Next.js
+alwaysApply: true
+---
+
+# Code quality
+
+Inspired by pragmatic Clean Architecture in React ([Kondov / Full-Stack Tao](https://alexkondov.com/full-stack-tao-clean-architecture-react/)) plus SOLID. Details: `docs/architecture-plan.md` §4 and ADR-0004.
+
+## SOLID (web)
+
+- **S — Single responsibility:** Components render. Hooks/use-cases orchestrate. `lib/api` transports. `lib/display` maps DTO → view models. No dayjs/entitlement math in JSX.
+- **O — Open/closed:** Extend via new mappers/modules; avoid editing core HTTP client for every screen.
+- **L — Liskov:** Port implementations (real API, fake for tests) must honor the same contract/types.
+- **I — Interface segregation:** Small ports (`RenewalsReader`, `OtpAuth`) — not one god `Api` used everywhere in UI.
+- **D — Dependency inversion:** UI and use-cases depend on **ports/interfaces**, not `fetch`/axios concretes. Wire concretes at the composition root (route/server entry, factory).
+
+## Dependency injection
+
+- Prefer **constructor/factory injection** (pass deps into use-case factories or hooks as args).
+- Avoid hidden globals for API clients in features; one composition place builds the graph.
+- Test by injecting fakes that implement the same port — do not mock JSX internals.
+
+## Clean Architecture habits (Kondov)
+
+- Design for the **domain / access pattern** first; ask questions before assuming API shapes.
+- First draft may be messy; **extract layers before shipping** (HTTP out of components, then display mapping out of JSX).
+- Prefer **deep modules** (small public surface, rich internals) over shallow wrappers.
+- Extract endpoint URLs / query keys next to the transport layer — no scattered magic strings.
+- Validate API payloads at the transport boundary (schema) — do not cast and pray.
+- Layers change at different rates: JSX often; HTTP rarely — keep them separate.
+
+## Baseline hygiene
+
+- TypeScript strict; no `any`; no messy barrel dumps.
+- Named handlers and typed props; avoid anonymous sprawl of state.
+- Glossary names from `docs/CONTEXT.md` (GymOrg, DataGrant, Subscription line, Lead).
+- Small, focused modules; no premature frameworks — pragmatism over ceremony.
+- Performance: lazy routes where natural; avoid unnecessary client JS.
+- Errors: calm user-facing messages; never expose stack traces or internals in UI.

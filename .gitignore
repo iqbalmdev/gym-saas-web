@@ -1,0 +1,25 @@
+# dependencies / build
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE / agent local
+.scratch/
+*.local
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,13 @@
+---
+description: Swappable Admin UI theme tokens — do not hardcode brand look
+globs: app/**/*.{ts,tsx,css}, components/**/*.{ts,tsx,css}, lib/theme/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# UI theme
+
+- Default direction: soft light CRM/ops Admin (`docs/ui-theme.md`).
+- Components use semantic tokens only (`--color-canvas`, `--color-surface`, `--color-accent`, …).
+- Themes change by swapping token maps — not by rewriting feature pages.
+- Avoid purple-indigo gradient defaults, loud glassmorphism, and decorative card stacks for ops screens.
+- Prefer tables, inboxes, and pipelines for Admin density; cards only when they aid interaction.

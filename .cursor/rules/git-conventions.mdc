@@ -1,0 +1,12 @@
+---
+description: Git and commit conventions for this repo
+alwaysApply: true
+---
+
+# Git conventions
+
+- Commit only when the user asks.
+- Prefer small commits that match one tracer-bullet slice.
+- Message style: imperative, why-focused (e.g. `docs: bootstrap agent OS for Admin web`).
+- Do not commit secrets (`.env`, keys, tokens).
+- Do not force-push `main` unless the user explicitly requests it.

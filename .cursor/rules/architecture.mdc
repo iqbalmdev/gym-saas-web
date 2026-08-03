@@ -1,0 +1,18 @@
+---
+description: Gym SaaS web architecture — multi-persona, Admin-first, follow architecture plan
+alwaysApply: true
+---
+
+# Architecture
+
+- **Build contract:** `docs/architecture-plan.md` (ADR-0003). Summary: `docs/architecture.md`.
+- This repo is **Gym SaaS Next.js web (S2)**: **Admin-first now**, **Client and Trainer web later**. Do not hardcode forever-Admin-only structure.
+- Domain truth: `docs/PRD.md` + `docs/product-flows.md`. Glossary: `docs/CONTEXT.md`.
+- Share `lib/api`, `lib/auth`, `lib/theme`. Prefer route groups `(admin)` / `(trainer)` / `(client)`.
+- Call the shared API via adapters behind **ports** (ADR-0004); do not re-encode entitlement rules only in the browser.
+- Honor plan §8: DataGrants empty states; billing≠access; manual block check-in only.
+- Code quality: SOLID + DI/DIP — see `.cursor/rules/code-quality.mdc` and plan §4.
+- Current wedge: renewals inbox, mini-CRM, desk ops, roster, plan catalog (plan §6 order).
+- Explicitly out of MVP: payment gateway, WhatsApp/SMS, open join codes, multi-branch switcher, custom RBAC, QR/geofence check-in.
+- Prefer Current stage in `docs/PROGRESS.md` over assuming features exist.
+- MCP: `docs/mcp-setup.md` and `.cursor/mcp.json`.

@@ -1,0 +1,12 @@
+---
+description: Error and empty-state handling for Admin UI
+alwaysApply: true
+---
+
+# Error handling
+
+- Map API failures to calm, actionable copy (retry / check connection / contact support).
+- Never dump raw API payloads or stack traces in the UI.
+- Distinguish empty, loading, forbidden (no grant), and error states.
+- DataGrant missing ≠ error: use dedicated empty state copy.
+- Log details for developers in server logs only (when logging exists); keep client quiet.
