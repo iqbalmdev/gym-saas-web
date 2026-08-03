@@ -14,7 +14,7 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Config in `.cursor/mcp.json` — **user must OAuth** |
 | Next.js app scaffold | Not started |
 | Feature modules | Not started (Admin order: architecture-plan §6) |
-| GitHub remote | Pending first push |
+| GitHub remote | Done — https://github.com/iqbalmdev/gym-saas-web |
 
 **Summary:** New canonical repo `gym-saas-web` with full Agent OS from the AI playbook, plus Gym Backend Postman collection and auth integration guide for Postman MCP testing.
 
