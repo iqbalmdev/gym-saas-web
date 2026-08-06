@@ -1,0 +1,13 @@
+---
+description: Postman cloud is the working SSOT for Gym Backend API — do not vendor collection JSON in this repo
+alwaysApply: true
+---
+
+# Postman collection sync
+
+- **Publish SSOT:** GitHub `abdulhasibn/gym-backend-postman`
+- **Working SSOT (this project):** Postman cloud workspace — see `docs/postman-sync.md`
+- **Do not** store `postman/*.json` in `gym-saas-web`. Sync with skill **sync-postman-collection**: GitHub MCP → ephemeral `/tmp` → Postman MCP inject → delete temp.
+- Auth narrative only: `docs/api/client-auth.md`
+- Prod API: `https://gym-backend-lovat-mu.vercel.app` (`GET /health` → ok). Local: `http://localhost:3000`
+- Never invent endpoints; prefer Postman Examples / request docs after inject.

@@ -22,7 +22,7 @@ Ask (or infer from user message) and confirm:
 ### 1. Repo skeleton
 
 - `git init` if needed; `.gitignore` (env, node_modules, `.next`, secrets)
-- `README.md` pointing at Agent OS + playbook
+- `docs/GETTING-STARTED.md` pointing at Agent OS + playbook (prefer over a root README)
 - `AGENTS.md` with Agent skills section stubs
 - `docs/PROGRESS.md` — Current stage = “Agent OS bootstrap”; Next up = architecture + first scaffold
 - `docs/adr/0001-agent-os-first.md` — Agent OS before features
