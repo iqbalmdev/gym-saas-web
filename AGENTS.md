@@ -7,7 +7,7 @@ Guidance for AI agents in **gym-saas-web** (Gym SaaS Next.js — Admin-first).
 - Admin-first web; Trainer/Client web later in the same app.
 - Build contract: `docs/architecture-plan.md` (ADR-0003). SOLID/DI: ADR-0004.
 - Read `docs/PROGRESS.md` before non-trivial work; start with skill **orient**.
-- Backend auth: `docs/api/client-auth.md`. Postman: `postman/` + skill **verify-api-flow**.
+- Backend auth: `docs/api/client-auth.md`. API collection: **Postman cloud** (sync via **sync-postman-collection**; see `docs/postman-sync.md`) + **verify-api-flow**.
 - Methodology: `docs/ai-development-playbook.md` · Getting started: `docs/GETTING-STARTED.md`.
 
 ## Agent skills
@@ -29,7 +29,9 @@ GitHub Issues via `gh` (this repo). See `docs/agents/issue-tracker.md`.
 - `orient` — PROGRESS + architecture-plan + narrow docs + Context7 for libs
 - `implement-feature` — vertical slice; ports/adapters
 - `implement-admin-feature` — Admin alias
+- `sync-postman-collection` — GitHub MCP → Postman cloud (no local JSON)
 - `verify-api-flow` — Gym Backend OTP → Bearer → endpoint (Postman MCP)
+- `playwright-e2e-testing` — Playwright `@playwright/test` UI E2E (POM, fixtures, locators)
 - `bootstrap-agent-os` — recreate Agent OS on another new project
 
 ### Matt Pocock (`.agents/skills`)

@@ -16,17 +16,24 @@ Local path: `/Users/iqbal/Projects/gym-saas-web`
 
 Details: `docs/mcp-setup.md`
 
-## 3. Import Postman (optional desktop)
+## 3. Postman collection (cloud SSOT)
 
-1. Open Postman → Import  
-2. Files under `postman/`:
-   - `Gym-Backend-API.postman_collection.json`
-   - `Gym-Backend-Dev.postman_environment.json` (or Local)
-3. Select **Gym Backend — dev**, set `email`, run OTP flow from `docs/api/client-auth.md`
+Working copy lives in **Postman cloud** (not in this git repo). Sync when backend updates GitHub:
 
-Upstream updates: https://github.com/abdulhasibn/gym-backend-postman
+> Use skill **sync-postman-collection**. Pull from abdulhasibn/gym-backend-postman with GitHub MCP and inject into my Postman workspace (no local postman/ JSON).
+
+Details + workspace IDs: `docs/postman-sync.md`  
+Auth contract: `docs/api/client-auth.md`  
+Prod API: `https://gym-backend-lovat-mu.vercel.app` (`GET /health` → ok)
 
 ## 4. Start any coding task
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 → redirects to `/login`. Admin chrome stubs at `/admin`.
 
 In chat:
 
@@ -41,6 +48,10 @@ Agent will read `PROGRESS` + architecture plan, then implement via ports/adapter
 ## 6. Large features
 
 `/grill-with-docs` → `/to-spec` → `/to-tickets` → `/implement` + `/tdd` → `/code-review`
+
+UI E2E: `npm run test:e2e` (installs Chromium if needed, builds, Playwright on :3001). First run may download a browser. Unit: `npm test` (Vitest).
+
+**Rules & skills how-to:** root [`README.md`](../README.md).
 
 ## 7. Product truth
 
