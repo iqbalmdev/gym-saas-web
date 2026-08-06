@@ -1,6 +1,6 @@
 # UI theme direction (swappable)
 
-**Status:** Direction only. No feature UI in this bootstrap. Themes must be changeable later via tokens — do not hardcode brand colors into feature components.
+**Status:** CRM token themes with light/dark (`data-theme`). Collapsible sidebar (icon rail ↔ labels). Feature modules still stub panels.
 
 ## Default direction (v0)
 
@@ -12,9 +12,14 @@ Soft light **CRM / operations** Admin shell (reference mood: light gray-blue can
 - Status pills: quiet semantic colors (e.g. blue = executed/info, amber = scheduled/warning)
 - Density: operational (tables, pipelines, inboxes) — not marketing landing pages
 
+## Light / dark
+
+- Tokens live in `lib/theme/crm-tokens.css` (`:root` / `html[data-theme="light"]` and `html[data-theme="dark"]`).
+- Preference stored in `localStorage` key `gym-saas-theme` (`light` | `dark`). First visit follows system preference.
+- Boot script in root layout sets `data-theme` before paint (no flash). Toggle: header + drawer + login.
+
 ## Non-goals for v0 theme
 
-- Dark mode as default (optional later via token swap)
 - Purple-on-white / purple-indigo AI-default gradients
 - Glassmorphism-heavy decoration that fights readability
 - Cards-for-everything; prefer clear sections and tables for Admin ops
@@ -23,7 +28,7 @@ Soft light **CRM / operations** Admin shell (reference mood: light gray-blue can
 
 1. Define semantic CSS variables (`--color-canvas`, `--color-surface`, `--color-accent`, `--radius-panel`, etc.).
 2. Components consume tokens only — never raw hex in feature JSX.
-3. Switching theme = swap token map (e.g. `themes/crm-light.css` → `themes/…`), not rewriting pages.
+3. Switching theme = swap token map via `data-theme`, not rewriting pages.
 4. Brand mark (product name) should be clear in the Admin chrome; features stay calm and medical/ops-grade trustworthy.
 
 ## Product UI constraints (from PRD)
