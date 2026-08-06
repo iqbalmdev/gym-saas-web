@@ -25,10 +25,17 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 ## Next up
 
 1. Admin Phase A: M4 plans → renewals inbox → M3 → M5 → M11 CRM.
-2. Re-login Postman MCP and finish cloud inject from tip `d42602a8`.
+2. Re-login Postman MCP and finish cloud inject from tip `7ae38910` (or Desktop Import raw URLs in `docs/postman-sync.md`).
 3. Deepen Client web when Phase B starts.
 
 ## Log
+
+### 2026-08-06 — Commits + Postman tip pull `7ae38910`
+
+- Landed 8 sequential commits (scaffold → Postman SSOT → ports → login → create-gym/client → Admin shell → E2E → docs).
+- Pulled `abdulhasibn/gym-backend-postman` tip `7ae38910` to `/tmp/gym-postman-sync/` (folders: Health, Auth, Gym Orgs, Staff Invites).
+- Cloud inject still **401 Invalid API Key** on Postman MCP after re-auth. Manual Desktop Import URLs recorded in `docs/postman-sync.md`.
+- Temp dir cleaned; architecture.md / architecture-plan.md left at committed plan (untouched).
 
 ### 2026-08-05 — Login: email first; lane only for isNewUser
 

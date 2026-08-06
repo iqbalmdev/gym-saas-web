@@ -94,8 +94,14 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 | Field | Value |
 |---|---|
-| Upstream tip | `d42602a8ee5c167770b180c984574251ec113ed9` (2026-08-05 — `isNewUser` + optional lane) |
-| Postman inject | **Blocked** — Postman MCP `401 Invalid API Key` after re-auth; re-login Postman in Cursor Settings, then re-run sync **or** Desktop Import from raw URLs below |
+| Upstream tip | `7ae3891099c99bad605282e18f0f85e2b26a43d5` (2026-08-05 — Staff Invites folder split; still has `isNewUser`) |
+| Postman inject | **Blocked** — Postman MCP `401 Invalid API Key` after `mcp_auth`; re-login Postman in Cursor Settings, then re-run sync **or** Desktop Import from tip raw URLs below |
 | Local `postman/` | **Removed** — Postman cloud is working SSOT |
-| Auth guide | Updated `docs/api/client-auth.md` from tip SHA |
+| Auth guide | `docs/api/client-auth.md` already matches `isNewUser` (no contract change this tip) |
 | Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` ok (2026-08-04) |
+
+### Tip raw URLs (Desktop Import)
+
+- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-API.postman_collection.json`
+- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-Dev.postman_environment.json`
+- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-Local.postman_environment.json`
