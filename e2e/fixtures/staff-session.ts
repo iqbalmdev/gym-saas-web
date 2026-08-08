@@ -31,7 +31,7 @@ export function encodeStaffSessionCookie(
   };
 }
 
-/** Staff session with zero GymOrg affiliations (create-gym gate). */
+/** Staff session with zero GymOrg affiliations (Settings-only first-run). */
 export function encodeStaffSessionCookieNoGym(
   overrides: Partial<SessionSnapshot> = {},
 ) {

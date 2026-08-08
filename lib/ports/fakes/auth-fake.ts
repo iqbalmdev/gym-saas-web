@@ -26,6 +26,7 @@ export function createFakeAuthGateway(
       },
       user,
     }),
+    completeGoogle: async () => ({ user }),
     getMe: async () => ({ user }),
     ...overrides,
   };

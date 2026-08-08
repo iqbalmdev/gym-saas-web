@@ -1,18 +1,6 @@
-import { CreateGymForm } from "@/components/onboarding/create-gym-form";
+import { redirect } from "next/navigation";
 
+/** @deprecated First-run Staff use /admin/settings. */
 export default function CreateGymPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-fg)]">
-          Create your gym
-        </h1>
-        <p className="mt-2 text-sm text-[var(--color-fg-muted)]">
-          Admin tools unlock after your GymOrg exists. You can update details
-          later in Settings.
-        </p>
-      </div>
-      <CreateGymForm />
-    </div>
-  );
+  redirect("/admin/settings");
 }

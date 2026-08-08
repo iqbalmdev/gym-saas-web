@@ -1,14 +1,12 @@
 ---
-description: Use Context7 MCP for up-to-date library docs before coding against frameworks
+description: Use Context7 MCP for third-party library docs before coding from memory
 alwaysApply: true
 ---
 
-# Context7 library docs
+# Context7
 
-When implementing or changing code that depends on third-party libraries (Next.js, React, Zod, Playwright, Supabase JS, Tailwind, Vitest, Vercel, etc.):
+When changing code that depends on Next.js, React, Zod, Playwright, Tailwind, Vitest, etc.:
 
-1. Use **Context7 MCP** to fetch current docs for that library/topic before writing APIs from memory.
-2. Prefer Context7 over guessing outdated `pages/` router, old Zod, or stale Playwright config.
-3. Still obey `docs/architecture-plan.md` (ports/adapters) and product docs — Context7 is for *library* truth, not *domain* truth.
-4. If Context7 is disconnected, say so and use official docs links; do not invent APIs.
-5. Setup: `.cursor/mcp.json` + `docs/mcp-setup.md` + https://context7.com/
+1. Fetch current docs via **Context7 MCP** before inventing APIs.
+2. Domain/product truth stays in `docs/` — Context7 is library truth only.
+3. If Context7 is disconnected, say so and use official docs — do not invent.

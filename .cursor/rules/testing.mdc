@@ -1,13 +1,39 @@
 ---
-description: Testing expectations when implementing Admin features
+description: Vitest + Playwright testing — ports fakes, no infra in unit tests
+globs: lib/**/*.test.ts, e2e/**/*.ts, e2e/**/*.tsx
 alwaysApply: false
 ---
 
 # Testing
 
-- Prefer vertical-slice tests when implementing features (failing test → implementation → refactor).
-- Cover entitlement display edges: unpaid badge still allows listed actions; missing grant empty states.
-- Prefer testing modules through their public interface (API mappers, date/timezone helpers).
-- Do not add flaky UI-only tests that assert CSS class names.
-- **Unit:** Vitest — `npm test` (`lib/**/*.test.ts`). Documented in `docs/architecture.md`.
-- **Browser E2E:** project skill **playwright-e2e-testing** — `npm run test:e2e` (`e2e/`, POM/fixtures, `@playwright/test`). Pair with Playwright MCP for exploratory sessions. API contract smokes stay on **verify-api-flow** / Postman.
+**Unit:** Vitest — `npm test` (`lib/**/*.test.ts`).  
+**E2E:** Playwright — `npm run test:e2e` (`e2e/`, POM + fixtures). Skill: **playwright-e2e-testing**.  
+API contract smokes: **verify-api-flow** / Postman — not Playwright.
+
+## Unit rules
+
+- Test use-cases / mappers / pure helpers through their public API.
+- Inject **fakes that implement ports** — do not mock JSX or Next internals.
+- Unit tests must **not** import real HTTP clients, `fetch` adapters under test, or hit the network.
+- Prefer red → green → refactor for new seams.
+- Cover display edges: unpaid badge ≠ lock; missing DataGrant → empty copy.
+
+```ts
+// Fake the port — do not call the real API adapter in unit tests
+const fakeGymOrgs: GymOrgsReader = {
+  list: async () => ({ gymOrgs: [] }),
+};
+```
+
+## E2E rules
+
+- Page Objects + fixtures (`e2e/fixtures/`, `e2e/pages/`).
+- Prefer role/label locators; never assert CSS class names.
+- Use `GYM_SAAS_E2E_FIXTURES` server fakes for SSR/auth gates — browser `page.route` cannot intercept Server Actions.
+- Zustand UI stores: unit-test the **store factory** via `getState`/`setState` — do not mount full pages for chrome toggles.
+---
+
+# Naming
+
+- Unit: `<subject>.test.ts` next to the module (e.g. `resolve-post-auth-path.test.ts`).
+- E2E: `<flow>.spec.ts` under `e2e/`.

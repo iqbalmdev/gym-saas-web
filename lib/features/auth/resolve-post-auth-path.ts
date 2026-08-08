@@ -6,14 +6,15 @@ export type PostAuthRouteInput = {
 };
 
 /**
- * Pure post-login destination — Staff without a GymOrg must create one first.
+ * Pure post-login destination — Staff without a GymOrg land on Settings
+ * (create org / accept invite). Same path for new and returning Staff.
  */
 export function resolvePostAuthPath(input: PostAuthRouteInput): string {
   if (input.lane === "CLIENT") {
     return "/client";
   }
   if (input.gymOrgCount === 0) {
-    return "/onboarding/create-gym";
+    return "/admin/settings";
   }
   return "/admin";
 }

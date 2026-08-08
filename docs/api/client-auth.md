@@ -3,7 +3,7 @@
 Brief guide for mobile/web (and AI agents) integrating with the gym Backend API.
 
 **Base URL:** `https://gym-backend-lovat-mu.vercel.app` (prod) or `http://localhost:3000` (local)  
-**Postman publish:** [gym-backend-postman](https://github.com/abdulhasibn/gym-backend-postman) @ `d42602a8` · **Working copy:** Postman cloud (`docs/postman-sync.md`) — not vendored in this repo.
+**Postman publish:** [gym-backend-postman](https://github.com/abdulhasibn/gym-backend-postman) @ `7a2d9bf` · **Working copy:** Postman cloud (`docs/postman-sync.md`) — not vendored in this repo.
 
 There is **no separate sign-up**. First successful OTP verify or Google complete **creates** the app user. Later logins return the same user.
 
@@ -110,19 +110,25 @@ For **Admin / Staff first provision**, use `"lane": "STAFF"` (→ `STAFF_UNASSIG
 ## Google (optional)
 
 ```
-1. Open GET /auth/google/start in a browser / in-app browser (302 → Supabase Google)
-2. After consent, capture access_token from the callback URL hash
-3. POST /auth/google/complete  with Bearer that token
-4. Body: { lane, name? }  →  { user }  (tokens are NOT rotated — keep the Google session token)
+1. Collect lane (CLIENT|STAFF) + optional name (API complete body requires lane)
+2. Open GET /auth/google/start?redirect_to={webOrigin}/auth/google/callback
+   (302 → Supabase Google). `redirect_to` origin must be in API
+   `GOOGLE_OAUTH_REDIRECT_ORIGINS` and in Supabase Auth redirect allowlist.
+3. After consent, web `/auth/google/callback` reads access_token (+ refresh_token,
+   expires_in) from the URL hash
+4. POST /auth/google/complete  with Bearer that token
+5. Body: { lane, name? }  →  { user }  (tokens are NOT rotated — keep the Google session token)
 ```
 
-`GET /auth/google/start` — public → redirect; **503** `OAUTH_CONFIGURATION` if Host/callback config is missing.
+`GET /auth/google/start` — public → redirect; **503** `OAUTH_CONFIGURATION` if Host/callback/`redirect_to` config is missing.
+
+Without `redirect_to`, local/dev may use the API’s Postman helper at `{apiHost}/auth/google/callback`. Production disables that helper — web clients must pass an allowlisted `redirect_to`.
 
 `POST /auth/google/complete` — Bearer (identity)
 
 - **200** `{ "user": { …same shape as OTP user… } }` (no new `session` tokens)
 - **401** `AUTHENTICATION_FAILED`
-- **422** `GOOGLE_IDENTITY_REQUIRED` / `EMAIL_NOT_VERIFIED` / `VALIDATION_ERROR`
+- **422** `GOOGLE_IDENTITY_REQUIRED` / `EMAIL_NOT_VERIFIED` / `VALIDATION_ERROR` / `LANE_REQUIRED`
 - **409** `LANE_MISMATCH`
 
 ---
@@ -178,4 +184,4 @@ Requires Bearer. Create only if `roleCode` is `STAFF_UNASSIGNED` or `ADMIN`.
 - Working collection: Postman cloud — see `docs/postman-sync.md`
 - Upstream publish: https://github.com/abdulhasibn/gym-backend-postman
 - Agent skills: `sync-postman-collection`, `verify-api-flow`
-- Research note (Admin web mapping): `docs/research/2026-08-04-client-auth-admin-web.md`
+- Archive research (optional): `docs/archive/research/`

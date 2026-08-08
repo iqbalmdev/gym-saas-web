@@ -19,6 +19,8 @@ export class LoginPage {
   readonly themeToggle: Locator;
   readonly alert: Locator;
 
+  readonly continueWithGoogle: Locator;
+
   constructor(page: Page) {
     this.page = page;
     this.heading = page.getByRole("heading", { name: "Sign in" });
@@ -28,6 +30,9 @@ export class LoginPage {
     this.staffLane = page.getByRole("radio", { name: /I work at a gym/i });
     this.clientLane = page.getByRole("radio", { name: /I.m a member/i });
     this.continueLane = page.getByRole("button", { name: "Continue to code" });
+    this.continueWithGoogle = page.getByRole("button", {
+      name: "Continue with Google",
+    });
     this.email = page.getByLabel("Email");
     this.sendCode = page.getByRole("button", { name: "Send code" });
     this.otp = page.getByLabel("Email code");

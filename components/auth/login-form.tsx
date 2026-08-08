@@ -8,15 +8,18 @@ import {
   requestOtpAction,
   verifyOtpAction,
 } from "@/lib/features/auth/actions";
+import {
+  writeGoogleOAuthPending,
+} from "@/lib/features/auth/google-oauth-pending";
+import { buildGoogleOAuthStartUrl } from "@/lib/features/auth/google-oauth-start";
 import type { AuthLane } from "@/lib/ports/auth";
 
 /**
- * Auth UX per client-auth.md `isNewUser`:
- * email → Request OTP →
- *   new user: lane (+ optional name) → OTP
- *   returning: OTP only (no lane, no create-gym until staff has no gym after login)
+ * Auth UX per client-auth.md:
+ * - Email OTP: email → (lane if isNewUser) → OTP
+ * - Google: lane (+ optional name) → /auth/google/start → callback → complete
  */
-type Step = "email" | "lane" | "otp";
+type Step = "email" | "lane" | "otp" | "google-lane";
 
 export function LoginForm() {
   const router = useRouter();
@@ -52,7 +55,6 @@ export function LoginForm() {
       setLane(null);
       setName("");
       setOtp("");
-      // New accounts choose Staff/Member; returning users go straight to OTP.
       setStep(nextIsNew ? "lane" : "otp");
     });
   }
@@ -65,6 +67,27 @@ export function LoginForm() {
       return;
     }
     setStep("otp");
+  }
+
+  function handleStartGoogle() {
+    setError(null);
+    setLane(null);
+    setName("");
+    setStep("google-lane");
+  }
+
+  function handleGoogleLaneContinue(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    if (!lane) {
+      setError("Choose whether you work at a gym or you are a member.");
+      return;
+    }
+    writeGoogleOAuthPending({
+      lane,
+      name: name.trim() || undefined,
+    });
+    window.location.assign(buildGoogleOAuthStartUrl(window.location.origin));
   }
 
   function handleVerifyOtp(event: FormEvent<HTMLFormElement>) {
@@ -85,6 +108,42 @@ export function LoginForm() {
     });
   }
 
+  if (step === "google-lane") {
+    return (
+      <form onSubmit={handleGoogleLaneContinue} className="space-y-4">
+        <div className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)] space-y-4">
+          <div>
+            <h2 className="text-base font-semibold text-[var(--color-fg)]">
+              Confirm your account type
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+              Choose Staff or Member before continuing with Google. Returning
+              users must pick the same type as before.
+            </p>
+          </div>
+          <LaneChooser lane={lane} onChange={setLane} />
+          <OptionalNameField name={name} onChange={setName} />
+          {error ? (
+            <p className="text-sm text-[var(--color-danger)]" role="alert">
+              {error}
+            </p>
+          ) : null}
+          <Button type="submit" className="w-full" disabled={!lane}>
+            Continue with Google
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full"
+            onClick={resetToEmail}
+          >
+            Back
+          </Button>
+        </div>
+      </form>
+    );
+  }
+
   if (step === "lane") {
     return (
       <form onSubmit={handleLaneContinue} className="space-y-4">
@@ -97,65 +156,8 @@ export function LoginForm() {
               New account for {email}. This choice is permanent for this email.
             </p>
           </div>
-          <fieldset className="space-y-2">
-            <legend className="sr-only">Account type</legend>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
-              <input
-                type="radio"
-                name="lane"
-                value="STAFF"
-                checked={lane === "STAFF"}
-                onChange={() => setLane("STAFF")}
-                className="mt-1"
-              />
-              <span>
-                <span className="block text-sm font-medium text-[var(--color-fg)]">
-                  I work at a gym
-                </span>
-                <span className="block text-xs text-[var(--color-fg-muted)]">
-                  Staff / Admin — create or join a gym organization
-                </span>
-              </span>
-            </label>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
-              <input
-                type="radio"
-                name="lane"
-                value="CLIENT"
-                checked={lane === "CLIENT"}
-                onChange={() => setLane("CLIENT")}
-                className="mt-1"
-              />
-              <span>
-                <span className="block text-sm font-medium text-[var(--color-fg)]">
-                  I’m a member
-                </span>
-                <span className="block text-xs text-[var(--color-fg-muted)]">
-                  Client — membership and personal progress
-                </span>
-              </span>
-            </label>
-          </fieldset>
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-[var(--color-fg)]"
-            >
-              Display name{" "}
-              <span className="font-normal text-[var(--color-fg-muted)]">
-                (optional)
-              </span>
-            </label>
-            <input
-              id="name"
-              name="name"
-              maxLength={120}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
-              placeholder="Your name"
-            />
-          </div>
+          <LaneChooser lane={lane} onChange={setLane} />
+          <OptionalNameField name={name} onChange={setName} />
           {error ? (
             <p className="text-sm text-[var(--color-danger)]" role="alert">
               {error}
@@ -270,7 +272,105 @@ export function LoginForm() {
         >
           {isPending ? "Sending code…" : "Send code"}
         </Button>
+        <div className="relative py-1">
+          <div
+            className="absolute inset-0 flex items-center"
+            aria-hidden="true"
+          >
+            <div className="w-full border-t border-[var(--color-border)]" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-[var(--color-surface)] px-2 text-[var(--color-fg-muted)]">
+              or
+            </span>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          disabled={isPending}
+          onClick={handleStartGoogle}
+        >
+          Continue with Google
+        </Button>
       </div>
     </form>
+  );
+}
+
+function LaneChooser(props: {
+  lane: AuthLane | null;
+  onChange: (lane: AuthLane) => void;
+}) {
+  const { lane, onChange } = props;
+  return (
+    <fieldset className="space-y-2">
+      <legend className="sr-only">Account type</legend>
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+        <input
+          type="radio"
+          name="lane"
+          value="STAFF"
+          checked={lane === "STAFF"}
+          onChange={() => onChange("STAFF")}
+          className="mt-1"
+        />
+        <span>
+          <span className="block text-sm font-medium text-[var(--color-fg)]">
+            I work at a gym
+          </span>
+          <span className="block text-xs text-[var(--color-fg-muted)]">
+            Staff / Admin — create or join a gym organization
+          </span>
+        </span>
+      </label>
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+        <input
+          type="radio"
+          name="lane"
+          value="CLIENT"
+          checked={lane === "CLIENT"}
+          onChange={() => onChange("CLIENT")}
+          className="mt-1"
+        />
+        <span>
+          <span className="block text-sm font-medium text-[var(--color-fg)]">
+            I’m a member
+          </span>
+          <span className="block text-xs text-[var(--color-fg-muted)]">
+            Client — membership and personal progress
+          </span>
+        </span>
+      </label>
+    </fieldset>
+  );
+}
+
+function OptionalNameField(props: {
+  name: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor="name"
+        className="block text-sm font-medium text-[var(--color-fg)]"
+      >
+        Display name{" "}
+        <span className="font-normal text-[var(--color-fg-muted)]">
+          (optional)
+        </span>
+      </label>
+      <input
+        id="name"
+        name="name"
+        maxLength={120}
+        value={props.name}
+        onChange={(e) => props.onChange(e.target.value)}
+        className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+        placeholder="Your name"
+      />
+    </div>
   );
 }

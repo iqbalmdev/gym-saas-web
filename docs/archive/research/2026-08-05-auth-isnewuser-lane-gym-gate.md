@@ -1,5 +1,7 @@
 # Research: Auth `isNewUser`, lane chooser, and create-gym gate
 
+> **Superseded (2026-08-06):** Staff with zero gyms now go to `/admin/settings` (Settings-only shell). `/onboarding/create-gym` redirects there. See `docs/PROGRESS.md` Settings-first entry.
+
 **Date:** 2026-08-05  
 **Question:** How should gym-saas-web implement email OTP signup/login with Staff vs Client, and gate Admin routes until a GymOrg exists?  
 **Method:** Primary sources only — `docs/api/client-auth.md` (synced from Postman publish tip `d42602a8`), product-flows F1/M2, architecture-plan §7, live ports in this repo.

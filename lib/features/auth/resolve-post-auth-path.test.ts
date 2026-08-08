@@ -25,9 +25,9 @@ describe("resolvePostAuthPath", () => {
     );
   });
 
-  it("sends STAFF with no gyms to create-gym onboarding", () => {
+  it("sends STAFF with no gyms to Settings (create org / invites)", () => {
     expect(resolvePostAuthPath({ lane: "STAFF", gymOrgCount: 0 })).toBe(
-      "/onboarding/create-gym",
+      "/admin/settings",
     );
   });
 

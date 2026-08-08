@@ -140,6 +140,57 @@ export async function verifyStaffOtpAction(input: {
   return verifyOtpAction({ ...input, lane: "STAFF" });
 }
 
+/**
+ * Finish Google OAuth after the browser lands on `/auth/google/callback` with
+ * tokens in the URL hash. Keep the Google session tokens (API does not rotate).
+ */
+export async function completeGoogleAction(input: {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  lane: AuthLane;
+  name?: string;
+}): Promise<AuthActionResult> {
+  const accessToken = input.accessToken.trim();
+  const refreshToken = input.refreshToken.trim();
+  const name = input.name?.trim();
+  const lane = input.lane;
+  const expiresIn =
+    Number.isFinite(input.expiresIn) && input.expiresIn > 0
+      ? Math.floor(input.expiresIn)
+      : 3600;
+
+  if (!accessToken || !refreshToken) {
+    return {
+      ok: false,
+      code: "AUTHENTICATION_FAILED",
+      message: authErrorMessage("AUTHENTICATION_FAILED"),
+    };
+  }
+
+  try {
+    const { completeGoogle } = createAppServices();
+    const { user } = await completeGoogle({
+      accessToken,
+      lane,
+      name: name || undefined,
+    });
+
+    const snapshot = buildSessionSnapshot(
+      { accessToken, refreshToken, expiresIn },
+      user,
+    );
+    await setSession(snapshot);
+    await redirectAfterAuth(snapshot);
+    return { ok: true };
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+    return fail(error);
+  }
+}
+
 export async function createGymOrgAction(input: {
   name: string;
   contactEmail?: string;
@@ -183,9 +234,31 @@ export async function createGymOrgAction(input: {
   }
 
   try {
-    const { createGymOrg } = createAppServices();
+    const { createGymOrg, getCurrentUser } = createAppServices();
     await createGymOrg({ accessToken: session.accessToken, body });
-    redirect("/admin");
+
+    try {
+      const { user } = await getCurrentUser({
+        accessToken: session.accessToken,
+      });
+      await setSession(
+        buildSessionSnapshot(
+          {
+            accessToken: session.accessToken,
+            refreshToken: session.refreshToken,
+            expiresIn: Math.max(
+              60,
+              Math.floor((session.expiresAt - Date.now()) / 1000),
+            ),
+          },
+          user,
+        ),
+      );
+    } catch {
+      // Create succeeded; session refresh is best-effort.
+    }
+
+    redirect("/admin/settings");
     return { ok: true };
   } catch (error) {
     if (isRedirectError(error)) {

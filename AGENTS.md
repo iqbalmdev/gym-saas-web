@@ -1,43 +1,52 @@
 # AGENTS.md
 
-Guidance for AI agents in **gym-saas-web** (Gym SaaS Next.js — Admin-first).
+Gym SaaS Next.js web — **Admin-first**.
 
-## Product posture
+## Start here
 
-- Admin-first web; Trainer/Client web later in the same app.
-- Build contract: `docs/architecture-plan.md` (ADR-0003). SOLID/DI: ADR-0004.
-- Read `docs/PROGRESS.md` before non-trivial work; start with skill **orient**.
-- Backend auth: `docs/api/client-auth.md`. API collection: **Postman cloud** (sync via **sync-postman-collection**; see `docs/postman-sync.md`) + **verify-api-flow**.
-- Methodology: `docs/ai-development-playbook.md` · Getting started: `docs/GETTING-STARTED.md`.
+1. Skill **orient** → `docs/PROGRESS.md` + needed `architecture-plan` sections.
+2. Implement via **implement-feature** (ports/adapters + state tier).
+3. API: **sync-postman-collection** / **verify-api-flow** — sibling `gym-backend-postman`, not `postman/` in this repo.
 
-## Agent skills
+Docs index: `docs/README.md`.
 
-### Issue tracker
+## Rules (best practices)
 
-GitHub Issues via `gh` (this repo). See `docs/agents/issue-tracker.md`.
+| Rule | Focus |
+|---|---|
+| `nextjs-app-router.mdc` | RSC default, Server Actions, client leaves |
+| `state-management.mdc` | Server data vs useState vs URL vs Zustand (UI only) |
+| `code-quality.mdc` | SOLID / ports / DI |
+| `architecture.mdc` | Settings-first, folders, no invent endpoints |
+| `testing.mdc` | Vitest port fakes + Playwright POM |
 
-### Triage labels
+## Skills (`.cursor/skills`)
 
-`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` — `docs/agents/triage-labels.md`.
+| Skill | When |
+|---|---|
+| `orient` | Task start |
+| `implement-feature` | Vertical slice (any persona) |
+| `implement-admin-feature` | Alias → Admin |
+| `sync-postman-collection` | Sibling pull → Postman cloud |
+| `verify-api-flow` | OTP → Bearer → endpoint |
+| `playwright-e2e-testing` | UI E2E |
+| `bootstrap-agent-os` | New empty repo only |
 
-### Domain docs
+Matt Pocock skills live under `.agents/skills` (`/grill-with-docs`, `/tdd`, …).
 
-`CONTEXT.md` → `docs/CONTEXT.md` + `docs/adr/` — `docs/agents/domain.md`.
+## Posture
 
-### Project skills (`.cursor/skills`)
+- Settings-first Staff (0 gyms → `/admin/settings`).
+- Never invent API endpoints.
+- Never put API entities in Zustand.
+- Showcase: https://prd-showcase.vercel.app/
 
-- `orient` — PROGRESS + architecture-plan + narrow docs + Context7 for libs
-- `implement-feature` — vertical slice; ports/adapters
-- `implement-admin-feature` — Admin alias
-- `sync-postman-collection` — GitHub MCP → Postman cloud (no local JSON)
-- `verify-api-flow` — Gym Backend OTP → Bearer → endpoint (Postman MCP)
-- `playwright-e2e-testing` — Playwright `@playwright/test` UI E2E (POM, fixtures, locators)
-- `bootstrap-agent-os` — recreate Agent OS on another new project
+<!-- BEGIN:nextjs-agent-rules -->
 
-### Matt Pocock (`.agents/skills`)
+# This is NOT the Next.js you know
 
-`/ask-matt`, `/grill-with-docs`, `/to-spec`, `/to-tickets`, `/implement`, `/tdd`, `/code-review`, …
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-## Showcase
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
-https://prd-showcase.vercel.app/
+<!-- END:nextjs-agent-rules -->

@@ -1,28 +1,43 @@
-# Sync Postman collection (no local JSON)
+# Sync Postman collection (multi-root + cloud)
 
 ## Single source of truth
 
 | Layer | What |
 |---|---|
-| **Publish** | [abdulhasibn/gym-backend-postman](https://github.com/abdulhasibn/gym-backend-postman) — backend engineer updates collection/envs here |
-| **Working copy** | **Postman cloud** (this project’s Active workspace below) — agents run/sync via Postman MCP |
-| **Auth narrative** | `docs/api/client-auth.md` in this repo — not a full collection duplicate |
+| **Publish** | Sibling git clone [`abdulhasibn/gym-backend-postman`](https://github.com/abdulhasibn/gym-backend-postman) — usually `/Users/iqbal/Projects/gym-backend-postman` next to this app |
+| **Working copy** | **Postman cloud** (Active workspace below) — agents inject via Postman MCP |
+| **Auth / invite narrative** | `docs/api/client-auth.md`, `docs/api/staff-invites.md` — not a full collection duplicate |
 
-**This repo does not vendor `postman/*.json`.** Keeping both cloud and git copies in `gym-saas-web` caused dual SSOT drift.
+**This repo does not vendor `postman/*.json`.** Open both folders via **`gym-saas.code-workspace`**.
 
 Skills: **sync-postman-collection** · **verify-api-flow**  
 Rule: `.cursor/rules/postman-sync.mdc`
+
+## Cursor multi-root workspace
+
+1. Clone sibling (once), if missing:
+   ```bash
+   cd /Users/iqbal/Projects
+   git clone https://github.com/abdulhasibn/gym-backend-postman.git
+   ```
+2. In Cursor: **File → Open Workspace from File…** →  
+   `/Users/iqbal/Projects/gym-saas-web/gym-saas.code-workspace`
+3. You should see two roots: **gym-saas-web** and **gym-backend-postman**.
+
+When the backend updates the Postman GitHub repo: `git pull` in the sibling folder, then run the sync skill (inject to cloud).
 
 ## Pipeline
 
 ```
 Backend updates GitHub (gym-backend-postman)
         ↓
-GitHub MCP → download to /tmp/gym-postman-sync/ only
+Sibling: git pull (preferred)  —  or GitHub MCP fallback
         ↓
-Postman MCP → createCollection / putCollection (+ envs)
+Read collection/env JSON from sibling (or /tmp only)
         ↓
-Delete temp files
+Postman MCP → putCollection / putEnvironment
+        ↓
+Delete ephemeral prep files
         ↓
 verify-api-flow against Postman cloud when needed
 ```
@@ -55,33 +70,34 @@ Admin smokes: Postman env **Gym Backend — dev** with `lane=STAFF` and prod `ba
 ## Canonical prompt
 
 ```
-Use skill sync-postman-collection. Pull from abdulhasibn/gym-backend-postman with GitHub MCP and inject into my Postman workspace with Postman MCP (no local postman/ JSON). Update docs/api/client-auth.md if auth changed, note SHA in PROGRESS. Don’t commit unless I ask.
+Use skill sync-postman-collection. Pull sibling gym-backend-postman (or GitHub), inject into my Postman workspace with Postman MCP (no postman/ JSON in gym-saas-web). Update docs/api/client-auth.md if auth changed, note SHA in PROGRESS. Don’t commit unless I ask.
 ```
 
 ---
 
 ## Agent steps (summary)
 
-1. `list_commits` + `get_file_contents` on upstream repo.
-2. Download JSON to `/tmp/gym-postman-sync/` (never into the git tree).
+1. Prefer sibling `git pull`; record tip SHA. Fallback: GitHub MCP `list_commits` + file fetch.
+2. Read JSON from sibling (or `/tmp/gym-postman-sync/` only — never `gym-saas-web/postman/`).
 3. Inject collection/envs via Postman MCP; force Dev `baseUrl` = prod Vercel URL, `lane` = `STAFF`.
-4. Update `docs/api/client-auth.md` only if auth contract changed.
+4. Update `docs/api/client-auth.md` / `docs/api/staff-invites.md` only if contracts changed.
 5. Note SHA in `docs/PROGRESS.md`; refresh **Last verified sync** below.
-6. Delete `/tmp/gym-postman-sync/`.
+6. Delete ephemeral prep dirs.
 7. Do not commit unless asked.
 
-| MCP | Tools |
+| MCP / git | Tools |
 |---|---|
-| GitHub | `list_commits`, `get_file_contents` |
+| Sibling git | `git fetch` / `git pull --ff-only` |
+| GitHub (fallback) | `list_commits`, `get_file_contents` |
 | Postman | `getWorkspaces`, `getCollections`, `createCollection`, `putCollection`, `createEnvironment`, `putEnvironment` |
 
 ### Examples caveat
 
-Postman MCP often cannot round-trip nested request **Examples**. Publish SSOT for Examples remains the GitHub repo; optional Desktop Import from GitHub raw URLs if cloud Examples are required.
+Postman MCP often cannot round-trip nested request **Examples**. Publish SSOT for Examples remains the sibling/GitHub repo; optional Desktop Import from those files if cloud Examples are required.
 
 ### Manual fallback (MCP inject fails)
 
-Import in Postman Desktop from GitHub raw (or a one-off download you discard):
+Import in Postman Desktop from the sibling JSON files, or GitHub raw:
 
 - `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/main/Gym-Backend-API.postman_collection.json`
 - same for `Gym-Backend-Dev` / `Gym-Backend-Local` environment files  
@@ -94,14 +110,19 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 | Field | Value |
 |---|---|
-| Upstream tip | `7ae3891099c99bad605282e18f0f85e2b26a43d5` (2026-08-05 — Staff Invites folder split; still has `isNewUser`) |
-| Postman inject | **Blocked** — Postman MCP `401 Invalid API Key` after `mcp_auth`; re-login Postman in Cursor Settings, then re-run sync **or** Desktop Import from tip raw URLs below |
-| Local `postman/` | **Removed** — Postman cloud is working SSOT |
-| Auth guide | `docs/api/client-auth.md` already matches `isNewUser` (no contract change this tip) |
-| Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` ok (2026-08-04) |
+| Upstream tip | `7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee` (2026-08-08 — Leads + Plans folders; staff invite inbox embeds `gym`; feature-folder layout docs) |
+| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — `git pull --ff-only` 7ae3891 → 7a2d9bf |
+| Cursor workspace | `gym-saas.code-workspace` (web + postman roots) |
+| GitHub / sibling pull | **OK** — sibling pull |
+| Postman inject | **OK** — 2026-08-08; collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347`; `updatedAt` `2026-08-08T06:44:33.000Z`; folders Health, Auth, Gym Orgs, Staff Invites, **Leads**, **Plans**; Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`) |
+| Local `postman/` in web repo | **Forbidden** — cloud + sibling only |
+| Auth guide | `docs/api/client-auth.md` — OTP `isNewUser` / optional `lane` unchanged |
+| Staff invites guide | `docs/api/staff-invites.md` — tip `7a2d9bf`; inbox items embed `gym` |
+| Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` ok (2026-08-08) |
+| Examples caveat | MCP inject may strip nested Examples / long scripts; sibling tip remains Examples SSOT. Desktop Import from tip raw URLs below if needed. |
 
 ### Tip raw URLs (Desktop Import)
 
-- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-API.postman_collection.json`
-- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-Dev.postman_environment.json`
-- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7ae3891099c99bad605282e18f0f85e2b26a43d5/Gym-Backend-Local.postman_environment.json`
+- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-API.postman_collection.json`
+- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-Dev.postman_environment.json`
+- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-Local.postman_environment.json`

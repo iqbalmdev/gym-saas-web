@@ -1,15 +1,29 @@
 /**
- * Deterministic Auth + GymOrg adapters for Playwright (`GYM_SAAS_E2E_FIXTURES=1`).
+ * Deterministic Auth + GymOrg + StaffInvite adapters for Playwright (`GYM_SAAS_E2E_FIXTURES=1`).
  * Server Actions and RSC call these — browser `page.route` cannot intercept them.
  */
+import { ApiClientError } from "@/lib/api/errors";
 import type { AuthGateway, AuthLane, AuthUser } from "@/lib/ports/auth";
 import type { GymOrgsReader, GymOrgsWriter } from "@/lib/ports/gym-orgs";
+import type {
+  StaffInvite,
+  StaffInvitesReader,
+  StaffInvitesWriter,
+} from "@/lib/ports/staff-invites";
 
 export const E2E_FIXTURES_ENV = "GYM_SAAS_E2E_FIXTURES";
 
 export const E2E_STAFF_TOKEN_WITH_GYM = "e2e-access-token";
 export const E2E_STAFF_TOKEN_NO_GYM = "e2e-access-token-no-gym";
 export const E2E_CLIENT_TOKEN = "e2e-client-access";
+
+const E2E_GYM_ID = "gym-e2e-1";
+const E2E_PENDING_INBOX_ID = "invite-e2e-inbox-1";
+
+/** Tokens that gained a gym via Accept Staff Invite in this process. */
+const e2eAffiliatedTokens = new Set<string>();
+/** Tokens that became gym owners via Create GymOrg in this process. */
+const e2eOwnerTokens = new Set<string>();
 
 export function areE2eFixturesEnabled(): boolean {
   return process.env[E2E_FIXTURES_ENV] === "1";
@@ -64,6 +78,52 @@ export function createE2eAuthGateway(): AuthGateway {
       };
     },
 
+    async completeGoogle({ accessToken, lane, name }) {
+      const resolvedLane: AuthLane = lane;
+      const email =
+        resolvedLane === "CLIENT"
+          ? "e2e-google-client@example.com"
+          : "e2e-google-staff@example.com";
+      const user = userFromVerify({ email, lane: resolvedLane, name });
+      // Prefer explicit fixture tokens when tests pass them in the hash.
+      if (
+        accessToken === E2E_CLIENT_TOKEN ||
+        accessToken === E2E_STAFF_TOKEN_NO_GYM ||
+        accessToken === E2E_STAFF_TOKEN_WITH_GYM
+      ) {
+        if (accessToken === E2E_CLIENT_TOKEN) {
+          return {
+            user: userFromVerify({
+              email: "e2e-client@example.com",
+              lane: "CLIENT",
+              name,
+            }),
+          };
+        }
+        if (accessToken === E2E_STAFF_TOKEN_WITH_GYM) {
+          return {
+            user: {
+              ...userFromVerify({
+                email: "e2e-admin@example.com",
+                lane: "STAFF",
+                name,
+              }),
+              roleCode: "ADMIN",
+              staffCode: "STF-E2E-ADMIN",
+            },
+          };
+        }
+        return {
+          user: userFromVerify({
+            email: "e2e-admin@example.com",
+            lane: "STAFF",
+            name,
+          }),
+        };
+      }
+      return { user };
+    },
+
     async getMe({ accessToken }) {
       if (accessToken === E2E_CLIENT_TOKEN) {
         return {
@@ -71,6 +131,42 @@ export function createE2eAuthGateway(): AuthGateway {
             email: "e2e-client@example.com",
             lane: "CLIENT",
           }),
+        };
+      }
+      if (accessToken === E2E_STAFF_TOKEN_WITH_GYM) {
+        return {
+          user: {
+            ...userFromVerify({
+              email: "e2e-admin@example.com",
+              lane: "STAFF",
+            }),
+            roleCode: "ADMIN",
+            staffCode: "STF-E2E-ADMIN",
+          },
+        };
+      }
+      if (e2eOwnerTokens.has(accessToken)) {
+        return {
+          user: {
+            ...userFromVerify({
+              email: "e2e-admin@example.com",
+              lane: "STAFF",
+            }),
+            roleCode: "ADMIN",
+            staffCode: "STF-E2E",
+          },
+        };
+      }
+      if (e2eAffiliatedTokens.has(accessToken)) {
+        return {
+          user: {
+            ...userFromVerify({
+              email: "e2e-admin@example.com",
+              lane: "STAFF",
+            }),
+            roleCode: "TRAINER",
+            staffCode: "STF-E2E",
+          },
         };
       }
       return {
@@ -86,20 +182,20 @@ export function createE2eAuthGateway(): AuthGateway {
 export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
   return {
     async list({ accessToken }) {
-      if (
-        accessToken === E2E_STAFF_TOKEN_NO_GYM ||
-        accessToken === E2E_CLIENT_TOKEN
-      ) {
+      if (accessToken === E2E_CLIENT_TOKEN) {
         return { gymOrgs: [] };
       }
-      if (accessToken === E2E_STAFF_TOKEN_WITH_GYM) {
+      if (
+        accessToken === E2E_STAFF_TOKEN_WITH_GYM ||
+        e2eAffiliatedTokens.has(accessToken)
+      ) {
         return {
           gymOrgs: [
             {
-              id: "gym-e2e-1",
+              id: E2E_GYM_ID,
               name: "E2E Gym",
               timezone: "Asia/Kolkata",
-              isOwner: true,
+              isOwner: accessToken === E2E_STAFF_TOKEN_WITH_GYM,
             },
           ],
         };
@@ -107,7 +203,9 @@ export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
       return { gymOrgs: [] };
     },
 
-    async create({ body }) {
+    async create({ accessToken, body }) {
+      e2eOwnerTokens.add(accessToken);
+      e2eAffiliatedTokens.add(accessToken);
       return {
         gymOrg: {
           id: "gym-e2e-created",
@@ -117,6 +215,132 @@ export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
           createdAt: "2026-08-05T00:00:00.000Z",
         },
       };
+    },
+  };
+}
+
+function sampleInvite(overrides: Partial<StaffInvite> = {}): StaffInvite {
+  return {
+    id: "invite-e2e-1",
+    gymOrgId: E2E_GYM_ID,
+    invitedUserId: "e2e-invitee-1",
+    targetRole: "TRAINER",
+    status: "PENDING",
+    expiresAt: "2026-08-20T00:00:00.000Z",
+    createdBy: "e2e-user-1",
+    acceptedAt: null,
+    createdAt: "2026-08-06T00:00:00.000Z",
+    updatedAt: "2026-08-06T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+/** In-memory invites for E2E — reset per process (Playwright workers are isolated enough). */
+const e2eGymInvites: StaffInvite[] = [
+  sampleInvite({ id: "invite-e2e-gym-pending" }),
+];
+
+export function createE2eStaffInvitesAdapter(): StaffInvitesReader &
+  StaffInvitesWriter {
+  return {
+    async listForGym({ accessToken, gymOrgId, limit = 20, offset = 0 }) {
+      if (accessToken !== E2E_STAFF_TOKEN_WITH_GYM || gymOrgId !== E2E_GYM_ID) {
+        return {
+          staffInvites: { items: [], total: 0, limit, offset },
+        };
+      }
+      const items = e2eGymInvites.slice(offset, offset + limit);
+      return {
+        staffInvites: {
+          items,
+          total: e2eGymInvites.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async listInbox({ accessToken, limit = 20, offset = 0 }) {
+      if (accessToken !== E2E_STAFF_TOKEN_NO_GYM) {
+        return {
+          staffInvites: { items: [], total: 0, limit, offset },
+        };
+      }
+      const items = [
+        sampleInvite({
+          id: E2E_PENDING_INBOX_ID,
+          invitedUserId: "e2e-user-1",
+          targetRole: "TRAINER",
+          status: "PENDING",
+        }),
+      ];
+      return {
+        staffInvites: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async create({ accessToken, gymOrgId, body }) {
+      if (accessToken !== E2E_STAFF_TOKEN_WITH_GYM) {
+        throw new ApiClientError({
+          code: "STAFF_INVITE_FORBIDDEN",
+          message: "Not allowed",
+          status: 403,
+        });
+      }
+      const invite = sampleInvite({
+        id: `invite-e2e-${e2eGymInvites.length + 1}`,
+        gymOrgId,
+        targetRole: body.targetRole,
+        status: "PENDING",
+      });
+      e2eGymInvites.unshift(invite);
+      return { staffInvite: invite };
+    },
+
+    async revoke({ inviteId }) {
+      const idx = e2eGymInvites.findIndex((item) => item.id === inviteId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      const updated: StaffInvite = {
+        ...e2eGymInvites[idx],
+        status: "REVOKED",
+        updatedAt: "2026-08-06T01:00:00.000Z",
+      };
+      e2eGymInvites[idx] = updated;
+      return { staffInvite: updated };
+    },
+
+    async accept({ accessToken, inviteId }) {
+      if (
+        accessToken === E2E_STAFF_TOKEN_NO_GYM &&
+        inviteId === E2E_PENDING_INBOX_ID
+      ) {
+        e2eAffiliatedTokens.add(accessToken);
+        return {
+          staffInvite: sampleInvite({
+            id: inviteId,
+            invitedUserId: "e2e-user-1",
+            status: "ACCEPTED",
+            acceptedAt: "2026-08-06T01:00:00.000Z",
+            targetRole: "TRAINER",
+          }),
+        };
+      }
+      throw new ApiClientError({
+        code: "NOT_FOUND",
+        message: "Not found",
+        status: 404,
+      });
     },
   };
 }

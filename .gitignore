@@ -43,3 +43,6 @@ postman/
 # typescript / next
 *.tsbuildinfo
 next-env.d.ts
+
+# ephemeral postman sync payloads
+.tmp-postman-sync/

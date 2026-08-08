@@ -33,9 +33,8 @@ export default async function LoginPage() {
           Sign in
         </h1>
         <p className="mt-2 text-sm text-[var(--color-fg-muted)]">
-          Enter your email for a one-time code. New accounts choose Staff or
-          Member next; returning users go straight to the code. No separate
-          sign-up.
+          Email code or Google. New accounts choose Staff or Member; returning
+          users keep the same type. No separate sign-up.
         </p>
       </div>
       <LoginForm />

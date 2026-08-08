@@ -7,21 +7,21 @@ import {
 } from "./staff-session";
 import { AdminShellPage } from "../pages/admin-shell.page";
 import { ClientHomePage } from "../pages/client-home.page";
-import { CreateGymPage } from "../pages/create-gym.page";
 import { LoginPage } from "../pages/login.page";
+import { SettingsPage } from "../pages/settings.page";
 
 type Pages = {
   loginPage: LoginPage;
   adminShellPage: AdminShellPage;
   clientHomePage: ClientHomePage;
-  createGymPage: CreateGymPage;
+  settingsPage: SettingsPage;
 };
 
 type AuthFixtures = {
   /** Staff cookie + gym affiliation; lands on Admin Operations. */
   staffAdmin: AdminShellPage;
-  /** Staff cookie, zero gyms; /admin redirects to create-gym. */
-  staffNoGym: CreateGymPage;
+  /** Staff cookie, zero gyms; lands on Settings-only first-run. */
+  staffNoGym: SettingsPage;
   /** Client cookie; Member home. */
   clientHome: ClientHomePage;
 };
@@ -39,8 +39,8 @@ export const test = base.extend<Pages & AuthFixtures>({
     await use(new ClientHomePage(page));
   },
 
-  createGymPage: async ({ page }, use) => {
-    await use(new CreateGymPage(page));
+  settingsPage: async ({ page }, use) => {
+    await use(new SettingsPage(page));
   },
 
   staffAdmin: async ({ context, page }, use) => {
@@ -56,9 +56,9 @@ export const test = base.extend<Pages & AuthFixtures>({
 
   staffNoGym: async ({ context, page }, use) => {
     await context.addCookies([encodeStaffSessionCookieNoGym()]);
-    const createGym = new CreateGymPage(page);
+    const settings = new SettingsPage(page);
     await page.goto("/admin");
-    await use(createGym);
+    await use(settings);
   },
 
   clientHome: async ({ context, page }, use) => {

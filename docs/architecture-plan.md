@@ -214,19 +214,21 @@ M1 → M2 → M4 catalog → M4/M12 renewals inbox → M3 roster/invites → M5 
 ## 7. Auth & tenancy plan
 
 ```text
-User → lane chooser (CLIENT | STAFF)
-     → email OTP (or Google → verified email)
+User → email OTP request → isNewUser? lane chooser : skip
+     → OTP verify (lane only when new)
      → session (access + refresh)
-     → STAFF_UNASSIGNED: show waiting / staff_code (web)
-     → ADMIN affiliation: enter (admin)/* with active gym_org_id
+     → CLIENT → (client)/*
+     → STAFF + no GymOrg → (admin)/settings only (create org / accept invite)
+     → STAFF + GymOrg → (admin)/* full shell
      → TRAINER affiliation: Phase B (trainer)/*
-     → CLIENT: Phase B (client)/* or redirect “use mobile”
 ```
 
 ### Rules
 
 - Session established only after OTP/Google verify (API).
-- Admin shell requires `ADMIN` role + gym affiliation.
+- First-run Staff (empty `GET /gym-orgs`) land on **Settings** with Settings-only nav — not a separate create-gym route.
+- Ops modules (`/admin`, renewals, …) require ≥1 GymOrg; Settings stays available for create + staff invites.
+- Admin shell for day-to-day ops expects `ADMIN` (or affiliated staff) + gym affiliation after first-run.
 - Every Admin API call sends auth; server scopes by `gym_org_id`.
 - MVP UI: **single active gym** (no branch switcher) even if owner has multiple orgs in DB.
 - Client cannot accept staff invites on a Client account (and vice versa) — enforce via API; UI must not offer cross-lane actions.

@@ -4,8 +4,9 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
-import { createAppServices } from "@/lib/api/composition";
 import { getSession, isStaffSession } from "@/lib/auth/session";
+import type { AdminShellMode } from "@/lib/features/admin/admin-nav";
+import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
 
 function initialsFrom(name: string | null, email: string): string {
   const source = (name?.trim() || email).trim();
@@ -29,38 +30,52 @@ export default async function AdminSectionLayout({
     redirect("/login");
   }
 
+  let mode: AdminShellMode = "full";
   try {
-    const { listGymOrgs } = createAppServices();
-    const { gymOrgs } = await listGymOrgs({ accessToken: session.accessToken });
-    if (gymOrgs.length === 0) {
-      redirect("/onboarding/create-gym");
-    }
+    const gymOrgs = await listStaffGymOrgs(session.accessToken);
+    mode = gymOrgs.length === 0 ? "settings-only" : "full";
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     }
-    // List/network failures must not bounce staff into onboarding (create loop).
+    // List/network failures: keep full shell so ops pages remain reachable.
+    mode = "full";
   }
 
   const displayName = session.name ?? session.email;
   const setupBanner =
-    session.roleCode === "STAFF_UNASSIGNED" ? (
+    mode === "settings-only" ? (
+      <div className="mb-6 rounded-[var(--radius-panel)] border border-[var(--color-border)]/80 bg-[var(--color-surface)] p-4 text-sm text-[var(--color-fg-muted)] shadow-[var(--shadow-panel)]">
+        Create your gym or accept a staff invite on this page
+        {session.staffCode ? (
+          <>
+            {" "}
+            · your staff code is{" "}
+            <span className="font-medium text-[var(--color-fg)]">
+              {session.staffCode}
+            </span>
+          </>
+        ) : null}
+        .
+      </div>
+    ) : session.roleCode === "STAFF_UNASSIGNED" ? (
       <div className="mb-6 rounded-[var(--radius-panel)] border border-[var(--color-border)]/80 bg-[var(--color-surface)] p-4 text-sm text-[var(--color-fg-muted)] shadow-[var(--shadow-panel)]">
         Your staff account is ready
-        {session.staffCode ? ` · ${session.staffCode}` : ""}. Finish gym profile
-        in{" "}
+        {session.staffCode ? ` · ${session.staffCode}` : ""}. Invite Trainers
+        from{" "}
         <Link
           href="/admin/settings"
           className="font-medium text-[var(--color-fg)] underline-offset-2 hover:underline"
         >
           Settings
         </Link>{" "}
-        anytime.
+        once you are an Admin, or accept an invite if you were invited.
       </div>
     ) : null;
 
   return (
     <AdminShell
+      mode={mode}
       user={{
         displayName,
         email: session.email,

@@ -69,17 +69,18 @@ test.describe("Login (isNewUser)", () => {
 });
 
 test.describe("OTP sign-in destinations (E2E fixtures)", () => {
-  test("new Staff lands on create-gym", async ({
+  test("new Staff lands on Settings", async ({
     loginPage,
-    createGymPage,
+    settingsPage,
     page,
   }) => {
     await loginPage.signInNewUser({
       lane: "STAFF",
       email: "new.staff@example.com",
     });
-    await expect(page).toHaveURL(/\/onboarding\/create-gym/);
-    await expect(createGymPage.heading).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/settings/);
+    await expect(settingsPage.heading).toBeVisible();
+    await expect(settingsPage.createGymHeading).toBeVisible();
   });
 
   test("new Client lands on member home", async ({
@@ -96,16 +97,51 @@ test.describe("OTP sign-in destinations (E2E fixtures)", () => {
     await expect(clientHomePage.adminSidebar).toHaveCount(0);
   });
 
-  test("returning Staff without gym still lands on create-gym", async ({
+  test("returning Staff without gym still lands on Settings", async ({
     loginPage,
-    createGymPage,
+    settingsPage,
     page,
   }) => {
     // Fixture verify without lane defaults STAFF + no-gym token.
     await loginPage.signInReturningUser({
       email: "returning.staff@example.com",
     });
-    await expect(page).toHaveURL(/\/onboarding\/create-gym/);
-    await expect(createGymPage.heading).toBeVisible();
+    await expect(page).toHaveURL(/\/admin\/settings/);
+    await expect(settingsPage.heading).toBeVisible();
+    await expect(settingsPage.createGymHeading).toBeVisible();
+  });
+});
+
+test.describe("Google OAuth (E2E fixtures)", () => {
+  test("shows Continue with Google and asks for lane before start", async ({
+    loginPage,
+    page,
+  }) => {
+    await loginPage.goto();
+    await expect(loginPage.continueWithGoogle).toBeVisible();
+    await loginPage.continueWithGoogle.click();
+    await expect(loginPage.laneHeading).toBeVisible();
+    await loginPage.staffLane.check();
+    await expect(
+      page.getByRole("button", { name: "Continue with Google" }),
+    ).toBeEnabled();
+  });
+
+  test("callback with hash completes Staff session to Settings", async ({
+    page,
+    settingsPage,
+  }) => {
+    await page.goto("/login");
+    await page.evaluate(() => {
+      sessionStorage.setItem(
+        "gym-saas.google-oauth-pending",
+        JSON.stringify({ lane: "STAFF" }),
+      );
+    });
+    await page.goto(
+      "/auth/google/callback#access_token=e2e-access-token-no-gym&refresh_token=e2e-refresh-token&expires_in=3600",
+    );
+    await expect(page).toHaveURL(/\/admin\/settings/);
+    await expect(settingsPage.heading).toBeVisible();
   });
 });

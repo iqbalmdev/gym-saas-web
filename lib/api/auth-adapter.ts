@@ -66,6 +66,20 @@ export function createAuthAdapter(http: HttpClient): AuthGateway {
       return verifySchema.parse(raw);
     },
 
+    async completeGoogle({ accessToken, lane, name }) {
+      const body: { lane: AuthLane; name?: string } = { lane };
+      if (name) {
+        body.name = name;
+      }
+      const raw = await http.request<unknown>({
+        path: endpoints.googleComplete,
+        method: "POST",
+        accessToken,
+        body,
+      });
+      return meSchema.parse(raw);
+    },
+
     async getMe({ accessToken }) {
       const raw = await http.request<unknown>({
         path: endpoints.me,

@@ -1,16 +1,36 @@
 ---
-description: Next.js App Router conventions for multi-persona Gym web
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/**/*.{ts,tsx}
+description: Next.js App Router best practices for Gym SaaS web
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
-# Next.js Gym web
+# Next.js App Router
 
-- App Router; Server Components by default.
-- `"use client"` only for interactive forms, local table UI state, charts.
-- Persona route groups: `(auth)`, `(admin)` now; `(trainer)` / `(client)` when those surfaces start — do not block future groups with Admin-only global assumptions.
-- Shared code lives in `components/ui` and `lib/*`; persona-specific UI under `components/admin|trainer|client`.
-- Fetch via server components / route handlers + typed `lib/api` — not ad-hoc fetch in JSX.
-- Use `loading.tsx` / calm skeletons and error UI with recovery paths.
-- Theme: consume CSS variables from `docs/ui-theme.md` — no raw brand hex in features.
-- Gate navigation and pages by lane/role from session; never trust client-only role flags.
+## Server vs Client
+
+- **Default = Server Components** — fetch data, keep secrets/tokens server-side, smaller JS.
+- **`"use client"` only** when you need: event handlers, `useState`/`useEffect`, browser APIs, client libraries (Zustand hooks).
+- Push client boundaries to **leaves** — pages/layouts stay server; interactive widgets are client children.
+- Pass server-fetched data as **props** into client components (e.g. Settings inbox).
+
+## Data & mutations
+
+- Read domain data via **ports** from Server Components / Server Actions — not ad-hoc `fetch` in JSX.
+- Mutations: **Server Actions** (`"use server"`) → use-case → adapter → API → `revalidatePath` / `redirect`.
+- Do not use Server Actions as a general-purpose GET replacement when parallel reads matter.
+- Session lane/role gates on the server; never trust client-only role flags.
+
+## Routing & tenancy
+
+- Route groups: `(auth)`, `(admin)`; keep `(trainer)` / `(client)` viable.
+- Staff with 0 gyms: Settings-only shell (`/admin/settings`); ops under `(ops)` require a GymOrg.
+- Shared UI: `components/ui`, `lib/*`. Persona UI: `components/admin|trainer|client`.
+
+## State
+
+- Follow rule `state-management.mdc` — server owns API truth; Zustand only for shared client UI chrome.
+- Theme tokens from `docs/ui-theme.md` — no raw brand hex in features.
+
+## Libs
+
+- Before inventing Next/React APIs, use **Context7 MCP** (rule `context7-docs.mdc`). Prefer `node_modules/next/dist/docs/` when AGENTS.md Next block applies.

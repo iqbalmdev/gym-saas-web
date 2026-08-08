@@ -15,6 +15,11 @@ describe("authErrorMessage", () => {
     );
   });
 
+  it("maps Google OAuth configuration and identity failures", () => {
+    expect(authErrorMessage("OAUTH_CONFIGURATION")).toMatch(/email code/i);
+    expect(authErrorMessage("GOOGLE_IDENTITY_REQUIRED")).toMatch(/verified email/i);
+  });
+
   it("does not expose raw unknown codes — uses fallback or generic copy", () => {
     expect(authErrorMessage("SOME_INTERNAL_STACK")).toBe(
       "Something went wrong. Please try again.",

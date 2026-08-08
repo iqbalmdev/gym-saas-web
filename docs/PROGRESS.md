@@ -6,29 +6,100 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 
 | Area | Status |
 |---|---|
-| Agent OS (rules, skills, docs, playbook) | Done |
+| Agent OS (rules, skills, docs) | Done — lean rules + Next/state best practices (`state-management.mdc`) |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
-| Postman API collection | Done — **Postman cloud SSOT** (GitHub publish → MCP inject; no local `postman/` JSON) |
-| Client/Admin auth guide | Done — `docs/api/client-auth.md` (synced 2026-08-04 to WhatsApp + Postman) |
-| Auth research note (Admin web) | Done — `docs/research/2026-08-04-client-auth-admin-web.md` |
+| Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
+| Client/Admin auth guide | Done — `docs/api/client-auth.md` |
+| Auth research notes | Archived — `docs/archive/research/` |
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth with isNewUser + lane chooser; M2 create-gym gate; Client home stub |
-| Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens |
-| Unit + E2E test scaffold | Done — Vitest + Playwright (login/lane/create-gym/client) |
-| GitHub remote | Done — https://github.com/iqbalmdev/gym-saas-web |
+| Feature modules | M1 auth (OTP + Google OAuth); M2 **Settings-first** (create gym + staff invites) |
+| Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Login uses `isNewUser` for Staff/Client; Staff without a GymOrg must create one before Admin modules; Clients land on `/client`. Next: Phase A plans/renewals; re-login Postman MCP when convenient.
+**Summary:** Staff first-run is Settings-only. Google OAuth web flow wired (start → callback → complete). Postman multi-root sync done. Next: Admin Phase A modules (plans → renewals → …); deploy backend `GOOGLE_OAUTH_REDIRECT_ORIGINS` for live Google.
 
 ## Next up
 
-1. Admin Phase A: M4 plans → renewals inbox → M3 → M5 → M11 CRM.
-2. Re-login Postman MCP and finish cloud inject from tip `7ae38910` (or Desktop Import raw URLs in `docs/postman-sync.md`).
-3. Deepen Client web when Phase B starts.
+1. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web callback (required for live Google on prod API).
+2. Admin Phase A: M4 plans → renewals inbox → M3 → M5 → M11 CRM.
+3. Optional: add Zustand package + Admin UI store when renewals needs shared chrome.
 
 ## Log
+
+### 2026-08-08 — Google OAuth login (web + backend redirect_to)
+
+- Web: `completeGoogle` port/adapter/action; login **Continue with Google** → lane → API start with `redirect_to`; `/auth/google/callback` reads hash, keeps Google tokens, session cookie, post-auth redirect.
+- Backend (`gym-backend`): allowlisted `?redirect_to=` via `GOOGLE_OAUTH_REDIRECT_ORIGINS`; start works in production without Postman helper.
+- Docs: `docs/api/client-auth.md` Google section. Unit + Playwright coverage (fixtures).
+- Live Google needs backend deploy + Supabase redirect allowlist for `{web}/auth/google/callback`.
+
+### 2026-08-08 — Postman sync tip `7a2d9bf` → cloud
+
+- Sibling `gym-backend-postman` `git pull` 7ae3891 → `7a2d9bf` (Leads, Plans; inbox embeds `gym`).
+- Postman MCP `putCollection` + Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`).
+- Collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347` `updatedAt` 2026-08-08T06:44:33Z; folders Health, Auth, Gym Orgs, Staff Invites, Leads, Plans.
+- Updated `docs/postman-sync.md`, `docs/api/staff-invites.md` (inbox `gym`), client-auth tip SHA. Auth OTP contract unchanged.
+- Examples may be trimmed on MCP inject; sibling remains Examples SSOT. Temp cleaned. No commit.
+
+### 2026-08-07 — Rules/skills: Next.js + state-management best practices
+
+- Added `state-management.mdc` (server data / URL / useState / Context / Zustand UI-only).
+- Rewrote `nextjs-app-router.mdc` (RSC default, Server Actions, client leaves).
+- Updated `architecture`, `code-quality`, `testing`; skills `orient`, `implement-feature`, `implement-admin-feature`, `bootstrap-agent-os`; `AGENTS.md`.
+- No Zustand package install yet — document first; scaffold when a slice needs shared client chrome.
+
+### 2026-08-07 — Agent OS lean pass (rules + skills + docs)
+
+- **Rules:** Short `.mdc` files; `testing` / `architecture` / `error-handling` / theme / Next use globs; Settings-first in architecture + nextjs rules.
+- **Skills:** Trimmed orient, implement-feature, sync-postman, verify-api-flow, bootstrap-agent-os.
+- **Docs:** Index `docs/README.md`; archived research, playbook, Postman MCP dump → `docs/archive/`; thin `docs/agents/*` stubs for Matt skills; slim `AGENTS.md` / GETTING-STARTED / root README.
+
+### 2026-08-06 — Settings-first Staff onboarding (plan A)
+
+- Post-auth: STAFF + 0 gyms → `/admin/settings` (same for `isNewUser` true/false).
+- Admin shell `settings-only` mode: Settings nav only; ops routes under `(ops)` redirect to Settings when empty.
+- Settings composes create gym + invite inbox + staff invite admin panel.
+- `/onboarding/create-gym` (+ onboarding layout) redirects to Settings.
+- Create gym refreshes session → stay on Settings; accept invite → `/admin`.
+- Unit: `admin-nav`, `resolvePostAuthPath`. E2E: login destinations, Settings-only shell, inbox accept.
+- Docs: `architecture-plan` §7, `staff-invites.md`, research note superseded banner.
+
+### 2026-08-06 — Multi-root Postman workspace + sync skill/docs (C/D)
+
+- Cloned sibling `/Users/iqbal/Projects/gym-backend-postman` @ `7ae38910`.
+- Added `gym-saas.code-workspace` (web + postman roots).
+- Rewrote **sync-postman-collection**: prefer sibling `git pull` → Postman MCP inject; GitHub MCP fallback.
+- Updated `docs/postman-sync.md`, `mcp-setup.md`, `GETTING-STARTED.md`, rule `postman-sync.mdc`, `architecture.mdc`, `AGENTS.md`, **orient**, **verify-api-flow**, **implement-feature**, `README.md`.
+- Still no vendored `postman/*.json` in web repo.
+
+### 2026-08-06 — Staff invites (create / list / revoke / inbox / accept)
+
+- Ports + Zod adapter from Postman Staff Invites; composition + E2E fakes.
+- Admin **Settings**: invite by staff code (TRAINER/ADMIN), list, revoke.
+- Onboarding **create-gym**: invitee inbox + accept → refresh session → `/admin`.
+- Docs: `docs/api/staff-invites.md`. Unit + Playwright coverage.
+
+### 2026-08-06 — Admin/Client nav: space-between + mobile drawer
+
+- Headers use `justify-between`: brand left, Sign out (and user) right — Admin shell, Client, Onboarding.
+- Admin: sidebar off-canvas under `md`; hamburger opens drawer; desktop collapse rail unchanged.
+- E2E: mobile header + open navigation smoke.
+
+### 2026-08-06 — Postman cloud inject OK (`7ae38910`)
+
+- Tip `7ae3891099c99bad605282e18f0f85e2b26a43d5` → Postman MCP `putCollection` + `putEnvironment` (Dev/Local).
+- Collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347` (`updatedAt` 2026-08-06T12:47:55Z); folders Health, Auth, Gym Orgs, Staff Invites.
+- Dev `baseUrl` = Vercel prod, `lane=STAFF`. Auth guide unchanged beyond prior SHA bump. Temp cleaned; no commit.
+
+### 2026-08-06 — Postman sync retry (pull OK, inject 401)
+
+- Tip still `7ae3891099c99bad605282e18f0f85e2b26a43d5` (Staff Invites folder; Auth still has `isNewUser` + `LANE_REQUIRED`).
+- GitHub MCP pull OK → `/tmp/gym-postman-sync/` (ephemeral; cleaned). Prep payloads ready (Dev `baseUrl` = Vercel prod, `lane=STAFF`).
+- Postman MCP: `mcp_auth` reports success twice; `getCollections` / `getEnvironments` still **401 Invalid API Key**. Cloud inject skipped.
+- `docs/api/client-auth.md` — publish SHA → `7ae38910` only (no OTP contract change). `docs/postman-sync.md` Last verified refreshed.
+- No commit.
 
 ### 2026-08-06 — Commits + Postman tip pull `7ae38910`
 

@@ -6,32 +6,15 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  adminNavItems,
+  resolveAdminHomeHref,
+  type AdminNavIcon,
+  type AdminShellMode,
+} from "@/lib/features/admin/admin-nav";
 import { signOutAction } from "@/lib/features/auth/actions";
 
 const SIDEBAR_EXPANDED_KEY = "gym-saas-sidebar-expanded";
-
-type NavIcon =
-  | "home"
-  | "renewals"
-  | "leads"
-  | "members"
-  | "attendance"
-  | "plans"
-  | "settings";
-
-const NAV_ITEMS: ReadonlyArray<{
-  href: string;
-  label: string;
-  icon: NavIcon;
-}> = [
-  { href: "/admin", label: "Dashboard", icon: "home" },
-  { href: "/admin/renewals", label: "Renewals", icon: "renewals" },
-  { href: "/admin/crm", label: "Leads", icon: "leads" },
-  { href: "/admin/members", label: "Members", icon: "members" },
-  { href: "/admin/attendance", label: "Attendance", icon: "attendance" },
-  { href: "/admin/plans", label: "Plans", icon: "plans" },
-  { href: "/admin/settings", label: "Settings", icon: "settings" },
-];
 
 export type AdminShellUser = {
   displayName: string;
@@ -44,6 +27,7 @@ export type AdminShellUser = {
 type AdminShellProps = {
   children: ReactNode;
   user: AdminShellUser;
+  mode?: AdminShellMode;
   setupBanner?: ReactNode;
 };
 
@@ -54,7 +38,7 @@ function isActive(pathname: string, href: string): boolean {
   return pathname.startsWith(href);
 }
 
-function NavGlyph({ icon }: { icon: NavIcon }) {
+function NavGlyph({ icon }: { icon: AdminNavIcon }) {
   const common = "h-4 w-4 shrink-0";
   switch (icon) {
     case "home":
@@ -185,9 +169,39 @@ function CollapseIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden>
+      {open ? (
+        <path
+          d="M6 6l12 12M18 6 6 18"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      ) : (
+        <path
+          d="M4 7h16M4 12h16M4 17h16"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  );
+}
+
+export function AdminShell({
+  children,
+  user,
+  mode = "full",
+  setupBanner,
+}: AdminShellProps) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navItems = adminNavItems(mode);
+  const homeHref = resolveAdminHomeHref(mode);
 
   useEffect(() => {
     const stored = localStorage.getItem(SIDEBAR_EXPANDED_KEY);
@@ -199,6 +213,23 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
     document.documentElement.dataset.adminShellReady = "true";
   }, []);
 
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileNavOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileNavOpen]);
+
   const toggleExpanded = useCallback(() => {
     setExpanded((prev) => {
       const next = !prev;
@@ -207,32 +238,49 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
     });
   }, []);
 
+  const closeMobileNav = useCallback(() => {
+    setMobileNavOpen(false);
+  }, []);
+
+  const sidebarExpanded = mobileNavOpen || expanded;
+
   return (
     <div className="admin-shell min-h-screen text-[var(--color-fg)]">
       <div className="flex min-h-screen">
+        {mobileNavOpen ? (
+          <button
+            type="button"
+            className="fixed inset-0 z-30 bg-[var(--color-fg)]/25 backdrop-blur-[1px] md:hidden"
+            aria-label="Close navigation"
+            onClick={closeMobileNav}
+          />
+        ) : null}
+
         <aside
-          className={`sticky top-0 flex h-screen shrink-0 flex-col border-r border-[var(--color-border)]/70 bg-[var(--color-surface)]/95 py-3 backdrop-blur-sm transition-[width] duration-300 ease-out ${
-            expanded ? "w-[14rem]" : "w-[4.25rem]"
-          }`}
+          id="admin-mobile-nav"
+          className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-[var(--color-border)]/70 bg-[var(--color-surface)] py-3 shadow-[var(--shadow-nav)] transition-[transform,width] duration-300 ease-out md:sticky md:z-auto md:shadow-none ${
+            mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          } ${sidebarExpanded ? "w-[14rem]" : "w-[4.25rem]"}`}
           aria-label="Admin modules"
           role="complementary"
         >
           <div
-            className={`mb-4 flex items-center gap-2.5 px-2 ${
-              expanded ? "justify-between" : "flex-col gap-2"
+            className={`mb-4 flex w-full items-center gap-2.5 px-2 ${
+              sidebarExpanded ? "justify-between" : "flex-col gap-2"
             }`}
           >
             <Link
-              href="/admin"
-              className={`flex items-center gap-2.5 rounded-xl ${
-                expanded ? "min-w-0 px-1.5 py-1" : "justify-center"
+              href={homeHref}
+              className={`flex min-w-0 items-center gap-2.5 rounded-xl ${
+                sidebarExpanded ? "px-1.5 py-1" : "justify-center"
               }`}
               title="Gym SaaS"
+              onClick={closeMobileNav}
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)] text-xs font-bold text-[var(--color-accent-fg)]">
                 G
               </span>
-              {expanded ? (
+              {sidebarExpanded ? (
                 <span className="truncate text-sm font-semibold tracking-tight">
                   Gym SaaS
                 </span>
@@ -241,7 +289,7 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
             <Button
               type="button"
               variant="ghost"
-              className="h-9 w-9 shrink-0 rounded-xl p-0"
+              className="hidden h-9 w-9 shrink-0 rounded-xl p-0 md:inline-flex"
               aria-expanded={expanded}
               aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
               title={expanded ? "Collapse" : "Expand"}
@@ -249,10 +297,19 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
             >
               <CollapseIcon expanded={expanded} />
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-9 w-9 shrink-0 rounded-xl p-0 md:hidden"
+              aria-label="Close navigation"
+              onClick={closeMobileNav}
+            >
+              <MenuIcon open />
+            </Button>
           </div>
 
           <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active = isActive(pathname, item.href);
               return (
                 <Link
@@ -260,8 +317,11 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
                   href={item.href}
                   title={item.label}
                   aria-label={item.label}
+                  onClick={closeMobileNav}
                   className={`flex items-center rounded-xl text-sm transition ${
-                    expanded ? "gap-2.5 px-3 py-2.5" : "justify-center px-0 py-2.5"
+                    sidebarExpanded
+                      ? "gap-2.5 px-3 py-2.5"
+                      : "justify-center px-0 py-2.5"
                   } ${
                     active
                       ? "bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]"
@@ -269,18 +329,22 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
                   }`}
                 >
                   <NavGlyph icon={item.icon} />
-                  {expanded ? <span className="truncate">{item.label}</span> : null}
+                  {sidebarExpanded ? (
+                    <span className="truncate">{item.label}</span>
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
 
           <div
-            className={`mt-2 flex border-t border-[var(--color-border)]/80 px-2 pt-3 ${
-              expanded ? "items-center justify-between gap-2" : "flex-col items-center gap-2"
+            className={`mt-2 flex w-full border-t border-[var(--color-border)]/80 px-2 pt-3 ${
+              sidebarExpanded
+                ? "items-center justify-between gap-2"
+                : "flex-col items-center gap-2"
             }`}
           >
-            {expanded ? (
+            {sidebarExpanded ? (
               <p className="text-xs text-[var(--color-fg-muted)]">Appearance</p>
             ) : null}
             <ThemeToggle />
@@ -289,23 +353,55 @@ export function AdminShell({ children, user, setupBanner }: AdminShellProps) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 border-b border-[var(--color-border)]/80 bg-[var(--color-surface)]/90 px-4 py-3 shadow-[var(--shadow-nav)] backdrop-blur-md md:px-6">
-            <div className="flex items-center justify-end gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-medium leading-tight">{user.displayName}</p>
-                <p className="text-xs text-[var(--color-fg-muted)]">{user.roleCode}</p>
-              </div>
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-canvas-accent)] text-xs font-semibold text-[var(--color-fg)] ring-2 ring-[var(--color-surface)]"
-                title={user.email}
-                aria-label={user.displayName}
-              >
-                {user.initials}
-              </div>
-              <form action={signOutAction}>
-                <Button type="submit" variant="ghost" className="text-xs">
-                  Sign out
+            <div className="flex w-full items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-9 w-9 shrink-0 rounded-xl p-0 md:hidden"
+                  aria-expanded={mobileNavOpen}
+                  aria-controls="admin-mobile-nav"
+                  aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
+                  onClick={() => setMobileNavOpen((open) => !open)}
+                >
+                  <MenuIcon open={mobileNavOpen} />
                 </Button>
-              </form>
+                <Link
+                  href={homeHref}
+                  className="flex min-w-0 items-center gap-2.5"
+                  title="Gym SaaS"
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)] text-xs font-bold text-[var(--color-accent-fg)]">
+                    G
+                  </span>
+                  <span className="truncate text-sm font-semibold tracking-tight">
+                    Gym SaaS
+                  </span>
+                </Link>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                <div className="hidden text-right sm:block">
+                  <p className="text-sm font-medium leading-tight">
+                    {user.displayName}
+                  </p>
+                  <p className="text-xs text-[var(--color-fg-muted)]">
+                    {user.roleCode}
+                  </p>
+                </div>
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-canvas-accent)] text-xs font-semibold text-[var(--color-fg)] ring-2 ring-[var(--color-surface)]"
+                  title={user.email}
+                  aria-label={user.displayName}
+                >
+                  {user.initials}
+                </div>
+                <form action={signOutAction}>
+                  <Button type="submit" variant="ghost" className="text-xs">
+                    Sign out
+                  </Button>
+                </form>
+              </div>
             </div>
           </header>
 

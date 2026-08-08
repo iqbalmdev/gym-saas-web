@@ -1,12 +1,12 @@
 ---
 name: implement-admin-feature
-description: Alias for Admin slices. Prefer implement-feature. Use when building Admin-only web features (renewals, CRM, roster, desk, plans).
+description: Alias for Admin slices. Prefer implement-feature.
 ---
 
 # Implement Admin feature
 
-This skill delegates to the multi-persona workflow.
+Follow `.cursor/skills/implement-feature/SKILL.md` with **persona = Admin**.
 
-1. Follow `.cursor/skills/implement-feature/SKILL.md` with **persona = Admin**.
-2. Place UI under `(admin)` / `components/admin` per `docs/architecture-plan.md` §5–§6.
-3. Keep shared `lib/*` persona-agnostic for future Trainer/Client web.
+Place UI under `(admin)` / `components/admin`. Keep `lib/*` persona-agnostic.
+
+Honor `state-management.mdc`: server owns roster/renewals/CRM rows; Zustand only for shared Admin UI chrome when needed.

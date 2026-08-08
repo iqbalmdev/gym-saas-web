@@ -1,0 +1,41 @@
+---
+description: Client vs server state — useState, Context, URL, Zustand (UI only)
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/client-state/**/*.ts
+alwaysApply: false
+---
+
+# State management
+
+## Decision tree (pick one)
+
+1. **Gym Backend / session data** (invites, gyms, roster, renewals rows)  
+   → Server Component + ports/adapters. Mutate with **Server Actions** + `revalidatePath` / redirect.  
+   → **Never** copy API entities into Zustand/Redux/Context.
+
+2. **Shareable list filters** (status, date range, search)  
+   → URL `searchParams` so the server can re-render. Prefer over client stores.
+
+3. **One form / one panel** (login OTP steps, create-gym fields, invite form)  
+   → Local `useState` + `useTransition`.
+
+4. **App-wide rare UI** (theme)  
+   → React Context (existing theme provider is fine).
+
+5. **Shared client UI chrome** across distant components (drawer open, column picker, wizard step that isn’t URL-worthy)  
+   → **Zustand** with `createStore` + Context provider (per-tree / per-request — no module-global singleton that leaks across SSR requests).  
+   → Client components only; RSCs must not read/write the store.
+
+## Zustand rules (when used)
+
+- Store **UI-only** slices — no `StaffInvite[]`, no tokens, no gym lists.
+- Prefer `createStore` from `zustand/vanilla` + provider (official Next.js pattern).
+- Selectors to avoid broad re-renders: `useStore(store, (s) => s.field)`.
+- Do not fetch inside the store — Server Actions / ports own network.
+
+## Anti-patterns
+
+- Client `fetch` of domain APIs from JSX (bypass ports).
+- Global module `create(...)` store shared across SSR requests without a provider.
+- Mirroring server props into Zustand “for convenience.”
+- Redux Toolkit / heavy global stores for Admin MVP — skip unless an ADR says otherwise.
+- SWR/React Query as default for Admin lists — only for true client polling / browser-only APIs.

@@ -33,5 +33,14 @@ export type AuthGateway = {
     lane?: AuthLane;
     name?: string;
   }) => Promise<{ session: AuthSession; user: AuthUser }>;
+  /**
+   * Provisions / loads the app user after Google OAuth.
+   * Tokens are NOT rotated — keep the Google access/refresh tokens.
+   */
+  completeGoogle: (input: {
+    accessToken: string;
+    lane: AuthLane;
+    name?: string;
+  }) => Promise<{ user: AuthUser }>;
   getMe: (input: { accessToken: string }) => Promise<{ user: AuthUser }>;
 };

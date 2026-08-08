@@ -1,39 +1,36 @@
 ---
 name: implement-feature
-description: Implement one Gym SaaS web vertical slice for Admin, Trainer, or Client against the architecture plan and PRD/product-flows. Use when building or changing a web feature for any persona.
+description: Implement one Gym SaaS web vertical slice (Admin, Trainer, or Client) with ports/adapters and correct state tiers.
 ---
 
-# Implement feature (any persona)
+# Implement feature
 
 ## Preconditions
 
-1. Run **orient** (PROGRESS + relevant `docs/architecture-plan.md` sections).
-2. Name **persona** (`Admin` | `Trainer` | `Client`) + module (e.g. M4 renewals) + single slice outcome.
-3. Confirm the slice fits plan §5 folders and §6 route map (or note an ADR-needed exception).
-4. Confirm out-of-MVP items stay out (plan §13).
-5. Prefer shared `lib/*` and `components/ui`; persona UI under matching folder/route group.
+1. Run **orient**.
+2. Name persona + module + one slice outcome.
+3. Fit plan §5–§6 folders/routes (or note ADR exception).
+4. Keep out-of-MVP items out (plan §13).
+5. **Choose state tier** (rule `state-management.mdc`) before coding UI.
 
 ## Workflow
 
-1. **Align** — Quote PRD/flow + architecture-plan bullets that apply; list open decisions. If ambiguous, ask or `/grill-with-docs` before coding.
-2. **Slice** — One vertical slice only (e.g. list + empty state, not full CRM).
-3. **Types & API** — Use-cases depend on **ports**; HTTP only in `lib/api` adapters (ADR-0004 / plan §4). No entitlement logic or `fetch` in JSX (plan §8).
-4. **UI** — Presentational components; theme tokens; calm empty/loading/error/grant-missing states.
-5. **Verify** — Postman MCP / Playwright MCP / `verify-api-flow` as appropriate.
-6. **Review bar** — Plan §12 compliance checklist (includes DIP).
-7. **Progress** — Update `docs/PROGRESS.md`.
+1. **Align** — PRD/flow bullets that apply; ask if ambiguous.
+2. **Slice** — one vertical cut only.
+3. **Server data** — Server Component reads via **ports**; HTTP only in `lib/api` adapters. Wire at composition root.
+4. **Mutations** — Server Actions → use-case → adapter → `revalidatePath` / `redirect`. No domain `fetch` in client JSX.
+5. **Client UI** — presentational leaves; theme tokens; calm empty/loading/error/grant-missing.
+   - One form → `useState` / `useTransition`.
+   - Shareable filters → URL `searchParams`.
+   - Shared chrome across trees → Zustand (`createStore` + provider); **never** store API entities.
+6. **M2 Staff** — create gym + staff invites on `/admin/settings` (Settings-only when 0 gyms). Invitee inbox = Accept only; Revoke = Admin gym panel.
+7. **Verify** — unit (port fakes) / Playwright / **verify-api-flow**. Sync Postman if contract may have moved.
+8. **Progress** — update `docs/PROGRESS.md`.
 
-## Persona notes
+## Done
 
-- **Admin (current focus):** renewals, CRM, desk attendance, roster, plans — Phase A order in plan §6.
-- **Trainer / Client (future):** reuse auth + API + theme; do not invent a second Next app without an ADR.
-
-## Done checklist
-
-- [ ] Matches `docs/CONTEXT.md` terms
-- [ ] Matches `docs/architecture-plan.md` layers, ports/adapters, folders
-- [ ] SOLID/DI: no transport or domain formatting buried in JSX
-- [ ] Honors DataGrant / billing≠access rules
-- [ ] Does not paint the codebase into Admin-only corners
-- [ ] No raw theme hex in feature components
+- [ ] State tier chosen deliberately (not default global store)
+- [ ] CONTEXT terms · ports/adapters · no fetch in JSX
+- [ ] DataGrant / billing≠access honored
+- [ ] No Admin-only dead ends for future personas
 - [ ] `docs/PROGRESS.md` updated

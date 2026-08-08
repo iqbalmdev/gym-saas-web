@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "gym-saas-web",
+      "path": "."
+    },
+    {
+      "name": "gym-backend-postman",
+      "path": "../gym-backend-postman"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.tmp-postman-sync": true
+    }
+  }
+}

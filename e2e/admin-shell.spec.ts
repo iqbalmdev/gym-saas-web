@@ -30,15 +30,38 @@ test.describe("Admin collapsible sidebar", () => {
     await expect(page).toHaveURL(/\/admin\/settings/);
     await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   });
+
+  test("mobile header keeps brand and sign out spaced apart", async ({
+    staffAdmin,
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.getByRole("link", { name: "Gym SaaS" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Sign out" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Open navigation" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Open navigation" }).click();
+    await expect(staffAdmin.moduleLink("Renewals")).toBeVisible();
+    await expect(staffAdmin.moduleLink("Renewals")).toHaveText("Renewals");
+  });
 });
 
 test.describe("Staff without gym", () => {
-  test("is sent to create-gym instead of Admin modules", async ({
+  test("lands on Settings-only shell instead of Admin modules", async ({
     staffNoGym,
     page,
   }) => {
-    await expect(page).toHaveURL(/\/onboarding\/create-gym/);
+    await expect(page).toHaveURL(/\/admin\/settings/);
     await expect(staffNoGym.heading).toBeVisible();
+    await expect(staffNoGym.createGymHeading).toBeVisible();
     await expect(staffNoGym.gymName).toBeVisible();
+    await expect(
+      page.getByRole("complementary", { name: "Admin modules" }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Renewals" })).toHaveCount(0);
   });
 });

@@ -16,11 +16,12 @@ After editing `.cursor/mcp.json`, open **Cursor Settings → Tools & MCP**, enab
 ## Postman MCP (working SSOT)
 
 1. Login to Postman MCP in Cursor.
-2. Use the cloud collection **Gym Backend API** in the Active workspace (`docs/postman-sync.md`) — **do not** vendor JSON under `postman/` in this repo.
-3. Auth contract: `docs/api/client-auth.md`
-4. Agent skills: **sync-postman-collection** (GitHub → Postman cloud) · **verify-api-flow** (STAFF OTP smoke)
-5. Prod API: `https://gym-backend-lovat-mu.vercel.app` — `GET /health` should return `{"status":"ok"}`. Local: `http://localhost:3000`.
-6. If Postman MCP returns **401 Invalid API Key**, re-auth under Settings → Tools & MCP.
+2. Open **`gym-saas.code-workspace`** so sibling **gym-backend-postman** is visible; sync with skill **sync-postman-collection** (sibling `git pull` → inject).
+3. Use cloud collection **Gym Backend API** (`docs/postman-sync.md`) — **do not** vendor JSON under `postman/` in this repo.
+4. Auth / invites: `docs/api/client-auth.md`, `docs/api/staff-invites.md`
+5. Agent skills: **sync-postman-collection** · **verify-api-flow** (STAFF OTP smoke)
+6. Prod API: `https://gym-backend-lovat-mu.vercel.app` — `GET /health` should return `{"status":"ok"}`. Local: `http://localhost:3000`.
+7. If Postman MCP returns **401 Invalid API Key**, re-auth under Settings → Tools & MCP.
 
 ## Context7
 
@@ -53,4 +54,4 @@ Never commit tokens. Rotate any token pasted into chat.
 ## Deeper reading
 
 - `docs/GETTING-STARTED.md`
-- `docs/ai-development-playbook.md`
+- `docs/README.md` (docs index)
