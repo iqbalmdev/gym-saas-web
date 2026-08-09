@@ -14,6 +14,8 @@ Keep this tree small. Prefer code + Current stage over essays.
 | `CONTEXT.md` | Glossary |
 | `api/client-auth.md` | OTP / lanes |
 | `api/staff-invites.md` | Staff invite API |
+| `api/plans.md` | Plan catalog BASE/ADDON |
+| `api/leads.md` | CRM leads |
 | `postman-sync.md` | Sibling Postman workflow |
 | `ui-theme.md` | Theme tokens |
 | `mcp-setup.md` | Cursor MCP once |

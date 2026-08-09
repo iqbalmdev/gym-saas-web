@@ -110,19 +110,19 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 | Field | Value |
 |---|---|
-| Upstream tip | `7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee` (2026-08-08 — Leads + Plans folders; staff invite inbox embeds `gym`; feature-folder layout docs) |
-| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — `git pull --ff-only` 7ae3891 → 7a2d9bf |
+| Upstream tip | `acc01be` (2026-08-08 — **Membership Invites** folder + Examples; guide link in sibling) |
+| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — `git pull --ff-only` 7a2d9bf → `acc01be` |
 | Cursor workspace | `gym-saas.code-workspace` (web + postman roots) |
 | GitHub / sibling pull | **OK** — sibling pull |
-| Postman inject | **OK** — 2026-08-08; collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347`; `updatedAt` `2026-08-08T06:44:33.000Z`; folders Health, Auth, Gym Orgs, Staff Invites, **Leads**, **Plans**; Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`) |
+| Postman inject | **OK** — 2026-08-08; collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347`; `updatedAt` `2026-08-08T17:31:47.000Z`; folders Health, Auth, Gym Orgs, Staff Invites, Leads, Plans, **Membership Invites**; Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`) |
 | Local `postman/` in web repo | **Forbidden** — cloud + sibling only |
-| Auth guide | `docs/api/client-auth.md` — OTP `isNewUser` / optional `lane` unchanged |
-| Staff invites guide | `docs/api/staff-invites.md` — tip `7a2d9bf`; inbox items embed `gym` |
+| Auth guide | `docs/api/client-auth.md` — OTP / Google contracts unchanged this tip |
+| Staff invites guide | `docs/api/staff-invites.md` — unchanged this tip |
 | Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` ok (2026-08-08) |
 | Examples caveat | MCP inject may strip nested Examples / long scripts; sibling tip remains Examples SSOT. Desktop Import from tip raw URLs below if needed. |
 
 ### Tip raw URLs (Desktop Import)
 
-- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-API.postman_collection.json`
-- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-Dev.postman_environment.json`
-- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/7a2d9bf67488d0f87a0d4f1f0a5b3ba475150aee/Gym-Backend-Local.postman_environment.json`
+- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-API.postman_collection.json`
+- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-Dev.postman_environment.json`
+- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-Local.postman_environment.json`

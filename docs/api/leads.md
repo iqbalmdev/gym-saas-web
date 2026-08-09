@@ -1,0 +1,33 @@
+# Leads (Admin CRM)
+
+Contract from Postman **Leads** @ `7a2d9bf`.
+
+**Auth:** Bearer **ADMIN** at the gym.
+
+| Action | Method | Path |
+|---|---|---|
+| Create | `POST` | `/gym-orgs/:gymOrgId/leads` |
+| List | `GET` | `/gym-orgs/:gymOrgId/leads?status&limit&offset` |
+| Get | `GET` | `/gym-orgs/:gymOrgId/leads/:leadId` |
+| Update | `PATCH` | `/gym-orgs/:gymOrgId/leads/:leadId` |
+| Change status | `PATCH` | `/gym-orgs/:gymOrgId/leads/:leadId/status` |
+| Due follow-ups | `GET` | `/gym-orgs/:gymOrgId/leads/due-follow-ups` |
+| Soft delete | `DELETE` | `/gym-orgs/:gymOrgId/leads/:leadId` → `204` |
+
+**Create example:**
+
+```json
+{
+  "name": "Walk-in Prospect",
+  "phone": "9876543210",
+  "source": "walk-in",
+  "interest": "trial",
+  "notes": null
+}
+```
+
+**201:** `{ lead, warnings }` — soft warn `DUPLICATE_OPEN_LEAD_PHONE` possible while still creating.  
+**Statuses:** `NEW` → `CONTACTED` → `TRIAL` → `CONVERTED` | `LOST` (any→any).  
+**followUpDate:** `YYYY-MM-DD` or `null` to clear.
+
+Web: `/admin/crm` — capture form, per-lead **Update** inputs (`PATCH …/leads/:leadId` for name/phone/source/interest/notes/followUpDate), status change, due follow-ups, delete.

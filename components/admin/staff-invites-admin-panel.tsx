@@ -65,15 +65,18 @@ export function StaffInvitesAdminPanel({
   return (
     <section className="space-y-4" aria-labelledby="staff-invites-heading">
       <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-fg-muted)]">
+          Gym organization
+        </p>
         <h2
           id="staff-invites-heading"
-          className="text-lg font-semibold tracking-tight text-[var(--color-fg)]"
+          className="mt-1 text-lg font-semibold tracking-tight text-[var(--color-fg)]"
         >
-          Staff invites
+          {gymName}
         </h2>
         <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
-          Invite an existing Staff account to {gymName} with their staff code.
-          Trainers are unlimited; Admins are capped by the API.
+          Invite Staff to this gym with their staff code. Trainers are
+          unlimited; Admins are capped by the API.
         </p>
       </div>
 
@@ -134,7 +137,7 @@ export function StaffInvitesAdminPanel({
       <div className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-panel)]">
         <div className="border-b border-[var(--color-border)]/80 px-5 py-3">
           <h3 className="text-sm font-medium text-[var(--color-fg)]">
-            Invites for this gym
+            Invites for {gymName}
           </h3>
         </div>
         {listError ? (
@@ -155,11 +158,12 @@ export function StaffInvitesAdminPanel({
               >
                 <div className="min-w-0 space-y-1">
                   <p className="text-sm font-medium text-[var(--color-fg)]">
+                    {gymName}
+                  </p>
+                  <p className="text-sm text-[var(--color-fg-muted)]">
                     {staffInviteRoleLabel(invite.targetRole)}
-                    <span className="mx-2 text-[var(--color-fg-muted)]">·</span>
-                    <span className="font-normal text-[var(--color-fg-muted)]">
-                      {staffInviteStatusLabel(invite.status)}
-                    </span>
+                    <span className="mx-2">·</span>
+                    {staffInviteStatusLabel(invite.status)}
                   </p>
                   <p className="text-xs text-[var(--color-fg-muted)]">
                     Expires {formatInviteExpiry(invite.expiresAt)}

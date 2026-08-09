@@ -15,18 +15,32 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth (OTP + Google OAuth); M2 **Settings-first** (create gym + staff invites) |
+| Feature modules | M1 auth; M2 Settings-first + invites; **M4 plans/addons**; **M11 leads** |
 | Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Staff first-run is Settings-only. Google OAuth web flow wired (start → callback → complete). Postman multi-root sync done. Next: Admin Phase A modules (plans → renewals → …); deploy backend `GOOGLE_OAUTH_REDIRECT_ORIGINS` for live Google.
+**Summary:** Staff invites show gym name (inbox embed + admin panel). Plans catalog and Leads CRM are live Admin slices. Google OAuth web flow wired. Postman tip `acc01be` adds **Membership Invites**. Next: renewals inbox or membership-invite Admin slice; backend Google redirect deploy.
 
 ## Next up
 
-1. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web callback (required for live Google on prod API).
-2. Admin Phase A: M4 plans → renewals inbox → M3 → M5 → M11 CRM.
-3. Optional: add Zustand package + Admin UI store when renewals needs shared chrome.
+1. Admin renewals inbox (M4/M12) after plans — or Membership Invites Admin (new Postman folder).
+2. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
+3. Optional: Zustand Admin UI store when renewals needs shared chrome.
 
 ## Log
+
+### 2026-08-08 — Postman sync tip `acc01be` → cloud
+
+- Sibling `gym-backend-postman` `git pull` 7a2d9bf → `acc01be` (Membership Invites Examples + guide link).
+- Postman MCP `putCollection` + Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`).
+- Collection `updatedAt` 2026-08-08T17:31:47Z; folders include **Membership Invites** (7 requests in sibling; 16 Examples SSOT).
+- MCP may compact Examples; sibling/GitHub remains Examples SSOT. Auth/staff-invite guides unchanged. No commit.
+
+### 2026-08-08 — Gym name on invites + Plans + Leads
+
+- Inbox: parse/display embedded `gym.name` (was stripped by Zod). Admin staff invites + shell show active gym name.
+- **Plans** (`/admin/plans`): ports/adapter, create BASE/ADDON, list filter, activate, soft delete. Docs `docs/api/plans.md`.
+- **Leads** (`/admin/crm`): ports/adapter, create (example walk-in), status pipeline, due follow-ups, delete. Docs `docs/api/leads.md`.
+- Composition + E2E fixtures wired. No invent endpoints (Postman tip `7a2d9bf`).
 
 ### 2026-08-08 — Google OAuth login (web + backend redirect_to)
 

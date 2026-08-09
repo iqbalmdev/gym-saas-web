@@ -75,7 +75,7 @@ export default async function SettingsPage() {
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-[var(--color-fg-muted)]">
           {gymOrgId
-            ? "Invite Trainers and desk Admins with an existing staff code. Gym profile editing ships next."
+            ? `Managing ${gymName}. Invite Trainers and desk Admins with an existing staff code.`
             : "Create your GymOrg to unlock Admin tools, or accept a staff invite if a gym already invited you."}
         </p>
       </div>

@@ -46,3 +46,7 @@ next-env.d.ts
 
 # ephemeral postman sync payloads
 .tmp-postman-sync/
+.vercel-deploy-payload.json
+.vercel-mcp-*/
+.vercel-mcp-*.json
+.vercel-mcp-*.cjs

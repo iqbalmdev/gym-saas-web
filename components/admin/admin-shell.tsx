@@ -28,6 +28,8 @@ type AdminShellProps = {
   children: ReactNode;
   user: AdminShellUser;
   mode?: AdminShellMode;
+  /** Active GymOrg name when Staff is affiliated. */
+  gymName?: string | null;
   setupBanner?: ReactNode;
 };
 
@@ -195,6 +197,7 @@ export function AdminShell({
   children,
   user,
   mode = "full",
+  gymName = null,
   setupBanner,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -281,8 +284,15 @@ export function AdminShell({
                 G
               </span>
               {sidebarExpanded ? (
-                <span className="truncate text-sm font-semibold tracking-tight">
-                  Gym SaaS
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold tracking-tight">
+                    Gym SaaS
+                  </span>
+                  {gymName ? (
+                    <span className="block truncate text-xs text-[var(--color-fg-muted)]">
+                      {gymName}
+                    </span>
+                  ) : null}
                 </span>
               ) : null}
             </Link>
@@ -369,13 +379,20 @@ export function AdminShell({
                 <Link
                   href={homeHref}
                   className="flex min-w-0 items-center gap-2.5"
-                  title="Gym SaaS"
+                  title={gymName ? `${gymName} · Gym SaaS` : "Gym SaaS"}
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)] text-xs font-bold text-[var(--color-accent-fg)]">
                     G
                   </span>
-                  <span className="truncate text-sm font-semibold tracking-tight">
-                    Gym SaaS
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold tracking-tight">
+                      {gymName ?? "Gym SaaS"}
+                    </span>
+                    {gymName ? (
+                      <span className="block truncate text-xs text-[var(--color-fg-muted)]">
+                        Admin
+                      </span>
+                    ) : null}
                   </span>
                 </Link>
               </div>

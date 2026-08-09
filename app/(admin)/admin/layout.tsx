@@ -31,9 +31,11 @@ export default async function AdminSectionLayout({
   }
 
   let mode: AdminShellMode = "full";
+  let gymName: string | null = null;
   try {
     const gymOrgs = await listStaffGymOrgs(session.accessToken);
     mode = gymOrgs.length === 0 ? "settings-only" : "full";
+    gymName = gymOrgs[0]?.name ?? null;
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
@@ -76,6 +78,7 @@ export default async function AdminSectionLayout({
   return (
     <AdminShell
       mode={mode}
+      gymName={gymName}
       user={{
         displayName,
         email: session.email,

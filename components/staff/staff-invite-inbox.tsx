@@ -98,11 +98,12 @@ export function StaffInviteInbox({
             >
               <div className="min-w-0 space-y-1">
                 <p className="text-sm font-medium text-[var(--color-fg)]">
+                  {invite.gym?.name ?? "Gym invite"}
+                </p>
+                <p className="text-sm text-[var(--color-fg-muted)]">
                   Join as {staffInviteRoleLabel(invite.targetRole)}
-                  <span className="mx-2 text-[var(--color-fg-muted)]">·</span>
-                  <span className="font-normal text-[var(--color-fg-muted)]">
-                    {staffInviteStatusLabel(invite.status)}
-                  </span>
+                  <span className="mx-2">·</span>
+                  {staffInviteStatusLabel(invite.status)}
                 </p>
                 <p className="text-xs text-[var(--color-fg-muted)]">
                   Expires {formatInviteExpiry(invite.expiresAt)}

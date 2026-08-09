@@ -25,9 +25,7 @@ export class SettingsPage {
       name: "Your staff invites",
     });
     this.acceptInviteButton = page.getByRole("button", { name: "Accept" });
-    this.staffInvitesHeading = page.getByRole("heading", {
-      name: "Staff invites",
-    });
+    this.staffInvitesHeading = page.locator("#staff-invites-heading");
     this.staffCodeInput = page.getByLabel("Staff code");
     this.sendInviteButton = page.getByRole("button", { name: "Send invite" });
     this.revokeButton = page.getByRole("button", { name: "Revoke" }).first();

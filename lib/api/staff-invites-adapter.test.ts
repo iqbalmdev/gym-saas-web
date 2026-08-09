@@ -1,9 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
+const staffInviteGymSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  address: z.string().nullable(),
+  contactPhone: z.string().nullable(),
+  contactEmail: z.string().nullable(),
+  logoUrl: z.string().nullable(),
+  timezone: z.string().min(1),
+});
+
 const staffInviteSchema = z.object({
   id: z.string().min(1),
   gymOrgId: z.string().min(1),
+  gym: staffInviteGymSchema.optional(),
   invitedUserId: z.string().min(1),
   targetRole: z.enum(["TRAINER", "ADMIN"]),
   status: z.enum(["PENDING", "ACCEPTED", "REVOKED", "EXPIRED"]),
@@ -65,5 +76,30 @@ describe("Staff invite response schemas (Postman tip 7ae38910)", () => {
       status: "EXPIRED",
     });
     expect(parsed.status).toBe("EXPIRED");
+  });
+
+  it("parses inbox page with embedded gym", () => {
+    const parsed = pageSchema.parse({
+      staffInvites: {
+        items: [
+          {
+            ...postmanInvite,
+            gym: {
+              id: "33333333-3333-4333-8333-333333333333",
+              name: "North Star Fitness",
+              address: "12 MG Road",
+              contactPhone: "+919876543210",
+              contactEmail: "desk@northstar.example",
+              logoUrl: null,
+              timezone: "Asia/Kolkata",
+            },
+          },
+        ],
+        total: 1,
+        limit: 20,
+        offset: 0,
+      },
+    });
+    expect(parsed.staffInvites.items[0]?.gym?.name).toBe("North Star Fitness");
   });
 });

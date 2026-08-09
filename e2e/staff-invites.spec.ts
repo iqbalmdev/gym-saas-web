@@ -36,6 +36,7 @@ test.describe("Staff invites", () => {
     await expect(page).toHaveURL(/\/admin\/settings/);
     await expect(staffNoGym.heading).toBeVisible();
     await expect(staffNoGym.inviteInboxHeading).toBeVisible();
+    await expect(page.getByText("E2E Gym").first()).toBeVisible();
     await expect(page.getByText(/Join as Trainer/i)).toBeVisible();
     await staffNoGym.acceptInviteButton.click();
     await expect(page).toHaveURL(/\/admin/);

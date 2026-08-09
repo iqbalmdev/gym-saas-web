@@ -5,6 +5,12 @@
 import { ApiClientError } from "@/lib/api/errors";
 import type { AuthGateway, AuthLane, AuthUser } from "@/lib/ports/auth";
 import type { GymOrgsReader, GymOrgsWriter } from "@/lib/ports/gym-orgs";
+import type { Lead, LeadsReader, LeadsWriter } from "@/lib/ports/leads";
+import type {
+  MembershipPlan,
+  PlansReader,
+  PlansWriter,
+} from "@/lib/ports/plans";
 import type {
   StaffInvite,
   StaffInvitesReader,
@@ -272,6 +278,15 @@ export function createE2eStaffInvitesAdapter(): StaffInvitesReader &
           invitedUserId: "e2e-user-1",
           targetRole: "TRAINER",
           status: "PENDING",
+          gym: {
+            id: E2E_GYM_ID,
+            name: "E2E Gym",
+            address: null,
+            contactPhone: null,
+            contactEmail: null,
+            logoUrl: null,
+            timezone: "Asia/Kolkata",
+          },
         }),
       ];
       return {
@@ -341,6 +356,257 @@ export function createE2eStaffInvitesAdapter(): StaffInvitesReader &
         message: "Not found",
         status: 404,
       });
+    },
+  };
+}
+
+const e2ePlans: MembershipPlan[] = [
+  {
+    id: "plan-e2e-base",
+    gymOrgId: E2E_GYM_ID,
+    name: "Monthly",
+    kind: "BASE",
+    capability: null,
+    durationDays: 30,
+    price: 999,
+    active: true,
+    createdAt: "2026-08-08T00:00:00.000Z",
+    updatedAt: "2026-08-08T00:00:00.000Z",
+  },
+  {
+    id: "plan-e2e-addon",
+    gymOrgId: E2E_GYM_ID,
+    name: "PT Coaching",
+    kind: "ADDON",
+    capability: "TRAINER_COACHING",
+    durationDays: 30,
+    price: 1500,
+    active: true,
+    createdAt: "2026-08-08T00:00:00.000Z",
+    updatedAt: "2026-08-08T00:00:00.000Z",
+  },
+];
+
+export function createE2ePlansAdapter(): PlansReader & PlansWriter {
+  return {
+    async list({ gymOrgId, kind, active, limit = 50, offset = 0 }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return { plans: { items: [], total: 0, limit, offset } };
+      }
+      let items = [...e2ePlans];
+      if (kind) {
+        items = items.filter((plan) => plan.kind === kind);
+      }
+      if (active !== undefined) {
+        items = items.filter((plan) => plan.active === active);
+      }
+      return {
+        plans: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async get({ planId }) {
+      const plan = e2ePlans.find((item) => item.id === planId);
+      if (!plan) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      return { plan };
+    },
+
+    async create({ gymOrgId, body }) {
+      const plan: MembershipPlan = {
+        id: `plan-e2e-${e2ePlans.length + 1}`,
+        gymOrgId,
+        name: body.name,
+        kind: body.kind,
+        capability: body.kind === "ADDON" ? "TRAINER_COACHING" : null,
+        durationDays: body.durationDays,
+        price: body.price,
+        active: true,
+        createdAt: "2026-08-08T00:00:00.000Z",
+        updatedAt: "2026-08-08T00:00:00.000Z",
+      };
+      e2ePlans.unshift(plan);
+      return { plan };
+    },
+
+    async update({ planId, body }) {
+      const idx = e2ePlans.findIndex((item) => item.id === planId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      const updated: MembershipPlan = {
+        ...e2ePlans[idx],
+        ...body,
+        updatedAt: "2026-08-08T01:00:00.000Z",
+      };
+      e2ePlans[idx] = updated;
+      return { plan: updated };
+    },
+
+    async softDelete({ planId }) {
+      const idx = e2ePlans.findIndex((item) => item.id === planId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      e2ePlans.splice(idx, 1);
+    },
+  };
+}
+
+const e2eLeads: Lead[] = [
+  {
+    id: "lead-e2e-1",
+    gymOrgId: E2E_GYM_ID,
+    name: "Walk-in Prospect",
+    phone: "9876543210",
+    source: "walk-in",
+    interest: "trial",
+    notes: null,
+    status: "NEW",
+    followUpDate: "2026-08-10",
+    createdBy: "e2e-user-1",
+    convertedMembershipInviteId: null,
+    createdAt: "2026-08-08T00:00:00.000Z",
+    updatedAt: "2026-08-08T00:00:00.000Z",
+  },
+];
+
+export function createE2eLeadsAdapter(): LeadsReader & LeadsWriter {
+  return {
+    async list({ gymOrgId, status, limit = 50, offset = 0 }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return { leads: { items: [], total: 0, limit, offset } };
+      }
+      let items = [...e2eLeads];
+      if (status) {
+        items = items.filter((lead) => lead.status === status);
+      }
+      return {
+        leads: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async listDueFollowUps({ gymOrgId, limit = 50, offset = 0 }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return { leads: { items: [], total: 0, limit, offset } };
+      }
+      const items = e2eLeads.filter(
+        (lead) =>
+          lead.followUpDate &&
+          lead.status !== "CONVERTED" &&
+          lead.status !== "LOST",
+      );
+      return {
+        leads: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async get({ leadId }) {
+      const lead = e2eLeads.find((item) => item.id === leadId);
+      if (!lead) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      return { lead };
+    },
+
+    async create({ gymOrgId, body }) {
+      const lead: Lead = {
+        id: `lead-e2e-${e2eLeads.length + 1}`,
+        gymOrgId,
+        name: body.name,
+        phone: body.phone,
+        source: body.source ?? null,
+        interest: body.interest ?? null,
+        notes: body.notes ?? null,
+        status: "NEW",
+        followUpDate: null,
+        createdBy: "e2e-user-1",
+        convertedMembershipInviteId: null,
+        createdAt: "2026-08-08T00:00:00.000Z",
+        updatedAt: "2026-08-08T00:00:00.000Z",
+      };
+      e2eLeads.unshift(lead);
+      return { lead, warnings: [] };
+    },
+
+    async update({ leadId, body }) {
+      const idx = e2eLeads.findIndex((item) => item.id === leadId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      const updated: Lead = {
+        ...e2eLeads[idx],
+        ...body,
+        updatedAt: "2026-08-08T01:00:00.000Z",
+      };
+      e2eLeads[idx] = updated;
+      return { lead: updated, warnings: [] };
+    },
+
+    async changeStatus({ leadId, status }) {
+      const idx = e2eLeads.findIndex((item) => item.id === leadId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      const updated: Lead = {
+        ...e2eLeads[idx],
+        status,
+        updatedAt: "2026-08-08T01:00:00.000Z",
+      };
+      e2eLeads[idx] = updated;
+      return { lead: updated };
+    },
+
+    async softDelete({ leadId }) {
+      const idx = e2eLeads.findIndex((item) => item.id === leadId);
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      e2eLeads.splice(idx, 1);
     },
   };
 }

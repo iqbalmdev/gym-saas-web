@@ -8,9 +8,22 @@ export type StaffInviteStatus =
   | "REVOKED"
   | "EXPIRED";
 
+/** Embedded on inbox items (Postman Staff Invite Inbox). */
+export type StaffInviteGym = {
+  id: string;
+  name: string;
+  address: string | null;
+  contactPhone: string | null;
+  contactEmail: string | null;
+  logoUrl: string | null;
+  timezone: string;
+};
+
 export type StaffInvite = {
   id: string;
   gymOrgId: string;
+  /** Present on inbox responses; omitted on gym-scoped list/create. */
+  gym?: StaffInviteGym;
   invitedUserId: string;
   targetRole: StaffInviteTargetRole;
   status: StaffInviteStatus;

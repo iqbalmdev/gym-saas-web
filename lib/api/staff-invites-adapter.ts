@@ -7,9 +7,20 @@ import type {
   StaffInvitesWriter,
 } from "@/lib/ports/staff-invites";
 
+const staffInviteGymSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  address: z.string().nullable(),
+  contactPhone: z.string().nullable(),
+  contactEmail: z.string().nullable(),
+  logoUrl: z.string().nullable(),
+  timezone: z.string().min(1),
+});
+
 const staffInviteSchema = z.object({
   id: z.string().min(1),
   gymOrgId: z.string().min(1),
+  gym: staffInviteGymSchema.optional(),
   invitedUserId: z.string().min(1),
   targetRole: z.enum(["TRAINER", "ADMIN"]),
   status: z.enum(["PENDING", "ACCEPTED", "REVOKED", "EXPIRED"]),
