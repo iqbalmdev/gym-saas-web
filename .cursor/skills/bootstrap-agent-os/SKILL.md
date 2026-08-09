@@ -1,37 +1,36 @@
 ---
 name: bootstrap-agent-os
-description: Scaffold a lean Agent OS (PROGRESS, few rules/skills, MCP) on a new empty repo. Prefer short rules with globs over docs sprawl.
+description: Use once, at the very start of the project, or when the user asks to set up/scaffold the repo from scratch. Creates the baseline folder structure, docs, and config the other skills and rules assume already exist. Do not re-run once the project has real feature code — use implement-feature/implement-admin-feature instead.
 ---
 
-# Bootstrap Agent OS
+# Bootstrap agent OS
 
-Lean OS only — not a docs dump. Model after gym-saas-web: short `.mdc` rules, few skills, one `PROGRESS.md`.
+One-time scaffold so later rules and skills (which assume certain folders
+and docs exist) have something real to attach to.
 
-## Confirm
+## Steps
 
-1. Project path  
-2. One-paragraph product  
-3. Stack (e.g. Next.js App Router)  
-4. MCP list (Context7 + domain tools)
-
-## Create
-
-1. `docs/PROGRESS.md`, `docs/README.md` (index), thin `AGENTS.md`
-2. Product spine stubs: PRD / CONTEXT / architecture-plan (short)
-3. `.cursor/rules/` — **one screen each**, globs when possible:
-   - `progress-log`, `git-conventions`, `code-quality` (always)
-   - `architecture`, `nextjs-app-router`, `state-management`, `testing`, `error-handling` (globs)
-4. `.cursor/skills/` — `orient`, `implement-feature` first (state tier in implement-feature)
-5. `.cursor/mcp.json` stubs
-
-## Next.js web defaults to encode
-
-- Server Components fetch; Server Actions mutate; ports/adapters for HTTP
-- State: server owns API data; `useState` for forms; URL for filters; Zustand only for shared client UI chrome
-
-## Do not
-
-- Copy research folders, playbooks, or long agent guides by default
-- Vendor Postman JSON into app repos
-- Scaffold full features until OS exists (unless user demands code first)
-- Mandate Redux or global client stores for server data
+1. Confirm `docs/PRD.md`, `docs/permissions.md`, `docs/MVP_ROADMAP.md`
+   exist. If missing, ask the user for the content rather than inventing
+   product decisions — this project's rules explicitly defer to these
+   files as source of truth.
+2. Create the Next.js App Router skeleton matching architecture.mdc:
+   - `app/(admin)/roster/`, `app/(admin)/renewals/`, `app/(admin)/crm/`,
+     `app/(admin)/plans/`, `app/(admin)/attendance/` (one route group per
+     PRD module currently in scope — check `orient` output for what's
+     actually next, don't scaffold all M1–M13 at once).
+   - `components/ui/`, `components/<module>/`
+   - `lib/api/`, `lib/hooks/`, `lib/auth/`, `lib/permissions/`
+3. Create `docs/PROGRESS_LOG.md` (empty, header only) and
+   `docs/postman/gym-saas.postman_collection.json` (empty collection with
+   module folders per M1–M13).
+4. Set up `lib/auth/session.ts` for Supabase email OTP session
+   verification (server-only) — the foundation every permission check in
+   security-data-access.mdc builds on.
+5. Set up `e2e/` folder for Playwright, matching
+   playwright-e2e-testing.mdc conventions.
+6. Confirm `.cursor/rules/` and `.cursor/skills/` are committed to git
+   (not gitignored) — they're team config, not personal.
+7. Report the created structure back and stop — do not start implementing
+   feature logic in the same pass. Hand off to `orient` for the next
+   session.

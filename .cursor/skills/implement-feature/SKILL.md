@@ -1,36 +1,35 @@
 ---
 name: implement-feature
-description: Implement one Gym SaaS web vertical slice (Admin, Trainer, or Client) with ports/adapters and correct state tiers.
+description: Use when building any new feature, route, or module slice for the Gym SaaS Web Admin (Next.js) — e.g. a new roster view, a renewal flow, a CRM pipeline stage. Not for auth/permission-sensitive admin surfaces specifically; use implement-admin-feature for those instead.
 ---
 
 # Implement feature
 
-## Preconditions
+Standard build loop for a feature slice. Follow it in order; don't skip to
+writing code before step 2.
 
-1. Run **orient**.
-2. Name persona + module + one slice outcome.
-3. Fit plan §5–§6 folders/routes (or note ADR exception).
-4. Keep out-of-MVP items out (plan §13).
-5. **Choose state tier** (rule `state-management.mdc`) before coding UI.
+## Steps
 
-## Workflow
-
-1. **Align** — PRD/flow bullets that apply; ask if ambiguous.
-2. **Slice** — one vertical cut only.
-3. **Server data** — Server Component reads via **ports**; HTTP only in `lib/api` adapters. Wire at composition root.
-4. **Mutations** — Server Actions → use-case → adapter → `revalidatePath` / `redirect`. No domain `fetch` in client JSX.
-5. **Client UI** — presentational leaves; theme tokens; calm empty/loading/error/grant-missing.
-   - One form → `useState` / `useTransition`.
-   - Shareable filters → URL `searchParams`.
-   - Shared chrome across trees → Zustand (`createStore` + provider); **never** store API entities.
-6. **M2 Staff** — create gym + staff invites on `/admin/settings` (Settings-only when 0 gyms). Invitee inbox = Accept only; Revoke = Admin gym panel.
-7. **Verify** — unit (port fakes) / Playwright / **verify-api-flow**. Sync Postman if contract may have moved.
-8. **Progress** — update `docs/PROGRESS.md`.
-
-## Done
-
-- [ ] State tier chosen deliberately (not default global store)
-- [ ] CONTEXT terms · ports/adapters · no fetch in JSX
-- [ ] DataGrant / billing≠access honored
-- [ ] No Admin-only dead ends for future personas
-- [ ] `docs/PROGRESS.md` updated
+1. **Locate the module.** Map the request to one of M1–M13 from
+   `docs/PRD.md`. If it doesn't map cleanly, say so before proceeding.
+2. **Check module boundaries** (architecture.mdc). Confirm which folders
+   this touches: `app/(admin)/<module>/`, `components/<module>/`,
+   `lib/api/`, `lib/hooks/`. Don't reach into another module's internals.
+3. **Design the data flow first, in words**: what does the Server
+   Component fetch, what does `lib/api` call, what shape does the Express
+   API return. If the API shape is unknown, ask — don't invent it.
+4. **Write the typed API client function** in `lib/api/<module>.ts`
+   before writing any UI.
+5. **Write the React Query hook** in `lib/hooks/` wrapping that function.
+6. **Build the UI**: Server Component for initial fetch, Client Component
+   for interactivity, following code-quality.mdc.
+7. **Wire error handling** per error-handling.mdc — every mutation needs a
+   visible failure state.
+8. **Self-check before calling it done:**
+   - Does this need a permission check? If yes, stop and switch to
+     implement-admin-feature or apply security-data-access.mdc directly.
+   - Are there tests for the new `lib/api` function and any new
+     `lib/permissions` logic?
+   - Does it match the PRD's stated scope, or did it quietly add something
+     from "Explicitly deferred" (docs/MVP_ROADMAP.md)? If so, flag it.
+9. Offer to run `@progress-log` to record what shipped.

@@ -1,0 +1,37 @@
+---
+description: "Gym SaaS — project context, always loaded"
+alwaysApply: true
+---
+
+# Project: Gym SaaS (India-first, MVP)
+
+Multi-surface product, one backend:
+- S1 Mobile (React Native) — Client + Trainer core flows, light Admin
+- S2 Web Admin (Next.js, App Router) — THIS REPO. Dashboards, renewals inbox,
+  CRM pipeline, roster tables, desk attendance, plan catalog
+- S3 API (Node/Express + Supabase/Postgres) — auth (email OTP), tenancy,
+  jobs, push, food catalog, audit trail
+
+## Non-negotiable domain rules
+- Two account lanes: CLIENT and STAFF. A CLIENT can never become STAFF and
+  vice versa. Never write code that lets a user switch lanes.
+- Every gym is a tenant (GymOrg). Every query that touches gym-scoped data
+  MUST be filtered by gym_org_id. There is no cross-tenant read, ever.
+- Joins are invite-only. There are no open join codes. Do not build or
+  suggest an open-code join flow (explicitly deferred, see docs/MVP_ROADMAP.md).
+- Personal fitness/health data (progress, nutrition, wearables) is
+  CLIENT-OWNED. Trainers/Admins can only read it if a DataGrant exists for
+  that specific scope (PROGRESS, CALORIES, WEARABLES). No grant = no access,
+  no exceptions, no "just for debugging."
+- Roles: CLIENT, UNASSIGNED, TRAINER, ADMIN. A role code alone never unlocks
+  data — every sensitive action must pass: auth -> role check -> tenant
+  check -> grant check (see security-data-access.mdc).
+- Billing is base + addons with price snapshots — never recompute historical
+  invoices from current prices; always read the snapshot stored at
+  purchase/renewal time.
+- English UI only for this MVP. Do not add i18n scaffolding.
+
+## Source of truth
+When in doubt, defer to `docs/PRD.md`, `docs/permissions.md`,
+`docs/MVP_ROADMAP.md`. If a request conflicts with these, flag the conflict
+instead of silently picking one.

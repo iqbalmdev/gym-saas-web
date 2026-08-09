@@ -1,11 +1,16 @@
 ---
-description: Git and commit conventions
-alwaysApply: true
+description: "Commit and branch conventions"
+alwaysApply: false
 ---
 
-# Git
+# Git conventions
 
-- Commit only when the user asks.
-- Small commits per tracer-bullet slice; imperative, why-focused messages.
-- Never commit secrets (`.env`, keys, tokens).
-- No force-push `main` unless explicitly requested.
+- Conventional commits: `feat(m4-plans): add addon price snapshot on renewal`
+  — scope is the module id when applicable (m1..m13), otherwise the area
+  (infra, ci, docs).
+- Branch naming: `feat/m4-renewal-snapshot`, `fix/m11-crm-pipeline-filter`.
+- One logical change per commit. Don't bundle an unrelated refactor into a
+  feature commit — call it out and suggest splitting instead.
+- PR description must state which module (M1–M13) and which PRD section it
+  implements, and list any deferred-scope item it deliberately does NOT
+  touch (see docs/MVP_ROADMAP.md "Explicitly deferred").

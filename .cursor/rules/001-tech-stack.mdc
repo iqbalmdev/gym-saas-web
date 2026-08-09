@@ -1,0 +1,30 @@
+---
+description: "Locked tech stack and versions for the Next.js Admin web app"
+alwaysApply: true
+---
+
+# Tech stack (Web Admin — S2)
+
+- Next.js 15, App Router ONLY. No Pages Router, no `getServerSideProps`,
+  no `getStaticProps`.
+- React 19, functional components + hooks only. No class components.
+- TypeScript 5.x, strict mode. `any` is banned — use `unknown` + a type
+  guard, or a proper generic.
+- Data layer: talks to the Express API (S3), not directly to Postgres, for
+  writes. Read-heavy dashboard queries MAY use the Supabase JS client
+  directly with row-level security — ask before assuming which, don't guess.
+- Auth: Supabase email OTP session, verified server-side in middleware /
+  route handlers. Never trust a role or gym_org_id sent from the client.
+- Styling: Tailwind CSS. Use `cn()` from `@/lib/utils` for conditional
+  classes. No styled-components, no CSS-in-JS libraries.
+- State: server state via fetch in Server Components / route handlers +
+  React Query (or SWR — pick one and stay consistent) for client-side
+  mutations. No ad-hoc global state libraries without asking first.
+- Forms: react-hook-form + zod for validation, mirrored on the API side.
+
+## Banned outright
+- `any`
+- Pages Router APIs
+- default exports for components (named exports only)
+- inline `fetch` calls scattered through client components — go through a
+  typed API client in `@/lib/api`

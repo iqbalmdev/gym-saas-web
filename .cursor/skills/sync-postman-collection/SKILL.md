@@ -1,40 +1,29 @@
 ---
 name: sync-postman-collection
-description: Pull sibling gym-backend-postman and inject into Postman cloud via Postman MCP. No vendored postman/*.json in web.
+description: Use whenever an Express API route is added, removed, or its request/response shape changes, or when the user asks to update the Postman collection. Keeps docs/postman/gym-saas.postman_collection.json as the accurate, current contract reference for the Admin web app to build against.
 ---
 
 # Sync Postman collection
 
-## SSOT
+The Postman collection is the contract the Next.js Admin app is built
+against — it must never drift silently from the real Express routes.
 
-| Layer | Owns |
-|---|---|
-| Publish | Sibling `../gym-backend-postman` |
-| Working | Postman cloud (`docs/postman-sync.md`) |
-| Web narrative | `docs/api/client-auth.md`, `docs/api/staff-invites.md` |
+## Steps
 
-Open `gym-saas.code-workspace`. **Never** vendor `postman/*.json` here.
-
-## Prompt
-
-```
-Use skill sync-postman-collection. Pull sibling gym-backend-postman, inject into Postman cloud. Update auth docs if contract changed. Don’t commit unless I ask.
-```
-
-## A — Fetch
-
-1. Prefer sibling: `git pull --ff-only` in `../gym-backend-postman`. Record tip SHA.
-2. Read collection + Dev/Local env JSON from sibling (or ephemeral `/tmp/gym-postman-sync/` only).
-3. Fallback: GitHub MCP on `abdulhasibn/gym-backend-postman`.
-4. Diff Auth/Staff Invites vs web guides; update guides only if contract changed.
-
-## B — Inject (Postman MCP)
-
-1. Workspace IDs in `docs/postman-sync.md`.
-2. `putCollection` / `createCollection` for **Gym Backend API**.
-3. Envs: Dev `baseUrl` = Vercel prod; Local = `http://localhost:3000`; `lane=STAFF`.
-4. Delete temp prep. Note SHA + result in `docs/postman-sync.md` / PROGRESS. No commit unless asked.
-
-## Out of scope
-
-No inventing endpoints · no committing sibling into this repo · no deleting unrelated Postman items.
+1. Locate `docs/postman/gym-saas.postman_collection.json` (create it,
+   with folders per module M1–M13, if it doesn't exist yet).
+2. For a new/changed route, add or update the matching request:
+   - Correct method, path, and module folder.
+   - Request body example matching the actual zod/validation schema.
+   - Example success response AND at least one example error response
+     (401/403/404/422 as applicable).
+   - Any required headers (auth token, tenant context).
+3. Cross-check the collection's shape against `lib/api/<module>.ts` in the
+   Next.js app — if they've diverged, flag which side is stale rather than
+   guessing which one is correct.
+4. Do not add example values that look like real user data — use clearly
+   fake values (e.g. `client_demo_001`) since this file may be shared or
+   committed.
+5. Note the update in `docs/PROGRESS_LOG.md` if invoked as part of a
+   larger feature (via `@progress-log`), so the contract change is
+   traceable to the commit that caused it.

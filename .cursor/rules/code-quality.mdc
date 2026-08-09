@@ -1,21 +1,22 @@
 ---
-description: SOLID, DI/DIP, Clean Architecture for Next.js web
-alwaysApply: true
+description: "Code style and quality bar"
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
 ---
 
 # Code quality
 
-- **S:** Components render · use-cases orchestrate · `lib/api` transports · `lib/display` maps DTO → UI · client UI stores (Zustand) hold chrome only.
-- **O:** Extend via new mappers/modules — don’t edit the HTTP client for every screen.
-- **L:** Real + fake port impls honor the same types.
-- **I:** Small ports (`RenewalsReader`, auth, gym-orgs) — not one god `Api`.
-- **D:** UI/use-cases depend on ports; wire at `lib/api/composition.ts`.
-
-## Habits
-
-- Factory-inject deps; no hidden fetch globals in features.
-- Validate at adapter boundary (Zod); no cast-and-pray.
-- Endpoint paths in `lib/api/endpoints.ts` — no scattered magic strings.
-- Strict TypeScript; no `any`; glossary names from `docs/CONTEXT.md`.
-- Calm errors in UI — never stack traces.
-- Choose **state tier** before coding (`state-management.mdc`) — do not default to a global client store.
+- Use early returns to avoid nesting beyond 2 levels.
+- Extract any function longer than ~30 lines into named helpers.
+- Boolean variables/props are prefixed `is`, `has`, or `should`
+  (e.g. `isInvited`, `hasActiveGrant`).
+- Named exports only — no default exports for components, hooks, or
+  utilities.
+- No comments that restate what the code does. Comment only WHY, when the
+  reason isn't obvious from names (e.g. "snapshot price to avoid retroactive
+  billing changes").
+- Prefer composition over inheritance; no class hierarchies.
+- Every exported function has an explicit return type — do not rely on
+  inference for public API surfaces.
+- Do not add a library, dependency, or new pattern (state manager, ORM,
+  form lib) that isn't already in `package.json` without asking first.

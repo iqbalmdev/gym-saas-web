@@ -1,0 +1,52 @@
+---
+description: "Authorization stack: role + tenant + DataGrant checks. Apply whenever writing an API route, server action, or any code that reads member data."
+globs: ["app/**/route.ts", "app/**/actions.ts", "lib/api/**/*.ts", "lib/permissions/**/*.ts"]
+alwaysApply: false
+---
+
+# Authorization is a 3-step stack — never skip a step
+
+For ANY endpoint or server action that touches gym or member data, enforce
+in this exact order:
+
+1. **Auth check** — is there a valid Supabase session? If not, 401.
+2. **Role check** — does the role (CLIENT / UNASSIGNED / TRAINER / ADMIN)
+   even have this permission at all, independent of tenant? If not, 403.
+3. **Tenant + grant check**:
+   - Does this ADMIN/TRAINER belong to the same `gym_org_id` as the
+     resource being accessed? If not, 403 — never leak a 404-vs-403 hint
+     that reveals the resource exists in another tenant.
+   - For CLIENT-owned data (progress, nutrition, wearables): does an
+     active `DataGrant` exist for this specific scope
+     (PROGRESS / CALORIES / WEARABLES) between this client and this
+     trainer/admin? If not, 403.
+
+A role alone NEVER unlocks another gym's data or another client's health
+data. If you write an endpoint and only do steps 1–2, treat that as an
+incomplete implementation, not a shortcut — call it out explicitly.
+
+## Concrete pattern
+
+```ts
+// lib/permissions/checkAccess.ts
+export async function requireGrant(
+  clientId: string,
+  requesterId: string,
+  scope: "PROGRESS" | "CALORIES" | "WEARABLES"
+) {
+  const grant = await getActiveGrant(clientId, requesterId, scope);
+  if (!grant) throw new ForbiddenError(`No ${scope} grant`);
+  return grant;
+}
+```
+
+Every route handler that reads M8/M9/M10 data must call the matching
+`requireGrant` before querying — this is not optional decoration.
+
+## Self-check after writing an endpoint
+After generating a new API route or server action, verify out loud:
+- Does it check auth, role, tenant, AND grant (if applicable)?
+- Is `gym_org_id` used in the DB query's WHERE clause, not just checked
+  in application code after fetching?
+- Does the error response avoid confirming whether a resource exists in a
+  tenant the requester can't access?

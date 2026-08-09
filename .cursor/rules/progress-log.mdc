@@ -1,10 +1,23 @@
 ---
-description: Keep docs/PROGRESS.md as the live project stage
-alwaysApply: true
+description: "Maintain docs/PROGRESS_LOG.md. Invoke manually with @progress-log after finishing a module or a work session."
+alwaysApply: false
 ---
 
 # Progress log
 
-- **Read** `docs/PROGRESS.md` (Current stage + Next up) before non-trivial work.
-- **Write** after a meaningful chunk: refresh Current stage / Next up; prepend a dated Log entry (newest first).
-- Do not delete old log entries. Do not treat plan files as stage SSOT.
+When invoked, append an entry to `docs/PROGRESS_LOG.md` (create it if
+missing) with:
+
+```
+## [date] — <module id and name>
+- What shipped:
+- What's deliberately deferred / stubbed:
+- Files touched:
+- Follow-ups / TODOs:
+```
+
+Keep entries factual and short — this file is the run sheet a teammate or
+a future session reads to know exactly where the build stands relative to
+the orbit (Foundation → Stint 1.1–1.4 → 1.5 subscriptions Admin → ...).
+Don't editorialize; state what's actually shipped vs. what's UI-only or
+mocked.

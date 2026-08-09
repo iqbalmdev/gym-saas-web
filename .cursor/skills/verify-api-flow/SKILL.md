@@ -1,33 +1,33 @@
 ---
 name: verify-api-flow
-description: Verify Gym Backend OTP → Bearer → endpoint via Postman MCP cloud collection.
+description: Use after implementing or changing anything that calls the Express API from the Next.js Admin app, or whenever the user asks to confirm an end-to-end flow (e.g. "does the renewal flow actually work", "check the invite -> accept -> DataGrant chain"). Verifies the real request/response, not just that the code compiles.
 ---
 
 # Verify API flow
 
-## Sources
+Confirms an integration actually works end-to-end against the real (or
+locally running) Express API — not just that TypeScript types line up.
 
-- Auth: `docs/api/client-auth.md` · Invites: `docs/api/staff-invites.md`
-- Collection: Postman cloud (**Gym Backend API**) — IDs in `docs/postman-sync.md`
-- Publish clone: sibling `../gym-backend-postman`
-- Prod: `https://gym-backend-lovat-mu.vercel.app` · Local: `http://localhost:3000`
+## Steps
 
-## STAFF smoke
-
-1. Env: Dev or Local; `lane=STAFF`.
-2. Optional `GET /health` → ok.
-3. `POST /auth/otp/request` `{ email }` → note `isNewUser`.
-4. Paste email code into `otpToken`.
-5. `POST /auth/otp/verify` — include `lane` **only** when `isNewUser` was true → store tokens.
-6. `GET /auth/me` with Bearer.
-7. Optional: `POST /gym-orgs` if unassigned; or staff-invite endpoints under test.
-
-## Errors (do not invent)
-
-`OTP_EXPIRED` · `LANE_MISMATCH` · `AUTH_RATE_LIMITED` · `AUTHENTICATION_FAILED` — branch on `error.code`.
-
-## Notes
-
-- First verify provisions the user (no separate sign-up).
-- Prefer Postman Examples; record real failures.
-- Postman MCP 401 → re-login Postman in Cursor MCP settings.
+1. Identify the full chain for the flow being verified, e.g.:
+   `Admin sends invite -> Client accepts -> DataGrant created -> Admin can
+   read progress if grant scope matches`.
+2. Check `lib/api/<module>.ts` — does the request payload match what the
+   Express route actually expects? Cross-check against
+   `docs/PRD.md` and, if present, the Postman collection
+   (see sync-postman-collection).
+3. If the API is running locally, exercise the flow with a real request
+   (curl or a small script) rather than trusting the TS types alone —
+   types can drift from the actual API contract.
+4. Confirm the response shape matches what `lib/api` expects to parse. A
+   mismatch here fails silently in production if not caught now.
+5. Confirm error responses (401/403/404/422) are handled per
+   error-handling.mdc — trigger at least one failure case deliberately
+   (e.g. call with no grant) and confirm the UI shows the right state.
+6. Report back: which steps of the chain were verified against a real
+   response vs. only checked at the type level. Don't claim "verified"
+   for anything not actually exercised.
+7. If a mismatch is found between the PRD/Postman contract and the actual
+   API behavior, flag it rather than silently adjusting the frontend to
+   match — that may be an API bug, not a frontend bug.

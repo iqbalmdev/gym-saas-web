@@ -1,13 +1,21 @@
 ---
-description: Calm error and empty states for web UI
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/display/**/*.ts, lib/features/**/*.ts
+description: "Error handling conventions for API routes, server actions, and client mutations"
+globs: ["app/**/route.ts", "app/**/actions.ts", "lib/hooks/**/*.ts"]
 alwaysApply: false
 ---
 
 # Error handling
 
-- Map API failures to calm, actionable copy (retry / check connection / contact support).
-- Never dump raw payloads or stack traces in the UI.
-- Distinguish empty · loading · forbidden (no grant) · error.
-- Missing DataGrant ≠ error — dedicated empty copy (“Member has not shared X”).
-- Log details server-side only when logging exists.
+- API routes/server actions throw typed errors (`ForbiddenError`,
+  `NotFoundError`, `ValidationError`) caught by a single error-mapping
+  layer that converts them to HTTP status codes. Don't hand-roll
+  `res.status(x)` inline in every handler.
+- Never expose internal error messages, stack traces, or DB errors to the
+  client response — log server-side, return a generic message client-side.
+- Client-side mutations (React Query) always handle the error state in the
+  UI — no silent failures. A failed renewal, invite, or grant request must
+  surface a visible message to the Admin.
+- Validation errors from zod are mapped field-by-field back to the form
+  (react-hook-form), not shown as one generic toast.
+- After writing a new API route, verify: does every failure path return a
+  typed error, and does the caller actually handle it (not just `.catch(() => {})`)?
