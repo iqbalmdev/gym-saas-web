@@ -26,4 +26,11 @@ export const endpoints = {
     `/gym-orgs/${encodeURIComponent(gymOrgId)}/leads/${encodeURIComponent(leadId)}/status`,
   gymOrgLeadDueFollowUps: (gymOrgId: string) =>
     `/gym-orgs/${encodeURIComponent(gymOrgId)}/leads/due-follow-ups`,
+  gymOrgMembershipInvites: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/membership-invites`,
+  gymOrgMembershipInviteRevoke: (gymOrgId: string, membershipInviteId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/membership-invites/${encodeURIComponent(membershipInviteId)}/revoke`,
+  membershipInviteInbox: "/membership-invites/inbox",
+  membershipInviteAccept: (membershipInviteId: string) =>
+    `/membership-invites/${encodeURIComponent(membershipInviteId)}/accept`,
 } as const;

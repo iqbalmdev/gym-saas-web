@@ -1,6 +1,32 @@
-import { EmptyState } from "@/components/ui/empty-state";
+import { MembershipInviteInbox } from "@/components/client/membership-invite-inbox";
+import { createAppServices } from "@/lib/api/composition";
+import { ApiClientError } from "@/lib/api/errors";
+import { getSession, isClientSession } from "@/lib/auth/session";
+import { membershipInviteErrorMessage } from "@/lib/display/membership-invite-errors";
+import type { MembershipInvite } from "@/lib/ports/membership-invites";
 
-export default function ClientHomePage() {
+export default async function ClientHomePage() {
+  const session = await getSession();
+  if (!session || !isClientSession(session)) {
+    return null;
+  }
+
+  let invites: MembershipInvite[] = [];
+  let listError: string | null = null;
+
+  try {
+    const { listMembershipInviteInbox } = createAppServices();
+    const { membershipInvites } = await listMembershipInviteInbox({
+      accessToken: session.accessToken,
+    });
+    invites = membershipInvites.items;
+  } catch (error) {
+    listError =
+      error instanceof ApiClientError
+        ? membershipInviteErrorMessage(error.code, error.message)
+        : membershipInviteErrorMessage("NETWORK_OR_UNKNOWN");
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,13 +34,10 @@ export default function ClientHomePage() {
           Member home
         </h1>
         <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
-          Your client dashboard for membership and progress.
+          Accept a gym invite to start your membership.
         </p>
       </div>
-      <EmptyState
-        title="More member features come next"
-        description="You are signed in on the Client lane. Invites, plans, and progress land here in Phase B — this home stays free of Admin desk tools."
-      />
+      <MembershipInviteInbox invites={invites} listError={listError} />
     </div>
   );
 }

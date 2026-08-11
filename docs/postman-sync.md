@@ -110,8 +110,8 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 | Field | Value |
 |---|---|
-| Upstream tip | `acc01be` (2026-08-08 — **Membership Invites** folder + Examples; guide link in sibling) |
-| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — `git pull --ff-only` 7a2d9bf → `acc01be` |
+| Upstream tip | `ca849e0` (2026-08-09 — Membership Invites + **Subscriptions** folder) |
+| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — `git pull --ff-only` acc01be → `ca849e0` |
 | Cursor workspace | `gym-saas.code-workspace` (web + postman roots) |
 | GitHub / sibling pull | **OK** — sibling pull |
 | Postman inject | **OK** — 2026-08-08; collection uid `33631273-e6dafd3b-8829-4ba6-885f-763020fc8347`; `updatedAt` `2026-08-08T17:31:47.000Z`; folders Health, Auth, Gym Orgs, Staff Invites, Leads, Plans, **Membership Invites**; Dev/Local envs (`baseUrl` prod/local, `lane=STAFF`) |
@@ -123,6 +123,6 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 ### Tip raw URLs (Desktop Import)
 
-- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-API.postman_collection.json`
-- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-Dev.postman_environment.json`
-- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/acc01be/Gym-Backend-Local.postman_environment.json`
+- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/ca849e0/Gym-Backend-API.postman_collection.json`
+- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/ca849e0/Gym-Backend-Dev.postman_environment.json`
+- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/ca849e0/Gym-Backend-Local.postman_environment.json`

@@ -5,11 +5,13 @@ import {
   createE2eAuthGateway,
   createE2eGymOrgsAdapter,
   createE2eLeadsAdapter,
+  createE2eMembershipInvitesAdapter,
   createE2ePlansAdapter,
   createE2eStaffInvitesAdapter,
 } from "@/lib/api/e2e-fixtures";
 import { createGymOrgsAdapter } from "@/lib/api/gym-orgs-adapter";
 import { createLeadsAdapter } from "@/lib/api/leads-adapter";
+import { createMembershipInvitesAdapter } from "@/lib/api/membership-invites-adapter";
 import { createPlansAdapter } from "@/lib/api/plans-adapter";
 import { createStaffInvitesAdapter } from "@/lib/api/staff-invites-adapter";
 import { createCompleteGoogle } from "@/lib/features/auth/complete-google";
@@ -26,6 +28,13 @@ import {
   createSoftDeleteLead,
   createUpdateLead,
 } from "@/lib/features/leads/use-cases";
+import {
+  createAcceptMembershipInvite,
+  createCreateMembershipInvite,
+  createListMembershipInviteInbox,
+  createListMembershipInvites,
+  createRevokeMembershipInvite,
+} from "@/lib/features/membership-invites/use-cases";
 import {
   createCreatePlan,
   createListPlans,
@@ -60,6 +69,9 @@ export function createAppServices() {
   const leads = areE2eFixturesEnabled()
     ? createE2eLeadsAdapter()
     : createLeadsAdapter(http);
+  const membershipInvites = areE2eFixturesEnabled()
+    ? createE2eMembershipInvitesAdapter()
+    : createMembershipInvitesAdapter(http);
 
   return {
     auth,
@@ -67,6 +79,7 @@ export function createAppServices() {
     staffInvites,
     plans,
     leads,
+    membershipInvites,
     requestOtp: createRequestOtp({ auth }),
     verifyOtp: createVerifyOtp({ auth }),
     completeGoogle: createCompleteGoogle({ auth }),
@@ -88,6 +101,13 @@ export function createAppServices() {
     updateLead: createUpdateLead({ leads }),
     changeLeadStatus: createChangeLeadStatus({ leads }),
     softDeleteLead: createSoftDeleteLead({ leads }),
+    listMembershipInvites: createListMembershipInvites({ membershipInvites }),
+    listMembershipInviteInbox: createListMembershipInviteInbox({
+      membershipInvites,
+    }),
+    createMembershipInvite: createCreateMembershipInvite({ membershipInvites }),
+    revokeMembershipInvite: createRevokeMembershipInvite({ membershipInvites }),
+    acceptMembershipInvite: createAcceptMembershipInvite({ membershipInvites }),
   };
 }
 

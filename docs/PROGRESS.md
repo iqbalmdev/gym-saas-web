@@ -15,18 +15,31 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth; M2 Settings-first + invites; **M4 plans/addons**; **M11 leads** |
+| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites**; **M4 plans/addons**; **M11 leads** |
 | Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Staff invites show gym name (inbox embed + admin panel). Plans catalog and Leads CRM are live Admin slices. Google OAuth web flow wired. Postman tip `acc01be` adds **Membership Invites**. Next: renewals inbox or membership-invite Admin slice; backend Google redirect deploy.
+**Summary:** Membership Invites Admin + Client accept on `/client`. Plans + Leads live. Next: renewals / subscriptions; `my-data-grants`.
 
 ## Next up
 
-1. Admin renewals inbox (M4/M12) after plans — or Membership Invites Admin (new Postman folder).
+1. Admin renewals / Subscriptions (Postman folder on tip `ca849e0`).
 2. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
-3. Optional: Zustand Admin UI store when renewals needs shared chrome.
+3. Optional: Client membership inbox/accept UI (CLIENT lane).
 
 ## Log
+
+### 2026-08-11 — Client membership invite accept
+
+- `/client` lists `GET /membership-invites/inbox` and accepts via `POST /membership-invites/:id/accept`.
+- CLIENT session only; optional grant checkboxes. Required vitals stay server-side.
+- `my-data-grants` still deferred. No invent endpoints.
+
+### 2026-08-09 — Membership Invites Admin (M3)
+
+- Postman sibling pull `acc01be` → `ca849e0` (Membership Invites + Subscriptions).
+- Ports/adapter/actions for create, list, revoke; `/admin/members` replaces stub.
+- Auth: STAFF session + gym affiliation; API enforces ADMIN. No DataGrant (gym-owned invites).
+- Docs `docs/api/membership-invites.md`. Client inbox/accept deferred. No invent endpoints.
 
 ### 2026-08-08 — Postman sync tip `acc01be` → cloud
 

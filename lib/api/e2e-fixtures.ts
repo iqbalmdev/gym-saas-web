@@ -7,6 +7,11 @@ import type { AuthGateway, AuthLane, AuthUser } from "@/lib/ports/auth";
 import type { GymOrgsReader, GymOrgsWriter } from "@/lib/ports/gym-orgs";
 import type { Lead, LeadsReader, LeadsWriter } from "@/lib/ports/leads";
 import type {
+  MembershipInvite,
+  MembershipInvitesReader,
+  MembershipInvitesWriter,
+} from "@/lib/ports/membership-invites";
+import type {
   MembershipPlan,
   PlansReader,
   PlansWriter,
@@ -607,6 +612,166 @@ export function createE2eLeadsAdapter(): LeadsReader & LeadsWriter {
         });
       }
       e2eLeads.splice(idx, 1);
+    },
+  };
+}
+
+const e2eMembershipInvites: MembershipInvite[] = [
+  {
+    id: "minvite-e2e-1",
+    gymOrgId: E2E_GYM_ID,
+    invitedEmail: "alex.client@example.com",
+    invitedUserId: "e2e-client-1",
+    inviteeName: "Alex Client",
+    inviteePhone: "+15551234567",
+    basePlanId: "plan-e2e-base",
+    basePaymentStatus: "unpaid",
+    addonPlanId: null,
+    addonPaymentStatus: null,
+    status: "PENDING",
+    expiresAt: "2026-08-22T00:00:00.000Z",
+    createdBy: "e2e-user-1",
+    acceptedAt: null,
+    acceptedMembershipId: null,
+    createdAt: "2026-08-08T12:00:00.000Z",
+    updatedAt: "2026-08-08T12:00:00.000Z",
+  },
+];
+
+export function createE2eMembershipInvitesAdapter(): MembershipInvitesReader &
+  MembershipInvitesWriter {
+  return {
+    async list({ gymOrgId, limit = 50, offset = 0 }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return {
+          membershipInvites: { items: [], total: 0, limit, offset },
+        };
+      }
+      return {
+        membershipInvites: {
+          items: e2eMembershipInvites.slice(offset, offset + limit),
+          total: e2eMembershipInvites.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async create({ gymOrgId, body }) {
+      const invite: MembershipInvite = {
+        id: `minvite-e2e-${e2eMembershipInvites.length + 1}`,
+        gymOrgId,
+        invitedEmail: body.invitedEmail,
+        invitedUserId: null,
+        inviteeName: body.inviteeName,
+        inviteePhone: body.inviteePhone ?? null,
+        basePlanId: body.basePlanId,
+        basePaymentStatus: body.basePaymentStatus,
+        addonPlanId: body.addonPlanId ?? null,
+        addonPaymentStatus: body.addonPaymentStatus ?? null,
+        status: "PENDING",
+        expiresAt: body.expiresAt ?? "2026-08-22T00:00:00.000Z",
+        createdBy: "e2e-user-1",
+        acceptedAt: null,
+        acceptedMembershipId: null,
+        createdAt: "2026-08-08T12:00:00.000Z",
+        updatedAt: "2026-08-08T12:00:00.000Z",
+      };
+      e2eMembershipInvites.unshift(invite);
+      return { membershipInvite: invite };
+    },
+
+    async listInbox({ limit = 50, offset = 0 }) {
+      const items = e2eMembershipInvites
+        .filter((item) => item.status === "PENDING")
+        .map((item) => ({
+          ...item,
+          gym: {
+            id: E2E_GYM_ID,
+            name: "E2E Gym",
+            address: null,
+            contactPhone: null,
+            contactEmail: null,
+            logoUrl: null,
+            timezone: "Asia/Kolkata",
+          },
+        }));
+      return {
+        membershipInvites: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async accept({ membershipInviteId, body }) {
+      const idx = e2eMembershipInvites.findIndex(
+        (item) => item.id === membershipInviteId,
+      );
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      if (e2eMembershipInvites[idx].status !== "PENDING") {
+        throw new ApiClientError({
+          code: "MEMBERSHIP_INVITE_INVALID_TRANSITION",
+          message: "Only PENDING membership invites can be accepted",
+          status: 409,
+        });
+      }
+      const updated: MembershipInvite = {
+        ...e2eMembershipInvites[idx],
+        status: "ACCEPTED",
+        acceptedAt: "2026-08-08T12:05:00.000Z",
+        acceptedMembershipId: "membership-e2e-1",
+        updatedAt: "2026-08-08T12:05:00.000Z",
+      };
+      e2eMembershipInvites[idx] = updated;
+      return {
+        membershipInvite: updated,
+        membershipId: "membership-e2e-1",
+        grants: {
+          profileAttributes: [
+            "DOB",
+            "HEIGHT",
+            "WEIGHT",
+            ...(body?.optionalProfileAttributes ?? []),
+          ],
+          classGrants: [...(body?.optionalClassGrants ?? [])],
+        },
+      };
+    },
+
+    async revoke({ membershipInviteId }) {
+      const idx = e2eMembershipInvites.findIndex(
+        (item) => item.id === membershipInviteId,
+      );
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      if (e2eMembershipInvites[idx].status !== "PENDING") {
+        throw new ApiClientError({
+          code: "MEMBERSHIP_INVITE_INVALID_TRANSITION",
+          message: "Only PENDING membership invites can be revoked",
+          status: 409,
+        });
+      }
+      const updated: MembershipInvite = {
+        ...e2eMembershipInvites[idx],
+        status: "REVOKED",
+        updatedAt: "2026-08-08T12:10:00.000Z",
+      };
+      e2eMembershipInvites[idx] = updated;
+      return { membershipInvite: updated };
     },
   };
 }
