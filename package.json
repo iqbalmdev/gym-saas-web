@@ -1,35 +1,56 @@
 {
-  "name": "gym-saas-web",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright install chromium && npm run build && playwright test",
-    "test:e2e:ui": "playwright install chromium && npm run build && playwright test --ui",
-    "test:e2e:install": "playwright install chromium"
-  },
-  "dependencies": {
-    "next": "16.3.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.48.2",
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.0",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^4.1.10"
-  }
+    "name": "gym-saas-web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint --max-warnings=0",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:e2e": "playwright install chromium && npm run build && playwright test",
+        "test:e2e:ui": "playwright install chromium && npm run build && playwright test --ui",
+        "test:e2e:install": "playwright install chromium",
+        "lockfile:check": "node scripts/lockfile-registry.mjs --check",
+        "lockfile:fix": "node scripts/lockfile-registry.mjs --fix",
+        "verify": "npm run lockfile:check && npm run lint && npm run typecheck && npm test",
+        "prepare": "husky"
+    },
+    "engines": {
+        "node": ">=20.9.0"
+    },
+    "lint-staged": {
+        "*.{ts,tsx,mjs,js}": [
+            "eslint --fix --max-warnings=0"
+        ],
+        "*.{json,css}": [
+            "prettier --write"
+        ]
+    },
+    "dependencies": {
+        "next": "16.3.0",
+        "react": "19.2.8",
+        "react-dom": "19.2.8",
+        "zod": "^3.25.76"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.48.2",
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "eslint": "^9",
+        "eslint-config-next": "16.3.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.3.0",
+        "prettier": "^3.9.6",
+        "prettier-plugin-tailwindcss": "^0.8.1",
+        "tailwindcss": "^4",
+        "typescript": "^5",
+        "vitest": "^4.1.10"
+    }
 }
