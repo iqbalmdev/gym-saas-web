@@ -3,48 +3,48 @@
  * Soft cool ops mood. No purple gradients. (docs/ui-theme.md)
  */
 :root,
-html[data-theme="light"] {
-  color-scheme: light;
-  --color-canvas: #eef2f6;
-  --color-canvas-accent: #e4ebf3;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-fg: #0f172a;
-  --color-fg-muted: #64748b;
-  --color-accent: #0a0a0a;
-  --color-accent-fg: #ffffff;
-  --color-info: #3b82f6;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-success: #10b981;
-  --color-overlay: rgb(15 23 42 / 25%);
-  --color-shell-glow-a: #dbe7f3;
-  --color-shell-glow-b: #e8eef6;
-  --radius-panel: 1.25rem;
-  --radius-pill: 999px;
-  --shadow-panel: 0 8px 30px rgb(15 23 42 / 6%);
-  --shadow-nav: 0 4px 20px rgb(15 23 42 / 5%);
+html[data-theme='light'] {
+    color-scheme: light;
+    --color-canvas: #eef2f6;
+    --color-canvas-accent: #e4ebf3;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+    --color-fg: #0f172a;
+    --color-fg-muted: #64748b;
+    --color-accent: #0a0a0a;
+    --color-accent-fg: #ffffff;
+    --color-info: #3b82f6;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-success: #10b981;
+    --color-overlay: rgb(15 23 42 / 25%);
+    --color-shell-glow-a: #dbe7f3;
+    --color-shell-glow-b: #e8eef6;
+    --radius-panel: 1.25rem;
+    --radius-pill: 999px;
+    --shadow-panel: 0 8px 30px rgb(15 23 42 / 6%);
+    --shadow-nav: 0 4px 20px rgb(15 23 42 / 5%);
 }
 
-html[data-theme="dark"] {
-  color-scheme: dark;
-  --color-canvas: #0b1220;
-  --color-canvas-accent: #111827;
-  --color-surface: #151c2c;
-  --color-border: #2a3448;
-  --color-fg: #e8eef6;
-  --color-fg-muted: #94a3b8;
-  --color-accent: #f8fafc;
-  --color-accent-fg: #0a0a0a;
-  --color-info: #60a5fa;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
-  --color-success: #34d399;
-  --color-overlay: rgb(2 6 23 / 55%);
-  --color-shell-glow-a: #1e293b;
-  --color-shell-glow-b: #172033;
-  --radius-panel: 1.25rem;
-  --radius-pill: 999px;
-  --shadow-panel: 0 8px 30px rgb(0 0 0 / 35%);
-  --shadow-nav: 0 4px 20px rgb(0 0 0 / 30%);
+html[data-theme='dark'] {
+    color-scheme: dark;
+    --color-canvas: #0b1220;
+    --color-canvas-accent: #111827;
+    --color-surface: #151c2c;
+    --color-border: #2a3448;
+    --color-fg: #e8eef6;
+    --color-fg-muted: #94a3b8;
+    --color-accent: #f8fafc;
+    --color-accent-fg: #0a0a0a;
+    --color-info: #60a5fa;
+    --color-warning: #fbbf24;
+    --color-danger: #f87171;
+    --color-success: #34d399;
+    --color-overlay: rgb(2 6 23 / 55%);
+    --color-shell-glow-a: #1e293b;
+    --color-shell-glow-b: #172033;
+    --radius-panel: 1.25rem;
+    --radius-pill: 999px;
+    --shadow-panel: 0 8px 30px rgb(0 0 0 / 35%);
+    --shadow-nav: 0 4px 20px rgb(0 0 0 / 30%);
 }

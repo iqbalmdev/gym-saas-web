@@ -21,55 +21,54 @@
  *   node scripts/lockfile-registry.mjs --check   exit 1 if private hosts remain
  *   node scripts/lockfile-registry.mjs --fix     rewrite them to registry.npmjs.org
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from 'node:fs';
 
-const PUBLIC_REGISTRY = "https://registry.npmjs.org/";
-const LOCKFILE = "package-lock.json";
+const PUBLIC_REGISTRY = 'https://registry.npmjs.org/';
+const LOCKFILE = 'package-lock.json';
 
 // Azure Artifacts upstream-mirror shape: <feed>/npm/registry/<pkg>/-/<file>.tgz
-const MIRROR_PREFIX =
-  /https:\/\/[^"/]*pkgs\.visualstudio\.com\/[^"]*?\/npm\/registry\//g;
+const MIRROR_PREFIX = /https:\/\/[^"/]*pkgs\.visualstudio\.com\/[^"]*?\/npm\/registry\//g;
 
-const mode = process.argv.includes("--fix") ? "fix" : "check";
-const original = readFileSync(LOCKFILE, "utf8");
+const mode = process.argv.includes('--fix') ? 'fix' : 'check';
+const original = readFileSync(LOCKFILE, 'utf8');
 
 const hosts = [
-  ...new Set(
-    [...original.matchAll(/"resolved":\s*"https?:\/\/([^/"]+)/g)]
-      .map((m) => m[1])
-      .filter((host) => host !== "registry.npmjs.org"),
-  ),
+    ...new Set(
+        [...original.matchAll(/"resolved":\s*"https?:\/\/([^/"]+)/g)]
+            .map((m) => m[1])
+            .filter((host) => host !== 'registry.npmjs.org'),
+    ),
 ];
 
 if (hosts.length === 0) {
-  console.log(`${LOCKFILE}: all resolved URLs use registry.npmjs.org`);
-  process.exit(0);
+    console.log(`${LOCKFILE}: all resolved URLs use registry.npmjs.org`);
+    process.exit(0);
 }
 
-if (mode === "check") {
-  console.error(
-    `${LOCKFILE} references non-public registries: ${hosts.join(", ")}\n` +
-      `Run \`npm run lockfile:fix\` and commit the result.`,
-  );
-  process.exit(1);
+if (mode === 'check') {
+    console.error(
+        `${LOCKFILE} references non-public registries: ${hosts.join(', ')}\n` +
+            `Run \`npm run lockfile:fix\` and commit the result.`,
+    );
+    process.exit(1);
 }
 
 const rewritten = original.replace(MIRROR_PREFIX, PUBLIC_REGISTRY);
 const remaining = [
-  ...new Set(
-    [...rewritten.matchAll(/"resolved":\s*"https?:\/\/([^/"]+)/g)]
-      .map((m) => m[1])
-      .filter((host) => host !== "registry.npmjs.org"),
-  ),
+    ...new Set(
+        [...rewritten.matchAll(/"resolved":\s*"https?:\/\/([^/"]+)/g)]
+            .map((m) => m[1])
+            .filter((host) => host !== 'registry.npmjs.org'),
+    ),
 ];
 
 if (remaining.length > 0) {
-  console.error(
-    `Could not rewrite every entry. Unrecognized host(s): ${remaining.join(", ")}\n` +
-      `Add the pattern to scripts/lockfile-registry.mjs.`,
-  );
-  process.exit(1);
+    console.error(
+        `Could not rewrite every entry. Unrecognized host(s): ${remaining.join(', ')}\n` +
+            `Add the pattern to scripts/lockfile-registry.mjs.`,
+    );
+    process.exit(1);
 }
 
 writeFileSync(LOCKFILE, rewritten);
-console.log(`${LOCKFILE}: rewrote ${hosts.join(", ")} → registry.npmjs.org`);
+console.log(`${LOCKFILE}: rewrote ${hosts.join(', ')} → registry.npmjs.org`);

@@ -1,11 +1,11 @@
-import type { AuthGateway } from "@/lib/modules/auth/auth-ports";
+import type { AuthGateway } from '@/lib/modules/auth/auth-ports';
 
 export type RequestOtpDeps = {
-  auth: AuthGateway;
+    auth: AuthGateway;
 };
 
 export function createRequestOtp(deps: RequestOtpDeps) {
-  return async function requestOtp(input: { email: string }) {
-    return deps.auth.requestOtp(input);
-  };
+    return async function requestOtp(input: { email: string }) {
+        return deps.auth.requestOtp(input);
+    };
 }

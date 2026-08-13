@@ -1,8 +1,8 @@
-import type { AuthLane } from "@/lib/modules/auth/auth-ports";
+import type { AuthLane } from '@/lib/modules/auth/auth-ports';
 
 export type PostAuthRouteInput = {
-  lane: AuthLane;
-  gymOrgCount: number;
+    lane: AuthLane;
+    gymOrgCount: number;
 };
 
 /**
@@ -10,11 +10,11 @@ export type PostAuthRouteInput = {
  * (create org / accept invite). Same path for new and returning Staff.
  */
 export function resolvePostAuthPath(input: PostAuthRouteInput): string {
-  if (input.lane === "CLIENT") {
-    return "/client";
-  }
-  if (input.gymOrgCount === 0) {
-    return "/admin/settings";
-  }
-  return "/admin";
+    if (input.lane === 'CLIENT') {
+        return '/client';
+    }
+    if (input.gymOrgCount === 0) {
+        return '/admin/settings';
+    }
+    return '/admin';
 }

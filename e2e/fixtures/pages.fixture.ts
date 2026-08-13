@@ -1,90 +1,87 @@
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect } from '@playwright/test';
 
-import { encodeClientSessionCookie } from "./client-session";
-import {
-  encodeStaffSessionCookie,
-  encodeStaffSessionCookieNoGym,
-} from "./staff-session";
-import { AdminShellPage } from "../pages/admin-shell.page";
-import { AttendancePage } from "../pages/attendance.page";
-import { ClientHomePage } from "../pages/client-home.page";
-import { LoginPage } from "../pages/login.page";
-import { MembersPage } from "../pages/members.page";
-import { RenewalsPage } from "../pages/renewals.page";
-import { SettingsPage } from "../pages/settings.page";
+import { encodeClientSessionCookie } from './client-session';
+import { encodeStaffSessionCookie, encodeStaffSessionCookieNoGym } from './staff-session';
+import { AdminShellPage } from '../pages/admin-shell.page';
+import { AttendancePage } from '../pages/attendance.page';
+import { ClientHomePage } from '../pages/client-home.page';
+import { LoginPage } from '../pages/login.page';
+import { MembersPage } from '../pages/members.page';
+import { RenewalsPage } from '../pages/renewals.page';
+import { SettingsPage } from '../pages/settings.page';
 
 type Pages = {
-  loginPage: LoginPage;
-  adminShellPage: AdminShellPage;
-  clientHomePage: ClientHomePage;
-  settingsPage: SettingsPage;
-  membersPage: MembersPage;
-  attendancePage: AttendancePage;
-  renewalsPage: RenewalsPage;
+    loginPage: LoginPage;
+    adminShellPage: AdminShellPage;
+    clientHomePage: ClientHomePage;
+    settingsPage: SettingsPage;
+    membersPage: MembersPage;
+    attendancePage: AttendancePage;
+    renewalsPage: RenewalsPage;
 };
 
 type AuthFixtures = {
-  /** Staff cookie + gym affiliation; lands on Admin Operations. */
-  staffAdmin: AdminShellPage;
-  /** Staff cookie, zero gyms; lands on Settings-only first-run. */
-  staffNoGym: SettingsPage;
-  /** Client cookie; Member home. */
-  clientHome: ClientHomePage;
+    /** Staff cookie + gym affiliation; lands on Admin Operations. */
+    staffAdmin: AdminShellPage;
+    /** Staff cookie, zero gyms; lands on Settings-only first-run. */
+    staffNoGym: SettingsPage;
+    /** Client cookie; Member home. */
+    clientHome: ClientHomePage;
 };
 
 export const test = base.extend<Pages & AuthFixtures>({
-  loginPage: async ({ page }, use) => {
-    await use(new LoginPage(page));
-  },
+    loginPage: async ({ page }, use) => {
+        await use(new LoginPage(page));
+    },
 
-  adminShellPage: async ({ page }, use) => {
-    await use(new AdminShellPage(page));
-  },
+    adminShellPage: async ({ page }, use) => {
+        await use(new AdminShellPage(page));
+    },
 
-  clientHomePage: async ({ page }, use) => {
-    await use(new ClientHomePage(page));
-  },
+    clientHomePage: async ({ page }, use) => {
+        await use(new ClientHomePage(page));
+    },
 
-  settingsPage: async ({ page }, use) => {
-    await use(new SettingsPage(page));
-  },
+    settingsPage: async ({ page }, use) => {
+        await use(new SettingsPage(page));
+    },
 
-  membersPage: async ({ page }, use) => {
-    await use(new MembersPage(page));
-  },
+    membersPage: async ({ page }, use) => {
+        await use(new MembersPage(page));
+    },
 
-  attendancePage: async ({ page }, use) => {
-    await use(new AttendancePage(page));
-  },
+    attendancePage: async ({ page }, use) => {
+        await use(new AttendancePage(page));
+    },
 
-  renewalsPage: async ({ page }, use) => {
-    await use(new RenewalsPage(page));
-  },
+    renewalsPage: async ({ page }, use) => {
+        await use(new RenewalsPage(page));
+    },
 
-  staffAdmin: async ({ context, page }, use) => {
-    await context.addCookies([encodeStaffSessionCookie()]);
-    await page.addInitScript(() => {
-      localStorage.setItem("gym-saas-sidebar-expanded", "1");
-    });
-    const shell = new AdminShellPage(page);
-    await shell.gotoDashboard();
-    await shell.expectShellReady();
-    await use(shell);
-  },
+    staffAdmin: async ({ context, page }, use) => {
+        await context.addCookies([encodeStaffSessionCookie()]);
+        await page.addInitScript(() => {
+            localStorage.setItem('gym-saas-sidebar-expanded', '1');
+        });
+        const shell = new AdminShellPage(page);
+        await shell.gotoDashboard();
+        await shell.expectShellReady();
+        await use(shell);
+    },
 
-  staffNoGym: async ({ context, page }, use) => {
-    await context.addCookies([encodeStaffSessionCookieNoGym()]);
-    const settings = new SettingsPage(page);
-    await page.goto("/admin");
-    await use(settings);
-  },
+    staffNoGym: async ({ context, page }, use) => {
+        await context.addCookies([encodeStaffSessionCookieNoGym()]);
+        const settings = new SettingsPage(page);
+        await page.goto('/admin');
+        await use(settings);
+    },
 
-  clientHome: async ({ context, page }, use) => {
-    await context.addCookies([encodeClientSessionCookie()]);
-    const home = new ClientHomePage(page);
-    await home.goto();
-    await use(home);
-  },
+    clientHome: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const home = new ClientHomePage(page);
+        await home.goto();
+        await use(home);
+    },
 });
 
 export { expect };

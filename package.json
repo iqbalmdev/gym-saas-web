@@ -17,7 +17,7 @@
         "test:e2e:install": "playwright install chromium",
         "lockfile:check": "node scripts/lockfile-registry.mjs --check",
         "lockfile:fix": "node scripts/lockfile-registry.mjs --fix",
-        "verify": "npm run lockfile:check && npm run lint && npm run typecheck && npm test",
+        "verify": "npm run lockfile:check && npm run format:check && npm run lint && npm run typecheck && npm test",
         "prepare": "husky"
     },
     "engines": {

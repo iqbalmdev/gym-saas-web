@@ -1,67 +1,53 @@
-import { expect, test } from "./fixtures/pages.fixture";
+import { expect, test } from './fixtures/pages.fixture';
 
-test.describe("Admin collapsible sidebar", () => {
-  test("shows module labels when expanded and icons-only when collapsed", async ({
-    staffAdmin,
-  }) => {
-    await test.step("Expanded: Renewals label is visible", async () => {
-      await expect(staffAdmin.moduleLink("Renewals")).toBeVisible();
-      await expect(staffAdmin.moduleLink("Renewals")).toHaveText("Renewals");
-      await expect(staffAdmin.collapseSidebar).toBeVisible();
+test.describe('Admin collapsible sidebar', () => {
+    test('shows module labels when expanded and icons-only when collapsed', async ({ staffAdmin }) => {
+        await test.step('Expanded: Renewals label is visible', async () => {
+            await expect(staffAdmin.moduleLink('Renewals')).toBeVisible();
+            await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
+            await expect(staffAdmin.collapseSidebar).toBeVisible();
+        });
+
+        await test.step('Collapse to icon rail', async () => {
+            await staffAdmin.collapseSidebar.click();
+            await expect(staffAdmin.expandSidebar).toBeVisible();
+            const renewals = staffAdmin.moduleLink('Renewals');
+            await expect(renewals).toBeVisible();
+            await expect(renewals).toHaveAttribute('aria-label', 'Renewals');
+            await expect(renewals).not.toHaveText('Renewals');
+        });
+
+        await test.step('Expand again restores labels', async () => {
+            await staffAdmin.expandSidebar.click();
+            await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
+        });
     });
 
-    await test.step("Collapse to icon rail", async () => {
-      await staffAdmin.collapseSidebar.click();
-      await expect(staffAdmin.expandSidebar).toBeVisible();
-      const renewals = staffAdmin.moduleLink("Renewals");
-      await expect(renewals).toBeVisible();
-      await expect(renewals).toHaveAttribute("aria-label", "Renewals");
-      await expect(renewals).not.toHaveText("Renewals");
+    test('navigates to Settings from the sidebar', async ({ staffAdmin, page }) => {
+        await staffAdmin.moduleLink('Settings').click();
+        await expect(page).toHaveURL(/\/admin\/settings/);
+        await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     });
 
-    await test.step("Expand again restores labels", async () => {
-      await staffAdmin.expandSidebar.click();
-      await expect(staffAdmin.moduleLink("Renewals")).toHaveText("Renewals");
+    test('mobile header keeps brand and sign out spaced apart', async ({ staffAdmin, page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await expect(page.getByRole('link', { name: 'Gym SaaS' }).first()).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
+        await page.getByRole('button', { name: 'Open navigation' }).click();
+        await expect(staffAdmin.moduleLink('Renewals')).toBeVisible();
+        await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
     });
-  });
-
-  test("navigates to Settings from the sidebar", async ({ staffAdmin, page }) => {
-    await staffAdmin.moduleLink("Settings").click();
-    await expect(page).toHaveURL(/\/admin\/settings/);
-    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
-  });
-
-  test("mobile header keeps brand and sign out spaced apart", async ({
-    staffAdmin,
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.getByRole("link", { name: "Gym SaaS" }).first()).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Sign out" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Open navigation" }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "Open navigation" }).click();
-    await expect(staffAdmin.moduleLink("Renewals")).toBeVisible();
-    await expect(staffAdmin.moduleLink("Renewals")).toHaveText("Renewals");
-  });
 });
 
-test.describe("Staff without gym", () => {
-  test("lands on Settings-only shell instead of Admin modules", async ({
-    staffNoGym,
-    page,
-  }) => {
-    await expect(page).toHaveURL(/\/admin\/settings/);
-    await expect(staffNoGym.heading).toBeVisible();
-    await expect(staffNoGym.createGymHeading).toBeVisible();
-    await expect(staffNoGym.gymName).toBeVisible();
-    await expect(
-      page.getByRole("complementary", { name: "Admin modules" }),
-    ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Renewals" })).toHaveCount(0);
-  });
+test.describe('Staff without gym', () => {
+    test('lands on Settings-only shell instead of Admin modules', async ({ staffNoGym, page }) => {
+        await expect(page).toHaveURL(/\/admin\/settings/);
+        await expect(staffNoGym.heading).toBeVisible();
+        await expect(staffNoGym.createGymHeading).toBeVisible();
+        await expect(staffNoGym.gymName).toBeVisible();
+        await expect(page.getByRole('complementary', { name: 'Admin modules' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Renewals' })).toHaveCount(0);
+    });
 });
