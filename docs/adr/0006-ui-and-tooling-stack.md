@@ -33,7 +33,9 @@ Integration constraints:
   semantic tokens (`--color-canvas`, `--color-surface`, `--color-accent`,
   `--color-fg-muted`, …). Retheming stays a token-map swap (`docs/ui-theme.md`).
 - `components/ui/` stays global and business-logic free — the shadcn CLI writes there.
-- Accepts Radix runtime dependencies and introduces `cn()` (clsx + tailwind-merge).
+- Accepts **`@base-ui/react`** runtime dependencies (recent shadcn switched away
+  from Radix) and introduces `cn()` (clsx + tailwind-merge). `init` also installs
+  `shadcn` itself as a runtime dep — move it to devDependencies, it is a CLI.
 
 ### 2. Tailwind CSS 4 — already in use, unchanged.
 

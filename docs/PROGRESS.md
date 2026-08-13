@@ -9,6 +9,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Agent OS (rules, skills, docs) | Done — drift from `e537810` repaired; Cursor + Claude Code parity |
 | Tooling + CI | Done — Prettier/ESLint architecture rules/Husky/lint-staged + GitHub Actions (ADR-0006) |
 | Folder architecture | Done — module folders `lib/modules/<module>/` (ADR-0007) |
+| UI foundation | Done — shadcn/ui on `data-theme`, tokens aliased to the CRM palette (ADR-0006) |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
 | Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
@@ -26,11 +27,10 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 
 **Team setup:**
 
-1. **shadcn/ui** — install, point the dark variant at `[data-theme="dark"]`, alias its token names onto `lib/theme/crm-tokens.css`. Do **not** rewrite the token map (ADR-0006).
-2. **UI/UX design-system doc** — after shadcn, so it documents real tokens: theme tokens, table density, status badges (payment/membership/lead pipeline), empty states incl. missing-DataGrant copy.
-3. **Tailwind canonical classes** — 466 `[var(--x)]` → `(--x)` across 24 files. Cosmetic; last, because shadcn rewrites the same `className` strings.
-4. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
-5. **Module ownership split** with Iqbal, then feature branches + PRs.
+1. **UI/UX design-system doc** — now unblocked, and it can document real tokens: the shadcn↔CRM alias map, table density, status badges (payment / membership / lead pipeline), and empty states including missing-DataGrant copy.
+2. **Adopt shadcn components per surface** — table, dialog, sheet, dropdown, select, badge. Add them as screens need them, not all at once.
+3. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
+4. **Module ownership split** with Iqbal, then feature branches + PRs.
 
 **Product:**
 
