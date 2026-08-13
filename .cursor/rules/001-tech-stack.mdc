@@ -21,8 +21,9 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 
 - The web app calls the **Express API (S3) over HTTPS only**. It does not use
   the Supabase client, and it does not query Postgres — for reads or writes.
-- Transport lives in `lib/api/*-adapter.ts` behind ports in `lib/ports/`.
-  Bind at `lib/api/composition.ts` — the single composition root.
+- Transport lives in `lib/modules/<module>/<module>-adapter.ts` behind that
+  module's ports. Each module binds its own `<module>-services.ts`; the single
+  composition root `lib/api/composition.ts` just spreads them (ADR-0007).
 - Reads: Server Components call use-cases. Mutations: Server Actions →
   use-case → adapter → `revalidatePath` / `redirect`.
 - Session: httpOnly cookie set after OTP/Google verify (ADR-0005). Never
@@ -44,4 +45,4 @@ needs it, and say so first.
 - Pages Router APIs
 - default exports for components
 - `fetch` of domain APIs inside client components — go through ports
-- adapter imports outside `lib/api/composition.ts`
+- adapter imports outside the module's own `<module>-services.ts`

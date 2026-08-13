@@ -8,7 +8,7 @@ import {
   isStaffSession,
   type SessionSnapshot,
 } from "@/lib/auth/session-model";
-import type { AuthSession, AuthUser } from "@/lib/ports/auth";
+import type { AuthSession, AuthUser } from "@/lib/modules/auth/auth-ports";
 
 const staffUser: AuthUser = {
   id: "user-1",

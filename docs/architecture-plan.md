@@ -69,13 +69,13 @@ Inspired by pragmatic Clean Architecture in React ([Kondov](https://alexkondov.c
 ┌──────────────────────────────────────────────────────────┐
 │ Presentation  app/(persona)/*, components/*              │  props → markup; named event handlers only
 ├──────────────────────────────────────────────────────────┤
-│ Application   lib/features/*/use-cases, hooks            │  orchestrate; map to view models; depend on PORTS
+│ Application   lib/modules/*/<m>-use-cases.ts             │  orchestrate; map to view models; depend on PORTS
 ├──────────────────────────────────────────────────────────┤
-│ Ports         lib/ports/* (interfaces)                   │  RenewalsReader, GymOrgWriter, AuthGateway, …
+│ Ports         lib/modules/*/<m>-ports.ts (interfaces)    │  RenewalsReader, GymOrgWriter, AuthGateway, …
 ├──────────────────────────────────────────────────────────┤
-│ Adapters      lib/api/*  (HTTP), lib/auth/session, …     │  implement ports; endpoints + schema validation
+│ Adapters      lib/modules/*/<m>-adapter.ts, lib/auth/…   │  implement ports; endpoints + schema validation
 ├──────────────────────────────────────────────────────────┤
-│ Display       lib/display/*                              │  pure DTO → labels/badges/relative dates
+│ Display       lib/modules/*/<m>-errors|labels.ts         │  pure DTO → labels/badges/relative dates
 ├──────────────────────────────────────────────────────────┤
 │ Design system lib/theme, components/ui                   │  tokens only — no domain rules
 └──────────────────────────────────────────────────────────┘
@@ -102,7 +102,7 @@ Composition root (route / server entry / factory)
 | **O** | New Admin screens add use-cases/adapters; don’t fork the HTTP kernel |
 | **L** | Fake ports in tests behave like production contracts |
 | **I** | Small ports per access pattern (`listRenewals`, `markDeskAttendance`) — not one mega API in every component |
-| **D** | Use-cases import port *types*; only composition root imports `lib/api` concretes |
+| **D** | Use-cases import port *types*; only `<module>-services.ts` imports adapter concretes |
 
 ### Dependency injection
 
@@ -118,23 +118,23 @@ Composition root (route / server entry / factory)
 | Presentation | Render view models; call named handlers; show grant-missing empty states | `fetch`, dayjs, entitlement math, payment→lock logic |
 | Application / hooks | Orchestrate ports; build view models; loading/error policy | Own HTTP URLs; contain large JSX trees |
 | Ports | Declare async contracts + DTO types | Know React or CSS |
-| Adapters (`lib/api`) | HTTP, auth headers, zod/schema parse, endpoint constants | JSX; business “should we lock check-in?” |
+| Adapters (`<module>-adapter.ts`) | HTTP, auth headers, zod/schema parse, endpoint constants | JSX; business “should we lock check-in?” |
 | Display | Pure formatters/mappers | Network I/O |
 | Theme | Semantic tokens | Feature hex hardcoding |
 
 ### Example shape (Renewals inbox)
 
 ```typescript
-// lib/ports/renewals.ts
+// lib/modules/subscriptions/subscriptions-ports.ts
 export type RenewalsReader = {
   listDueWithinDays: (input: { days: number; gymOrgId: string }) => Promise<RenewalLineDto[]>;
 };
 
-// lib/api/renewals-adapter.ts — implements RenewalsReader (HTTP + schema)
+// lib/modules/subscriptions/subscriptions-adapter.ts — implements the port (HTTP + Zod)
 
-// lib/features/renewals/list-renewals.ts — use-case depends on RenewalsReader only
+// lib/modules/subscriptions/subscriptions-use-cases.ts — depends on the port only
 
-// components/admin/renewals-inbox.tsx — receives RenewalRowViewModel[] + onOpenMember
+// lib/modules/subscriptions/components/renewals-admin-panel.tsx — view model + handlers
 ```
 
 ### Kondov habits we keep
@@ -149,46 +149,55 @@ export type RenewalsReader = {
 
 ## 5. Target folder structure
 
+**Module-folder layout (ADR-0007).** Domain slices colocate; only genuinely
+shared infrastructure stays global.
+
 ```text
-gym-admin-web/
-├── app/
+gym-saas-web/
+├── app/                           # routes only — Next owns this tree
 │   ├── layout.tsx                 # root: fonts, theme CSS vars
-│   ├── (auth)/
-│   │   ├── login/                 # OTP request + verify; lane chooser
-│   │   └── layout.tsx
-│   ├── (admin)/
-│   │   ├── layout.tsx             # Admin chrome + gym scope guard (composition root for admin)
-│   │   ├── page.tsx               # dashboard (P1 ok to stub)
-│   │   ├── renewals/              # M4 + M12 inbox (wedge)
-│   │   ├── crm/                   # M11 leads pipeline
-│   │   ├── members/               # M3 roster + invites
-│   │   ├── attendance/            # M5 desk mark + logs
-│   │   ├── plans/                 # M4 catalog
-│   │   └── settings/              # M2 gym profile / branding
+│   ├── (auth)/login/              # OTP request + verify; lane chooser
+│   ├── (admin)/admin/
+│   │   ├── layout.tsx             # Admin chrome + gym scope guard
+│   │   ├── settings/              # M2 gym profile / branding
+│   │   └── (ops)/                 # renewals · crm · members · attendance · plans
 │   ├── (trainer)/                 # Phase B — do not delete the group idea
 │   ├── (client)/                  # Phase B — optional web
 │   └── api/                       # optional BFF route handlers only if ADR’d
-├── components/
-│   ├── ui/                        # buttons, table, empty-state, badges
-│   ├── admin/                     # presentational + thin composition
-│   ├── trainer/                   # Phase B
-│   └── client/                    # Phase B
+├── components/                    # shared only — no module UI
+│   ├── ui/                        # buttons, empty-state, badges
+│   ├── theme/                     # provider + toggle
+│   └── admin/                     # admin-shell, admin-stub-page (chrome)
 ├── lib/
-│   ├── ports/                     # interfaces (DIP) — RenewalsReader, AuthGateway, …
-│   ├── api/                       # adapters: HTTP client, endpoints, schema, *Adapter
-│   ├── features/                  # use-cases / hooks per module (depend on ports)
-│   │   ├── renewals/
-│   │   ├── members/
-│   │   └── …
-│   ├── auth/                      # session gateway adapter + guards
-│   ├── theme/
-│   └── display/                   # pure mappers (DTO → labels/badges)
-├── docs/                          # product + this plan + PROGRESS
-├── .cursor/                       # rules, project skills, mcp.json
+│   ├── modules/<module>/          # one folder per module — the vertical slice
+│   │   ├── <module>-ports.ts      # interfaces (DIP) — RosterReader, PlansWriter, …
+│   │   ├── <module>-adapter.ts    # HTTP + Zod   (+ <module>-adapter.test.ts)
+│   │   ├── <module>-endpoints.ts  # this module’s paths
+│   │   ├── <module>-use-cases.ts  # depends on ports only
+│   │   ├── <module>-actions.ts    # "use server" gate → use-case
+│   │   ├── <module>-errors.ts     # calm copy  (+ -labels.ts where needed)
+│   │   ├── <module>-services.ts   # this module’s port → adapter binding
+│   │   └── components/            # module UI (admin/ + client/ when both)
+│   ├── api/                       # HTTP kernel: client, errors, endpoints,
+│   │   └── composition.ts         # DI root — spreads module services
+│   ├── admin/                     # admin-nav (cross-cutting UI logic)
+│   ├── auth/                      # session cookie + guards
+│   └── theme/
+├── docs/                          # product + this plan + progress/
+├── .cursor/ · .claude/            # rules, skills, mcp.json
 └── .agents/skills/                # Matt Pocock skills
 ```
 
-Scaffold must create `(auth)` + `(admin)` first; leave empty placeholders or documented stubs for `(trainer)` / `(client)` so paths stay reserved. Introduce `lib/ports` + one sample adapter early so DI is real, not aspirational.
+Modules: `attendance`, `auth`, `gym-orgs`, `leads`, `membership-invites`,
+`plans`, `roster`, `staff-invites`, `subscriptions`.
+
+Keep `(trainer)` / `(client)` route groups reserved. Ports and adapters are real
+from day one so DI is not aspirational; ESLint enforces the boundary
+(`eslint.config.mjs`) rather than leaving it to review.
+
+Non-uniform modules are allowed: `auth`, `gym-orgs` and `staff-invites` keep one
+file per use-case instead of a single `<module>-use-cases.ts`. The contract is
+the *names and layering*, not a fixed file count.
 
 ---
 
@@ -249,35 +258,35 @@ User → email OTP request → isNewUser? lane chooser : skip
 - Check-in lock = manual **block check-in** only.
 - Coaching hard-stop = Trainer addon expiry / Admin end addon.
 
-Implement display mappers in `lib/display`; never branch “deny check-in because unpaid” in the web UI.
+Implement display mappers in `lib/modules/<module>/<module>-errors.ts` / `-labels.ts`; never branch “deny check-in because unpaid” in the web UI.
 
 ---
 
 ## 9. API client contract (web)
 
-Adapters live under `lib/api` and **implement** ports from `lib/ports`.
+Adapters live beside their ports in `lib/modules/<module>/` and **implement** them.
 
 ```text
-lib/ports/
-  renewals.ts        # RenewalsReader, …
-  auth.ts            # AuthGateway
-  …
-lib/api/
-  client.ts          # base URL, auth header, refresh retry once
-  endpoints.ts       # named path constants
-  errors.ts          # map status → calm user message codes
-  renewals-adapter.ts
-  auth-adapter.ts
-  …
-lib/features/
-  renewals/list-renewals.ts   # use-case(deps: { renewals: RenewalsReader })
+lib/api/                       # shared HTTP kernel only
+  client.ts                    # base URL, auth header, refresh retry once
+  errors.ts                    # map status → calm user message codes
+  endpoints.ts                 # shared paths (health)
+  e2e-fixtures.ts              # deterministic fakes for Playwright
+  composition.ts               # DI root — spreads module services
+
+lib/modules/subscriptions/     # one module, everything it owns
+  subscriptions-ports.ts       # RenewalsReader, …
+  subscriptions-adapter.ts     # implements the port (HTTP + Zod)
+  subscriptions-endpoints.ts   # this module's named paths
+  subscriptions-use-cases.ts   # use-case(deps: { subscriptions: RenewalsReader })
+  subscriptions-services.ts    # binds port → adapter (or E2E fake)
 ```
 
 - Prefer generated or hand-typed DTOs matching Postman/OpenAPI when available.
 - Validate responses at the adapter boundary (schema) before use-cases see data.
 - Errors: never dump raw payloads in UI (error-handling rule).
 - Verification path: Postman MCP / `verify-api-flow` skill (OTP → token → endpoint).
-- Composition root binds port → adapter; features never import adapter concretes directly when a port exists.
+- `<module>-services.ts` binds port → adapter; nothing above it imports adapter concretes (enforced in `eslint.config.mjs`).
 ---
 
 ## 10. UI / theme architecture
@@ -318,8 +327,8 @@ orient → read PROGRESS + this plan (relevant section)
 
 - [ ] Persona + module named (Admin/Trainer/Client + M#)
 - [ ] Fits folder map in §5 (no random top-level feature dumps)
-- [ ] Depends on **ports**; HTTP only in adapters (`lib/api`) — no `fetch` in JSX (ADR-0004)
-- [ ] Display/entitlement *presentation* mapping outside JSX (`lib/display` / use-case)
+- [ ] Depends on **ports**; HTTP only in `<module>-adapter.ts` — no `fetch` in JSX (ADR-0004/0007)
+- [ ] Display/entitlement *presentation* mapping outside JSX (`<module>-errors|labels.ts` / use-case)
 - [ ] Honors grants / billing≠access (§8) — API remains authority
 - [ ] Theme tokens only
 - [ ] Does not block future `(trainer)` / `(client)`

@@ -1,6 +1,6 @@
 ---
 description: "Authorization stack: auth + lane/role + tenant + DataGrant. Apply whenever writing a Server Action or any code that reads member data."
-globs: ["app/**/*.tsx", "lib/features/**/actions.ts", "lib/api/**/*.ts", "lib/auth/**/*.ts"]
+globs: ["app/**/*.tsx", "lib/modules/**/*-actions.ts", "lib/modules/**/*-adapter.ts", "lib/auth/**/*.ts"]
 alwaysApply: false
 ---
 
@@ -31,7 +31,7 @@ For any Server Action or RSC that touches gym or member data:
 Every Admin action opens with a gate helper before doing any work:
 
 ```ts
-// lib/features/plans/actions.ts
+// lib/modules/plans/plans-actions.ts
 async function requireStaffAdminGym() {
   const session = await getSession();
   if (!session || session.lane !== "STAFF") return authFailure();

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/auth/login-form";
+import { LoginForm } from "@/lib/modules/auth/components/login-form";
 import { createAppServices } from "@/lib/api/composition";
 import { getSession } from "@/lib/auth/session";
-import { resolvePostAuthPath } from "@/lib/features/auth/resolve-post-auth-path";
+import { resolvePostAuthPath } from "@/lib/modules/auth/resolve-post-auth-path";
 
 export default async function LoginPage() {
   const session = await getSession();

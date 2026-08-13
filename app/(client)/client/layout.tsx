@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { getSession, isClientSession } from "@/lib/auth/session";
-import { signOutAction } from "@/lib/features/auth/actions";
+import { signOutAction } from "@/lib/modules/auth/auth-actions";
 
 export default async function ClientSectionLayout({
   children,

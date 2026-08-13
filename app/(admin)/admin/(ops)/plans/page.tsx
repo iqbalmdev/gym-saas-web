@@ -1,10 +1,10 @@
-import { PlansAdminPanel } from "@/components/admin/plans-admin-panel";
+import { PlansAdminPanel } from "@/lib/modules/plans/components/plans-admin-panel";
 import { createAppServices } from "@/lib/api/composition";
 import { ApiClientError } from "@/lib/api/errors";
 import { getSession, isStaffSession } from "@/lib/auth/session";
-import { planErrorMessage } from "@/lib/display/plan-errors";
-import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
-import type { MembershipPlan, PlanKind } from "@/lib/ports/plans";
+import { planErrorMessage } from "@/lib/modules/plans/plans-errors";
+import { listStaffGymOrgs } from "@/lib/modules/gym-orgs/list-staff-gym-orgs";
+import type { MembershipPlan, PlanKind } from "@/lib/modules/plans/plans-ports";
 
 type PlansPageProps = {
   searchParams: Promise<{ kind?: string }>;

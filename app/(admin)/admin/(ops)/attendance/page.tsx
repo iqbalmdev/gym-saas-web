@@ -1,11 +1,11 @@
-import { AttendanceAdminPanel } from "@/components/admin/attendance-admin-panel";
+import { AttendanceAdminPanel } from "@/lib/modules/attendance/components/attendance-admin-panel";
 import { createAppServices } from "@/lib/api/composition";
 import { ApiClientError } from "@/lib/api/errors";
 import { getSession, isStaffSession } from "@/lib/auth/session";
-import { attendanceErrorMessage } from "@/lib/display/attendance-errors";
-import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
-import type { Attendance } from "@/lib/ports/attendance";
-import type { RosterMember } from "@/lib/ports/roster";
+import { attendanceErrorMessage } from "@/lib/modules/attendance/attendance-errors";
+import { listStaffGymOrgs } from "@/lib/modules/gym-orgs/list-staff-gym-orgs";
+import type { Attendance } from "@/lib/modules/attendance/attendance-ports";
+import type { RosterMember } from "@/lib/modules/roster/roster-ports";
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);

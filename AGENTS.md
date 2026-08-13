@@ -32,7 +32,7 @@ start, and the glob-scoped ones when you touch matching files.
 | `error-handling.mdc` | glob | Calm errors; typed action results |
 | `testing.mdc` | glob | Vitest port fakes + Playwright POM |
 | `ui-theme.mdc` | glob | Semantic tokens only |
-| `progress-log.mdc` | always | Keep `docs/PROGRESS.md` current |
+| `progress-log.mdc` | always | Stage in `docs/PROGRESS.md`; log entries in `docs/progress/` |
 
 ## Skills (`.cursor/skills`)
 

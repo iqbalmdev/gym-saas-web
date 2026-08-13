@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getSession, isStaffSession } from "@/lib/auth/session";
-import type { AdminShellMode } from "@/lib/features/admin/admin-nav";
-import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
+import type { AdminShellMode } from "@/lib/admin/admin-nav";
+import { listStaffGymOrgs } from "@/lib/modules/gym-orgs/list-staff-gym-orgs";
 
 function initialsFrom(name: string | null, email: string): string {
   const source = (name?.trim() || email).trim();

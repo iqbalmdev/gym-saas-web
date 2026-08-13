@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { getSession, isStaffSession } from "@/lib/auth/session";
-import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
+import { listStaffGymOrgs } from "@/lib/modules/gym-orgs/list-staff-gym-orgs";
 
 /**
  * Ops modules (dashboard, renewals, …) require at least one GymOrg.

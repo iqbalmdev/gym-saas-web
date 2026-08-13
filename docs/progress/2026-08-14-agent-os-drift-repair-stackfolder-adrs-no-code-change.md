@@ -1,0 +1,11 @@
+# 2026-08-14 — Agent OS drift repair + stack/folder ADRs (no code change)
+
+- **Cause:** `e537810` ("refresh Cursor rules and skills from PRD orbit bundle") imported a bundle describing a *different* app — Next 15, React Query, react-hook-form, direct Supabase reads, `lib/hooks/`, `lib/permissions/`, `cn()`, `docs/MVP_ROADMAP.md`, `docs/PROGRESS_LOG.md`. None of it existed here. Nothing could detect the contradiction.
+- **Restored to pre-drift:** rules `architecture`, `testing`, `progress-log`; all 7 skills. `playwright-e2e-testing` had lost all 17 `references/` links (files still on disk); `sync-postman-collection` was instructing agents to vendor a collection JSON that `.gitignore` blocks.
+- **Merged (kept good new content):** `code-quality` (+ style bar), `error-handling` (+ Server Action result contract), `git-conventions` (conventional commits, branches, PR contents; re-added secrets/force-push safety).
+- **Rewritten to match reality:** `001-tech-stack` (Next 16 + explicit *not installed* list), `000-project-context` (`STAFF_UNASSIGNED`, real doc paths), `security-data-access` (S3 enforces; web gates and never fakes — no RLS/SQL in this repo).
+- **Deleted:** `cursor-database.mdc` (SQL/RLS guidance; this repo never touches Postgres).
+- **Claude Code parity:** `CLAUDE.md` → `AGENTS.md` symlink; 7 skills symlinked into `.claude/skills/`; `.claude/settings.json` allowlist. AGENTS.md rules table now marks always-on vs glob, since Claude Code does not read `.mdc`.
+- **ADR-0006** UI + tooling stack: adopt shadcn/ui (keep `data-theme`, alias tokens), Prettier/ESLint/Husky + **CI as the enforcement boundary**; defer TanStack Query (access token is httpOnly — would need token exposure or a 29-endpoint BFF) and TanStack Form (not yet justified).
+- **ADR-0007** module-folder architecture: accepted, **implementation deferred**. Target tree, hotspot fix via per-module `services.ts`, and required sequencing recorded. `architecture-plan.md` §5 stays authoritative until the migration lands.
+- Verified: every path referenced by rules/skills resolves (except the deliberate forward-looking `lib/client-state/` glob). `typecheck` clean, 53 unit tests pass. No source changed. Not committed.

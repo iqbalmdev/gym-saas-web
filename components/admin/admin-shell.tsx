@@ -11,8 +11,8 @@ import {
   resolveAdminHomeHref,
   type AdminNavIcon,
   type AdminShellMode,
-} from "@/lib/features/admin/admin-nav";
-import { signOutAction } from "@/lib/features/auth/actions";
+} from "@/lib/admin/admin-nav";
+import { signOutAction } from "@/lib/modules/auth/auth-actions";
 
 const SIDEBAR_EXPANDED_KEY = "gym-saas-sidebar-expanded";
 

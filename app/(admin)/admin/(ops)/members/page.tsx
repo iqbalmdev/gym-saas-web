@@ -1,14 +1,14 @@
-import { MembersAdminPanel } from "@/components/admin/members-admin-panel";
-import { RosterPanel } from "@/components/admin/roster-panel";
+import { MembersAdminPanel } from "@/lib/modules/membership-invites/components/members-admin-panel";
+import { RosterPanel } from "@/lib/modules/roster/components/roster-panel";
 import { createAppServices } from "@/lib/api/composition";
 import { ApiClientError } from "@/lib/api/errors";
 import { getSession, isStaffSession } from "@/lib/auth/session";
-import { membershipInviteErrorMessage } from "@/lib/display/membership-invite-errors";
-import { rosterErrorMessage } from "@/lib/display/roster-errors";
-import { listStaffGymOrgs } from "@/lib/features/gym-orgs/list-staff-gym-orgs";
-import type { MembershipInvite } from "@/lib/ports/membership-invites";
-import type { MembershipPlan } from "@/lib/ports/plans";
-import type { RosterMember } from "@/lib/ports/roster";
+import { membershipInviteErrorMessage } from "@/lib/modules/membership-invites/membership-invites-errors";
+import { rosterErrorMessage } from "@/lib/modules/roster/roster-errors";
+import { listStaffGymOrgs } from "@/lib/modules/gym-orgs/list-staff-gym-orgs";
+import type { MembershipInvite } from "@/lib/modules/membership-invites/membership-invites-ports";
+import type { MembershipPlan } from "@/lib/modules/plans/plans-ports";
+import type { RosterMember } from "@/lib/modules/roster/roster-ports";
 
 export default async function MembersPage() {
   const session = await getSession();

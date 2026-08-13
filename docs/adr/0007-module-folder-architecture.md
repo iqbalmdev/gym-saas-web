@@ -1,14 +1,9 @@
 # ADR-0007: Module-folder architecture (vertical slice colocation)
 
-**Status:** Accepted — **implementation deferred**
+**Status:** Accepted — **implemented** 2026-08-14
 **Date:** 2026-08-14
-**Amends:** `docs/architecture-plan.md` §5 (target folder structure), once implemented.
-
-> ⚠️ **This structure does not exist yet.** Until the migration lands,
-> `architecture-plan.md` §5 and the current tree remain authoritative. Do not
-> implement features against the target shape below, and do not "helpfully" create
-> `lib/modules/` ahead of the planned move — a documented structure that contradicts
-> the code is exactly the failure this repo just recovered from (`e537810`).
+**Amends:** `docs/architecture-plan.md` §5 (folder structure), updated in the
+migration commit so the documented tree and the real tree never disagree.
 
 ## Context
 
@@ -68,10 +63,15 @@ app/                      # routes, thin composition
 ### Preserving the dependency rule
 
 Layer-first made DIP (ADR-0004) visible in the tree. Colocation preserves it by making
-**filenames** the layer: every module has the same files, and `ports.ts` never imports
-`adapter.ts` in any module. This is enforceable with per-directory
-`no-restricted-imports` (ADR-0006 §3) — a stronger guarantee than relying on authors
-noticing which folder they are in.
+**filenames** the layer: `<module>-ports.ts` never imports `<module>-adapter.ts` in any
+module. This is enforced by filename-scoped `no-restricted-imports` in
+`eslint.config.mjs` — a stronger guarantee than relying on authors noticing which
+folder they are in, because it fails the build.
+
+Note on flat config: when two config blocks set `no-restricted-imports` for the same
+file, the last match wins outright rather than merging. The rules are therefore split
+into **disjoint file sets** (ports · adapters · everything-above), not one block per
+concern.
 
 ### Hotspot resolution
 
@@ -92,29 +92,43 @@ three. `docs/PROGRESS.md` is separately split into one file per entry under
 Naming: `lib/features/` → `lib/modules/` aligns with the M1–M13 language already used
 in the PRD, docs, and commit scopes (`feat(m4-plans)`).
 
-## Sequencing (why implementation is deferred, not abandoned)
-
-The move is ~100 files, mechanical, with no behavior change — but it touches nearly
-everything, so it conflicts with any concurrent work. Required order:
+## Sequencing
 
 1. Repair rules + agent parity — **done**
-2. Tooling + CI (ADR-0006)
-3. **This migration**, as a single commit, while only one person is in the tree
-4. Split module ownership between contributors
-5. Parallel feature work
+2. Tooling + CI (ADR-0006) — **done**
+3. **This migration**, as a single commit — **done**
+4. shadcn + token aliasing (ADR-0006)
+5. Tailwind canonical classes, after shadcn settles the markup
+6. Split module ownership between contributors, then parallel feature work
 
-Doing it before shadcn avoids moving the same files twice, and it is cheapest now
-(9 modules) than at any later point. Definition of done: `typecheck`, all unit tests,
-and the Playwright suite green before and after, with no behavior change in the diff.
+Landing it before shadcn avoided moving the same files twice, and it was cheapest at
+9 modules. Ownership split was **not** a prerequisite — the structural payoff
+(hotspot removal, colocation) stands on its own.
+
+### Outcome
+
+- `lib/api/composition.ts`: **158 → 35 lines**; adding a module is now one import
+  plus one spread.
+- `endpoints.ts` split per module; only `health` remains shared.
+- Behavior-neutral: 53 unit tests and 25 Playwright specs green before and after.
+- `e2e-fixtures.ts` deliberately left central — see below.
 
 ## Consequences
 
-- Two files remain shared and will still occasionally collide: `composition.ts` (now
-  trivially) and the admin nav. A nav is a shared list by nature — accepted.
-- `e2e-fixtures.ts` is the fiddliest part of the split; its single fake set must be
-  decomposed per module without breaking `GYM_SAAS_E2E_FIXTURES`.
-- `architecture-plan.md` §5 must be updated **in the same commit** as the migration, so
-  the documented tree and the real tree never disagree.
+- Three files remain shared and will still occasionally collide: `composition.ts`
+  (now trivially — two lines per module), `lib/admin/admin-nav.ts`, and
+  `lib/api/e2e-fixtures.ts`. A nav is a shared list by nature — accepted.
+- **`e2e-fixtures.ts` was deliberately left central** (1173 lines). It holds genuine
+  cross-module mutable state — shared token `Set`s, and `seedMembershipSideEffects`
+  which writes across membership-invites → roster → subscriptions — so it does not
+  split cleanly per module. Each `<module>-services.ts` imports its own fake from it.
+  Decomposing it belongs in its own commit, where a broken fake is obvious rather
+  than buried in a 100-file diff. Until then it stays a (minor) hotspot.
+- Module shape is **not** uniform, and that is allowed: `auth`, `gym-orgs` and
+  `staff-invites` keep one file per use-case. The contract is the naming and the
+  layering, not a fixed file count.
+- `architecture-plan.md` §5 was updated in the same commit, so the documented tree
+  and the real tree never disagree.
 
 ## Alternatives considered
 
