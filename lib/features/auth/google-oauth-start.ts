@@ -1,4 +1,7 @@
 import { endpoints } from "@/lib/api/endpoints";
+// Deliberate exception to the adapter boundary (ADR-0004): this builds a browser
+// redirect target, it does not perform transport. Only the base URL is needed.
+// eslint-disable-next-line no-restricted-imports
 import { getApiBaseUrl } from "@/lib/api/client";
 
 /** Web callback path Supabase must allowlist (and backend `redirect_to` must match). */
