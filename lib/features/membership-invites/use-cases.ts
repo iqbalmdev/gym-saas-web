@@ -3,6 +3,7 @@ import type {
   CreateMembershipInviteInput,
   MembershipInvitesReader,
   MembershipInvitesWriter,
+  UpdateMyDataGrantsInput,
 } from "@/lib/ports/membership-invites";
 
 export function createListMembershipInvites(deps: {
@@ -59,5 +60,28 @@ export function createAcceptMembershipInvite(deps: {
     body?: AcceptMembershipInviteInput;
   }) {
     return deps.membershipInvites.accept(input);
+  };
+}
+
+export function createGetMyDataGrants(deps: {
+  membershipInvites: MembershipInvitesReader;
+}) {
+  return async function getMyDataGrants(input: {
+    accessToken: string;
+    gymOrgId: string;
+  }) {
+    return deps.membershipInvites.getMyDataGrants(input);
+  };
+}
+
+export function createUpdateMyDataGrants(deps: {
+  membershipInvites: MembershipInvitesWriter;
+}) {
+  return async function updateMyDataGrants(input: {
+    accessToken: string;
+    gymOrgId: string;
+    body: UpdateMyDataGrantsInput;
+  }) {
+    return deps.membershipInvites.updateMyDataGrants(input);
   };
 }

@@ -9,6 +9,8 @@ import type {
   MembershipInvitesReader,
   MembershipInvitesWriter,
   MembershipPaymentStatus,
+  MyDataGrants,
+  UpdateMyDataGrantsInput,
 } from "@/lib/ports/membership-invites";
 
 const paymentStatusSchema = z.enum(["paid", "unpaid", "partial"]);
@@ -91,6 +93,28 @@ const pageSchema = z.object({
     offset: z.number().int().nonnegative(),
   }),
 });
+
+const dataGrantsSchema = z.object({
+  gymOrgId: z.string().min(1),
+  clientUserId: z.string().min(1),
+  profileAttributes: z.array(z.string()),
+  classGrants: z.array(z.string()),
+});
+
+const dataGrantsEnvelopeSchema = z.object({
+  dataGrants: dataGrantsSchema,
+});
+
+function normalizeDataGrants(
+  raw: z.infer<typeof dataGrantsSchema>,
+): MyDataGrants {
+  return {
+    gymOrgId: raw.gymOrgId,
+    clientUserId: raw.clientUserId,
+    profileAttributes: raw.profileAttributes,
+    classGrants: raw.classGrants,
+  };
+}
 
 function listQuery(input: { limit?: number; offset?: number }): string {
   const params = new URLSearchParams();
@@ -204,6 +228,34 @@ export function createMembershipInvitesAdapter(
       return {
         membershipInvite: normalizeInvite(parsed.membershipInvite, gymOrgId),
       };
+    },
+
+    async getMyDataGrants({ accessToken, gymOrgId }) {
+      const raw = await http.request<unknown>({
+        path: endpoints.gymOrgMyDataGrants(gymOrgId),
+        method: "GET",
+        accessToken,
+      });
+      const parsed = dataGrantsEnvelopeSchema.parse(raw);
+      return { dataGrants: normalizeDataGrants(parsed.dataGrants) };
+    },
+
+    async updateMyDataGrants({ accessToken, gymOrgId, body }) {
+      const payload: UpdateMyDataGrantsInput = {};
+      if (body.optionalProfileAttributes !== undefined) {
+        payload.optionalProfileAttributes = body.optionalProfileAttributes;
+      }
+      if (body.optionalClassGrants !== undefined) {
+        payload.optionalClassGrants = body.optionalClassGrants;
+      }
+      const raw = await http.request<unknown>({
+        path: endpoints.gymOrgMyDataGrants(gymOrgId),
+        method: "PUT",
+        accessToken,
+        body: payload,
+      });
+      const parsed = dataGrantsEnvelopeSchema.parse(raw);
+      return { dataGrants: normalizeDataGrants(parsed.dataGrants) };
     },
   };
 }

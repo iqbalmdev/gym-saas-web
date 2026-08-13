@@ -5,6 +5,8 @@ export class ClientHomePage {
   readonly heading: Locator;
   readonly inviteHeading: Locator;
   readonly acceptButton: Locator;
+  readonly dataSharingHeading: Locator;
+  readonly saveSharingButton: Locator;
   readonly adminSidebar: Locator;
 
   constructor(page: Page) {
@@ -13,6 +15,12 @@ export class ClientHomePage {
     this.inviteHeading = page.getByRole("heading", { name: "Gym invites" });
     this.acceptButton = page.getByRole("button", {
       name: "Accept membership",
+    });
+    this.dataSharingHeading = page.getByRole("heading", {
+      name: "Data sharing",
+    });
+    this.saveSharingButton = page.getByRole("button", {
+      name: "Save sharing",
     });
     this.adminSidebar = page.getByRole("complementary", {
       name: "Admin modules",

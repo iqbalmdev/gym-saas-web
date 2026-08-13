@@ -84,4 +84,26 @@ describe("Membership invite schemas (Postman tip ca849e0)", () => {
       });
     expect(parsed.grants.profileAttributes).toContain("DOB");
   });
+
+  it("parses my-data-grants envelope", () => {
+    const parsed = z
+      .object({
+        dataGrants: z.object({
+          gymOrgId: z.string().min(1),
+          clientUserId: z.string().min(1),
+          profileAttributes: z.array(z.string()),
+          classGrants: z.array(z.string()),
+        }),
+      })
+      .parse({
+        dataGrants: {
+          gymOrgId: "33333333-3333-4333-8333-333333333333",
+          clientUserId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          profileAttributes: ["DOB", "HEIGHT", "WEIGHT", "GENDER"],
+          classGrants: ["PROGRESS"],
+        },
+      });
+    expect(parsed.dataGrants.profileAttributes).toContain("HEIGHT");
+    expect(parsed.dataGrants.classGrants).toEqual(["PROGRESS"]);
+  });
 });

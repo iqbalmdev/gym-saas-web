@@ -1,9 +1,19 @@
+import { DataGrantsPanel } from "@/components/client/data-grants-panel";
 import { MembershipInviteInbox } from "@/components/client/membership-invite-inbox";
 import { createAppServices } from "@/lib/api/composition";
 import { ApiClientError } from "@/lib/api/errors";
 import { getSession, isClientSession } from "@/lib/auth/session";
 import { membershipInviteErrorMessage } from "@/lib/display/membership-invite-errors";
-import type { MembershipInvite } from "@/lib/ports/membership-invites";
+import type {
+  MembershipInvite,
+  MyDataGrants,
+} from "@/lib/ports/membership-invites";
+
+type LoadedGrants = {
+  gymOrgId: string;
+  gymName?: string;
+  dataGrants: MyDataGrants;
+};
 
 export default async function ClientHomePage() {
   const session = await getSession();
@@ -13,13 +23,40 @@ export default async function ClientHomePage() {
 
   let invites: MembershipInvite[] = [];
   let listError: string | null = null;
+  const grantsPanels: LoadedGrants[] = [];
 
   try {
-    const { listMembershipInviteInbox } = createAppServices();
+    const { listMembershipInviteInbox, getMyDataGrants } = createAppServices();
     const { membershipInvites } = await listMembershipInviteInbox({
       accessToken: session.accessToken,
     });
     invites = membershipInvites.items;
+
+    const gymCandidates = new Map<string, string | undefined>();
+    for (const invite of invites) {
+      if (invite.gymOrgId) {
+        gymCandidates.set(invite.gymOrgId, invite.gym?.name);
+      }
+    }
+
+    for (const [gymOrgId, gymName] of gymCandidates) {
+      try {
+        const { dataGrants } = await getMyDataGrants({
+          accessToken: session.accessToken,
+          gymOrgId,
+        });
+        grantsPanels.push({ gymOrgId, gymName, dataGrants });
+      } catch (error) {
+        // 404 = no ACTIVE membership for that gym — hide panel.
+        if (
+          error instanceof ApiClientError &&
+          (error.status === 404 || error.code === "NOT_FOUND")
+        ) {
+          continue;
+        }
+        // Other errors: skip quietly so invite inbox still works.
+      }
+    }
   } catch (error) {
     listError =
       error instanceof ApiClientError
@@ -38,6 +75,14 @@ export default async function ClientHomePage() {
         </p>
       </div>
       <MembershipInviteInbox invites={invites} listError={listError} />
+      {grantsPanels.map((panel) => (
+        <DataGrantsPanel
+          key={panel.gymOrgId}
+          gymOrgId={panel.gymOrgId}
+          gymName={panel.gymName}
+          dataGrants={panel.dataGrants}
+        />
+      ))}
     </div>
   );
 }

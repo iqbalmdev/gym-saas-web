@@ -9,13 +9,18 @@ test.describe("Client home", () => {
     await expect(clientHome.adminSidebar).toHaveCount(0);
   });
 
-  test("CLIENT can accept a pending membership invite", async ({
+  test("CLIENT can accept a pending membership invite and manage data grants", async ({
     clientHome,
   }) => {
     await expect(clientHome.acceptButton).toBeVisible();
     await clientHome.acceptButton.click();
     await expect(
       clientHome.page.getByText("Membership accepted"),
+    ).toBeVisible();
+    await expect(clientHome.dataSharingHeading).toBeVisible();
+    await expect(clientHome.saveSharingButton).toBeVisible();
+    await expect(
+      clientHome.page.getByText("Always shared", { exact: true }),
     ).toBeVisible();
   });
 });

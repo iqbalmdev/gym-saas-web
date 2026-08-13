@@ -3,6 +3,11 @@
  * Server Actions and RSC call these — browser `page.route` cannot intercept them.
  */
 import { ApiClientError } from "@/lib/api/errors";
+import type {
+  Attendance,
+  AttendanceReader,
+  AttendanceWriter,
+} from "@/lib/ports/attendance";
 import type { AuthGateway, AuthLane, AuthUser } from "@/lib/ports/auth";
 import type { GymOrgsReader, GymOrgsWriter } from "@/lib/ports/gym-orgs";
 import type { Lead, LeadsReader, LeadsWriter } from "@/lib/ports/leads";
@@ -10,6 +15,7 @@ import type {
   MembershipInvite,
   MembershipInvitesReader,
   MembershipInvitesWriter,
+  MyDataGrants,
 } from "@/lib/ports/membership-invites";
 import type {
   MembershipPlan,
@@ -17,10 +23,22 @@ import type {
   PlansWriter,
 } from "@/lib/ports/plans";
 import type {
+  MembershipMutation,
+  RosterMember,
+  RosterReader,
+  RosterWriter,
+} from "@/lib/ports/roster";
+import type {
   StaffInvite,
   StaffInvitesReader,
   StaffInvitesWriter,
 } from "@/lib/ports/staff-invites";
+import type {
+  RenewalDueItem,
+  Subscription,
+  SubscriptionsReader,
+  SubscriptionsWriter,
+} from "@/lib/ports/subscriptions";
 
 export const E2E_FIXTURES_ENV = "GYM_SAAS_E2E_FIXTURES";
 
@@ -638,6 +656,96 @@ const e2eMembershipInvites: MembershipInvite[] = [
   },
 ];
 
+const e2eRosterMembers: RosterMember[] = [
+  {
+    membershipId: "membership-e2e-active",
+    clientUserId: "e2e-client-roster-1",
+    gymOrgId: E2E_GYM_ID,
+    status: "ACTIVE",
+    checkInBlocked: false,
+    assignedTrainerId: null,
+    clientName: "Ada Client",
+    clientEmail: "ada@example.com",
+    clientPhone: null,
+    joinedAt: "2026-08-08T12:00:00.000Z",
+    leftAt: null,
+    basePaymentStatus: "unpaid",
+    baseAmountPaid: 0,
+    basePriceAmount: 999,
+  },
+];
+
+const e2eAttendances: Attendance[] = [];
+
+const e2eDataGrantsByGym = new Map<string, MyDataGrants>();
+
+function isoDateOffset(days: number): string {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+const e2eRenewals: RenewalDueItem[] = [
+  {
+    id: "sub-e2e-renewal-1",
+    clientMembershipId: "membership-e2e-active",
+    gymOrgId: E2E_GYM_ID,
+    planId: "plan-e2e-base",
+    kind: "BASE",
+    capability: null,
+    priceAmount: 999,
+    durationDays: 30,
+    startDate: isoDateOffset(-28),
+    endDate: isoDateOffset(1),
+    startSource: "FIRST_ATTENDANCE",
+    paymentStatus: "unpaid",
+    amountPaid: 0,
+    createdAt: "2026-08-08T12:00:00.000Z",
+    updatedAt: "2026-08-11T10:00:00.000Z",
+    clientUserId: "e2e-client-roster-1",
+  },
+];
+
+function seedMembershipSideEffects(input: {
+  membershipId: string;
+  gymOrgId: string;
+  invite: MembershipInvite;
+  profileAttributes: string[];
+  classGrants: string[];
+}) {
+  e2eDataGrantsByGym.set(input.gymOrgId, {
+    gymOrgId: input.gymOrgId,
+    clientUserId: "e2e-client-1",
+    profileAttributes: input.profileAttributes,
+    classGrants: input.classGrants,
+  });
+
+  const existingIdx = e2eRosterMembers.findIndex(
+    (item) => item.membershipId === input.membershipId,
+  );
+  const member: RosterMember = {
+    membershipId: input.membershipId,
+    clientUserId: "e2e-client-1",
+    gymOrgId: input.gymOrgId,
+    status: "ACTIVE",
+    checkInBlocked: false,
+    assignedTrainerId: null,
+    clientName: input.invite.inviteeName,
+    clientEmail: input.invite.invitedEmail,
+    clientPhone: input.invite.inviteePhone,
+    joinedAt: "2026-08-08T12:05:00.000Z",
+    leftAt: null,
+    basePaymentStatus: input.invite.basePaymentStatus,
+    baseAmountPaid: 0,
+    basePriceAmount: 999,
+  };
+  if (existingIdx >= 0) {
+    e2eRosterMembers[existingIdx] = member;
+  } else {
+    e2eRosterMembers.unshift(member);
+  }
+}
+
 export function createE2eMembershipInvitesAdapter(): MembershipInvitesReader &
   MembershipInvitesWriter {
   return {
@@ -682,8 +790,31 @@ export function createE2eMembershipInvitesAdapter(): MembershipInvitesReader &
     },
 
     async listInbox({ limit = 50, offset = 0 }) {
+      // Ensure a pending invite exists across Playwright re-runs (same Next process).
+      if (!e2eMembershipInvites.some((item) => item.status === "PENDING")) {
+        e2eMembershipInvites.unshift({
+          id: `minvite-e2e-pending-${Date.now()}`,
+          gymOrgId: E2E_GYM_ID,
+          invitedEmail: "e2e-client@example.com",
+          invitedUserId: "e2e-client-1",
+          inviteeName: "E2E Member",
+          inviteePhone: null,
+          basePlanId: "plan-e2e-base",
+          basePaymentStatus: "unpaid",
+          addonPlanId: null,
+          addonPaymentStatus: null,
+          status: "PENDING",
+          expiresAt: "2026-08-22T00:00:00.000Z",
+          createdBy: "e2e-user-1",
+          acceptedAt: null,
+          acceptedMembershipId: null,
+          createdAt: "2026-08-08T12:00:00.000Z",
+          updatedAt: "2026-08-08T12:00:00.000Z",
+        });
+      }
+      // Include ACCEPTED so /client can discover gymOrgId for my-data-grants.
       const items = e2eMembershipInvites
-        .filter((item) => item.status === "PENDING")
+        .filter((item) => item.status === "PENDING" || item.status === "ACCEPTED")
         .map((item) => ({
           ...item,
           gym: {
@@ -724,25 +855,35 @@ export function createE2eMembershipInvitesAdapter(): MembershipInvitesReader &
           status: 409,
         });
       }
+      const membershipId = "membership-e2e-1";
+      const profileAttributes = [
+        "DOB",
+        "HEIGHT",
+        "WEIGHT",
+        ...(body?.optionalProfileAttributes ?? []),
+      ];
+      const classGrants = [...(body?.optionalClassGrants ?? [])];
       const updated: MembershipInvite = {
         ...e2eMembershipInvites[idx],
         status: "ACCEPTED",
         acceptedAt: "2026-08-08T12:05:00.000Z",
-        acceptedMembershipId: "membership-e2e-1",
+        acceptedMembershipId: membershipId,
         updatedAt: "2026-08-08T12:05:00.000Z",
       };
       e2eMembershipInvites[idx] = updated;
+      seedMembershipSideEffects({
+        membershipId,
+        gymOrgId: updated.gymOrgId,
+        invite: updated,
+        profileAttributes,
+        classGrants,
+      });
       return {
         membershipInvite: updated,
-        membershipId: "membership-e2e-1",
+        membershipId,
         grants: {
-          profileAttributes: [
-            "DOB",
-            "HEIGHT",
-            "WEIGHT",
-            ...(body?.optionalProfileAttributes ?? []),
-          ],
-          classGrants: [...(body?.optionalClassGrants ?? [])],
+          profileAttributes,
+          classGrants,
         },
       };
     },
@@ -772,6 +913,261 @@ export function createE2eMembershipInvitesAdapter(): MembershipInvitesReader &
       };
       e2eMembershipInvites[idx] = updated;
       return { membershipInvite: updated };
+    },
+
+    async getMyDataGrants({ gymOrgId }) {
+      const grants = e2eDataGrantsByGym.get(gymOrgId);
+      if (!grants) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Active membership not found for this gym",
+          status: 404,
+        });
+      }
+      return { dataGrants: { ...grants } };
+    },
+
+    async updateMyDataGrants({ gymOrgId, body }) {
+      const existing = e2eDataGrantsByGym.get(gymOrgId);
+      if (!existing) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Active membership not found for this gym",
+          status: 404,
+        });
+      }
+      const updated: MyDataGrants = {
+        ...existing,
+        profileAttributes: [
+          "DOB",
+          "HEIGHT",
+          "WEIGHT",
+          ...(body.optionalProfileAttributes ?? []),
+        ],
+        classGrants: [...(body.optionalClassGrants ?? [])],
+      };
+      e2eDataGrantsByGym.set(gymOrgId, updated);
+      return { dataGrants: updated };
+    },
+  };
+}
+
+function toMembershipMutation(member: RosterMember): MembershipMutation {
+  return {
+    membershipId: member.membershipId,
+    clientUserId: member.clientUserId,
+    gymOrgId: member.gymOrgId,
+    status: member.status,
+    checkInBlocked: member.checkInBlocked,
+    assignedTrainerId: member.assignedTrainerId,
+    joinedAt: member.joinedAt,
+    leftAt: member.leftAt,
+    updatedAt: "2026-08-11T12:00:00.000Z",
+  };
+}
+
+export function createE2eRosterAdapter(): RosterReader & RosterWriter {
+  return {
+    async listMembers({ gymOrgId, status, q }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return { members: [] };
+      }
+      let items = [...e2eRosterMembers];
+      if (status) {
+        items = items.filter((member) => member.status === status);
+      }
+      if (q?.trim()) {
+        const needle = q.trim().toLowerCase();
+        items = items.filter(
+          (member) =>
+            member.clientName.toLowerCase().includes(needle) ||
+            member.clientEmail.toLowerCase().includes(needle) ||
+            (member.clientPhone ?? "").toLowerCase().includes(needle),
+        );
+      }
+      return { members: items };
+    },
+
+    async offboard({ gymOrgId, membershipId }) {
+      const idx = e2eRosterMembers.findIndex(
+        (item) =>
+          item.membershipId === membershipId && item.gymOrgId === gymOrgId,
+      );
+      if (idx < 0 || e2eRosterMembers[idx].status !== "ACTIVE") {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Active membership not found",
+          status: 404,
+        });
+      }
+      const updated: RosterMember = {
+        ...e2eRosterMembers[idx],
+        status: "INACTIVE",
+        leftAt: "2026-08-11T12:00:00.000Z",
+      };
+      e2eRosterMembers[idx] = updated;
+      e2eDataGrantsByGym.delete(gymOrgId);
+      return { membership: toMembershipMutation(updated) };
+    },
+
+    async setCheckInBlock({ gymOrgId, membershipId, blocked }) {
+      const idx = e2eRosterMembers.findIndex(
+        (item) =>
+          item.membershipId === membershipId && item.gymOrgId === gymOrgId,
+      );
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Active membership not found",
+          status: 404,
+        });
+      }
+      if (e2eRosterMembers[idx].status !== "ACTIVE") {
+        throw new ApiClientError({
+          code: "CLIENT_MEMBERSHIP_INVALID_TRANSITION",
+          message: "Cannot block check-in an inactive membership",
+          status: 422,
+        });
+      }
+      const updated: RosterMember = {
+        ...e2eRosterMembers[idx],
+        checkInBlocked: blocked,
+      };
+      e2eRosterMembers[idx] = updated;
+      return { membership: toMembershipMutation(updated) };
+    },
+  };
+}
+
+export function createE2eAttendanceAdapter(): AttendanceReader &
+  AttendanceWriter {
+  return {
+    async listForDay({ gymOrgId, day, limit = 50, offset = 0 }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return {
+          attendances: { items: [], total: 0, limit, offset },
+        };
+      }
+      const items = e2eAttendances.filter(
+        (item) =>
+          item.gymOrgId === gymOrgId && item.occurredAt.startsWith(day),
+      );
+      return {
+        attendances: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async deskMark({ gymOrgId, clientUserId }) {
+      const member = e2eRosterMembers.find(
+        (item) =>
+          item.gymOrgId === gymOrgId &&
+          item.clientUserId === clientUserId &&
+          item.status === "ACTIVE",
+      );
+      if (!member) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Active membership not found",
+          status: 404,
+        });
+      }
+      if (member.checkInBlocked) {
+        throw new ApiClientError({
+          code: "ATTENDANCE_FORBIDDEN",
+          message: "Check-in is blocked for this member",
+          status: 403,
+        });
+      }
+      const day = new Date().toISOString().slice(0, 10);
+      const attendance: Attendance = {
+        id: `attendance-e2e-${e2eAttendances.length + 1}`,
+        clientUserId,
+        gymOrgId,
+        occurredAt: `${day}T10:00:00.000Z`,
+        recordedBy: "ADMIN",
+        recorderUserId: "e2e-user-1",
+        createdAt: `${day}T10:00:00.000Z`,
+        baseStarted: false,
+      };
+      e2eAttendances.unshift(attendance);
+      return { attendance };
+    },
+  };
+}
+
+export function createE2eSubscriptionsAdapter(): SubscriptionsReader &
+  SubscriptionsWriter {
+  return {
+    async listRenewalsDue({
+      gymOrgId,
+      onOrBefore,
+      onOrAfter,
+      limit = 50,
+      offset = 0,
+    }) {
+      if (gymOrgId !== E2E_GYM_ID) {
+        return {
+          renewals: { items: [], total: 0, limit, offset },
+        };
+      }
+      let items = e2eRenewals.filter((item) => item.gymOrgId === gymOrgId);
+      if (onOrAfter) {
+        items = items.filter(
+          (item) => item.endDate && item.endDate >= onOrAfter,
+        );
+      }
+      if (onOrBefore) {
+        items = items.filter(
+          (item) => item.endDate && item.endDate <= onOrBefore,
+        );
+      }
+      return {
+        renewals: {
+          items: items.slice(offset, offset + limit),
+          total: items.length,
+          limit,
+          offset,
+        },
+      };
+    },
+
+    async updatePayment({ gymOrgId, subscriptionId, body }) {
+      const idx = e2eRenewals.findIndex(
+        (item) => item.id === subscriptionId && item.gymOrgId === gymOrgId,
+      );
+      if (idx < 0) {
+        throw new ApiClientError({
+          code: "NOT_FOUND",
+          message: "Not found",
+          status: 404,
+        });
+      }
+      if (
+        body.paymentStatus === "partial" &&
+        body.amountPaid === undefined
+      ) {
+        throw new ApiClientError({
+          code: "VALIDATION_ERROR",
+          message: "Partial payment requires amountPaid",
+          status: 422,
+        });
+      }
+      const updated: RenewalDueItem = {
+        ...e2eRenewals[idx],
+        paymentStatus: body.paymentStatus,
+        amountPaid:
+          body.amountPaid ??
+          (body.paymentStatus === "paid" ? e2eRenewals[idx].priceAmount : 0),
+        updatedAt: "2026-08-11T11:00:00.000Z",
+      };
+      e2eRenewals[idx] = updated;
+      const subscription: Subscription = { ...updated };
+      return { subscription };
     },
   };
 }

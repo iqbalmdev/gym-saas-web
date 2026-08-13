@@ -33,4 +33,20 @@ export const endpoints = {
   membershipInviteInbox: "/membership-invites/inbox",
   membershipInviteAccept: (membershipInviteId: string) =>
     `/membership-invites/${encodeURIComponent(membershipInviteId)}/accept`,
+  gymOrgMyDataGrants: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/my-data-grants`,
+  gymOrgMembers: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/members`,
+  gymOrgMemberOffboard: (gymOrgId: string, membershipId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/members/${encodeURIComponent(membershipId)}/offboard`,
+  gymOrgMemberCheckInBlock: (gymOrgId: string, membershipId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/members/${encodeURIComponent(membershipId)}/check-in-block`,
+  gymOrgAttendances: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/attendances`,
+  gymOrgAttendanceDeskMark: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/attendances/desk-mark`,
+  gymOrgRenewalsDue: (gymOrgId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/subscriptions/renewals-due`,
+  gymOrgSubscriptionPayment: (gymOrgId: string, subscriptionId: string) =>
+    `/gym-orgs/${encodeURIComponent(gymOrgId)}/subscriptions/${encodeURIComponent(subscriptionId)}/payment`,
 } as const;

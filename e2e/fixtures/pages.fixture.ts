@@ -6,8 +6,11 @@ import {
   encodeStaffSessionCookieNoGym,
 } from "./staff-session";
 import { AdminShellPage } from "../pages/admin-shell.page";
+import { AttendancePage } from "../pages/attendance.page";
 import { ClientHomePage } from "../pages/client-home.page";
 import { LoginPage } from "../pages/login.page";
+import { MembersPage } from "../pages/members.page";
+import { RenewalsPage } from "../pages/renewals.page";
 import { SettingsPage } from "../pages/settings.page";
 
 type Pages = {
@@ -15,6 +18,9 @@ type Pages = {
   adminShellPage: AdminShellPage;
   clientHomePage: ClientHomePage;
   settingsPage: SettingsPage;
+  membersPage: MembersPage;
+  attendancePage: AttendancePage;
+  renewalsPage: RenewalsPage;
 };
 
 type AuthFixtures = {
@@ -41,6 +47,18 @@ export const test = base.extend<Pages & AuthFixtures>({
 
   settingsPage: async ({ page }, use) => {
     await use(new SettingsPage(page));
+  },
+
+  membersPage: async ({ page }, use) => {
+    await use(new MembersPage(page));
+  },
+
+  attendancePage: async ({ page }, use) => {
+    await use(new AttendancePage(page));
+  },
+
+  renewalsPage: async ({ page }, use) => {
+    await use(new RenewalsPage(page));
   },
 
   staffAdmin: async ({ context, page }, use) => {

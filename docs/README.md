@@ -16,7 +16,10 @@ Keep this tree small. Prefer code + Current stage over essays.
 | `api/staff-invites.md` | Staff invite API |
 | `api/plans.md` | Plan catalog BASE/ADDON |
 | `api/leads.md` | CRM leads |
-| `api/membership-invites.md` | Membership invites (Admin M3) |
+| `api/membership-invites.md` | Membership invites + client my-data-grants |
+| `api/roster.md` | Admin roster / offboard / check-in block |
+| `api/attendance.md` | Admin desk attendance |
+| `api/subscriptions.md` | Renewals due + payment update |
 | `postman-sync.md` | Sibling Postman workflow |
 | `ui-theme.md` | Theme tokens |
 | `mcp-setup.md` | Cursor MCP once |

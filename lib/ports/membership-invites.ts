@@ -33,6 +33,19 @@ export type MembershipInviteGrants = {
   classGrants: string[];
 };
 
+/** Client-owned grants for an ACTIVE membership gym. */
+export type MyDataGrants = {
+  gymOrgId: string;
+  clientUserId: string;
+  profileAttributes: string[];
+  classGrants: string[];
+};
+
+export type UpdateMyDataGrantsInput = {
+  optionalProfileAttributes?: OptionalProfileAttribute[];
+  optionalClassGrants?: OptionalClassGrant[];
+};
+
 export type MembershipInvite = {
   id: string;
   gymOrgId: string;
@@ -86,6 +99,12 @@ export type MembershipInvitesReader = {
     limit?: number;
     offset?: number;
   }) => Promise<{ membershipInvites: MembershipInvitePage }>;
+
+  /** CLIENT + ACTIVE membership. Client owns grants — no staff DataGrant. */
+  getMyDataGrants: (input: {
+    accessToken: string;
+    gymOrgId: string;
+  }) => Promise<{ dataGrants: MyDataGrants }>;
 };
 
 export type MembershipInvitesWriter = {
@@ -110,4 +129,11 @@ export type MembershipInvitesWriter = {
     membershipId: string;
     grants: MembershipInviteGrants;
   }>;
+
+  /** CLIENT + ACTIVE membership. Sticky DOB/HEIGHT/WEIGHT stay server-side. */
+  updateMyDataGrants: (input: {
+    accessToken: string;
+    gymOrgId: string;
+    body: UpdateMyDataGrantsInput;
+  }) => Promise<{ dataGrants: MyDataGrants }>;
 };

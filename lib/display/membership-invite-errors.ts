@@ -15,6 +15,8 @@ const MEMBERSHIP_INVITE_ERROR_COPY: Record<string, string> = {
     "That email belongs to a staff account — invite a client email instead.",
   MEMBERSHIP_INVITE_INVALID_TRANSITION:
     "This invite is no longer pending.",
+  DATA_GRANT_FORBIDDEN:
+    "Sign in as a Member with an active membership to manage sharing.",
   VALIDATION_ERROR: "Check the invite details and try again.",
   NETWORK_OR_UNKNOWN: "Could not reach the server. Check your connection.",
 };

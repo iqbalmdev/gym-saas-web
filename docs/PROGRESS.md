@@ -15,18 +15,26 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites**; **M4 plans/addons**; **M11 leads** |
+| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
 | Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Membership Invites Admin + Client accept on `/client`. Plans + Leads live. Next: renewals / subscriptions; `my-data-grants`.
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live.
 
 ## Next up
 
-1. Admin renewals / Subscriptions (Postman folder on tip `ca849e0`).
+1. Assign trainer / trainer list when Postman exposes a list endpoint.
 2. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
-3. Optional: Client membership inbox/accept UI (CLIENT lane).
+3. Optional: deeper renewals UX (filters, member name join).
 
 ## Log
+
+### 2026-08-12 — Roster + attendance + renewals + my-data-grants (tip `91d4aba`)
+
+- Postman sibling tip `91d4aba` (Roster, Attendance, Subscriptions renewals-due, Profile & Progress / my-data-grants under Membership Invites).
+- Admin: `/admin/members` roster (list ACTIVE, offboard, check-in block); `/admin/attendance` desk-mark + day list; `/admin/renewals` renewals-due + payment patch.
+- Client: `GET`/`PUT` `/gym-orgs/:id/my-data-grants` after accept; sticky DOB/HEIGHT/WEIGHT.
+- Authz: roster/attendance/renewals = Auth + STAFF + gym tenant (API ADMIN); no DataGrant. Data grants = CLIENT + ACTIVE membership.
+- Ports/adapters/actions/UI + E2E fixtures + Playwright specs. Docs `docs/api/roster.md`, `attendance.md`, `subscriptions.md`; membership-invites updated. No invent endpoints.
 
 ### 2026-08-11 — Client membership invite accept
 

@@ -1,6 +1,6 @@
 # Membership invites (Admin — M3)
 
-Contract from Postman **Membership Invites** @ `ca849e0` (sibling `gym-backend-postman`; not vendored in this repo).
+Contract from Postman **Membership Invites** @ `91d4aba` (sibling `gym-backend-postman`; not vendored in this repo).
 
 **Auth:** Bearer **ADMIN** at the gym.
 
@@ -22,10 +22,12 @@ Contract from Postman **Membership Invites** @ `ca849e0` (sibling `gym-backend-p
 |---|---|---|
 | Inbox | `GET` | `/membership-invites/inbox?limit&offset` |
 | Accept | `POST` | `/membership-invites/:membershipInviteId/accept` |
+| Get my data grants | `GET` | `/gym-orgs/:gymOrgId/my-data-grants` |
+| Update my data grants | `PUT` | `/gym-orgs/:gymOrgId/my-data-grants` |
 
 **Accept body (optional):** `optionalProfileAttributes` (`GENDER`, `MEDICAL_NOTES`); `optionalClassGrants` (`PROGRESS`, `CALORIES`, `WEARABLES`, `DIET_PLANS`, `WORKOUT_PLANS`). Required `DOB` / `HEIGHT` / `WEIGHT` applied server-side.
 
-**Still deferred:** `GET`/`PUT` `/gym-orgs/:id/my-data-grants`.
+**My data grants:** CLIENT + **ACTIVE** membership. Client owns grants. Required vitals sticky on PUT; body replaces optional checklist (`optionalProfileAttributes`, `optionalClassGrants`). `404` when no active membership for that gym.
 
-Web Admin: `/admin/members` — create, list, revoke.  
-Web Client: `/client` — inbox + accept.
+Web Admin: `/admin/members` — create, list, revoke (+ roster panel).  
+Web Client: `/client` — inbox + accept + data sharing editor when grants resolve for an invite gym.

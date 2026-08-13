@@ -13,7 +13,7 @@ import type {
 } from "@/lib/ports/membership-invites";
 
 export type MembershipInviteActionResult =
-  | { ok: true }
+  | { ok: true; gymOrgId?: string }
   | { ok: false; code: string; message: string };
 
 function fail(error: unknown): MembershipInviteActionResult {
@@ -234,7 +234,7 @@ export async function acceptMembershipInviteAction(input: {
 
   try {
     const { acceptMembershipInvite } = createAppServices();
-    await acceptMembershipInvite({
+    const result = await acceptMembershipInvite({
       accessToken: session.accessToken,
       membershipInviteId,
       body: {
@@ -243,7 +243,56 @@ export async function acceptMembershipInviteAction(input: {
       },
     });
     revalidatePath("/client");
-    return { ok: true };
+    return { ok: true, gymOrgId: result.membershipInvite.gymOrgId };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function updateMyDataGrantsAction(input: {
+  gymOrgId: string;
+  optionalProfileAttributes?: string[];
+  optionalClassGrants?: string[];
+}): Promise<MembershipInviteActionResult> {
+  const session = await getSession();
+  if (!session || session.lane !== "CLIENT") {
+    return {
+      ok: false,
+      code: "DATA_GRANT_FORBIDDEN",
+      message: membershipInviteErrorMessage("DATA_GRANT_FORBIDDEN"),
+    };
+  }
+
+  const gymOrgId = input.gymOrgId.trim();
+  if (!gymOrgId) {
+    return {
+      ok: false,
+      code: "VALIDATION_ERROR",
+      message: membershipInviteErrorMessage("VALIDATION_ERROR"),
+    };
+  }
+
+  const optionalProfileAttributes = (input.optionalProfileAttributes ?? []).filter(
+    (value): value is OptionalProfileAttribute =>
+      PROFILE_ATTRS.has(value as OptionalProfileAttribute),
+  );
+  const optionalClassGrants = (input.optionalClassGrants ?? []).filter(
+    (value): value is OptionalClassGrant =>
+      CLASS_GRANTS.has(value as OptionalClassGrant),
+  );
+
+  try {
+    const { updateMyDataGrants } = createAppServices();
+    await updateMyDataGrants({
+      accessToken: session.accessToken,
+      gymOrgId,
+      body: {
+        optionalProfileAttributes,
+        optionalClassGrants,
+      },
+    });
+    revalidatePath("/client");
+    return { ok: true, gymOrgId };
   } catch (error) {
     return fail(error);
   }
