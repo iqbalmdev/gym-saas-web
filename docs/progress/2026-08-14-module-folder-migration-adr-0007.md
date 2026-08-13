@@ -3,6 +3,9 @@
 Behavior-neutral relocation of 9 modules from the layer-first tree into
 `lib/modules/<module>/`. `git mv` throughout, so history follows the files.
 
+Shipped as **two commits** — `refactor(arch)` then `style` — for the reason in
+"Formatting must not ride along" below.
+
 ## What moved
 
 - `lib/ports/`, `lib/api/*-adapter.ts`, `lib/features/*`, `lib/display/*` and the
@@ -36,6 +39,25 @@ merging.
 Verified by deliberately injecting four violations — component→adapter,
 port→adapter, action→http-client, adapter→use-cases. All four failed the lint as
 intended, then were reverted.
+
+## Formatting must not ride along with a move — worth remembering
+
+The plan bundled the one-off `npm run format` into the migration commit, on the
+reasoning that both are whole-tree mechanical diffs. That was wrong, and the
+plan's own verification step caught it: `git log --follow` on a moved file
+returned nothing.
+
+Prettier's reformat (4-space, single quotes) rewrote nearly every line, so
+content similarity between old and new paths fell **below git's rename
+threshold — even at `-M10%`**. The commit recorded **145 A / 89 D / 1 R**:
+delete-plus-add, not renames. History was still reachable via the *old* path,
+but `--follow` and `git blame` could no longer bridge the move.
+
+Redone as two commits — move first, format second — the same migration records
+**87 R / 58 A / 0 D**, and `--follow` reaches the original feature commits.
+
+**Rule for next time:** a commit that moves files must not also reformat them.
+Rename detection is content-similarity based, and a formatter defeats it.
 
 ## Deliberately not done
 
