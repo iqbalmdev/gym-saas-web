@@ -1,35 +1,17 @@
 ---
-description: "App Router structure and data-flow patterns"
-globs: ["app/**/*.tsx", "app/**/*.ts", "lib/**/*.ts", "components/**/*.tsx"]
+description: Gym SaaS web architecture — Admin-first, ports/adapters, Settings-first Staff
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
-# Architecture (Web Admin)
+# Architecture
 
-Folder roles (do not invent new top-level folders without asking):
-- `app/(admin)/...` — route segments, one folder per module (roster,
-  renewals, crm, plans, attendance)
-- `components/ui/` — shadcn-style primitives only, no business logic
-- `components/<module>/` — module-specific components, may import hooks
-  but not call the API client directly (pass data down or use a hook)
-- `lib/api/` — one typed function per API endpoint, all fetches live here
-- `lib/hooks/` — React Query hooks that wrap `lib/api`
-- `lib/auth/` — session + role + tenant helpers, server-only
-- `lib/permissions/` — the permission-check functions (see
-  security-data-access.mdc)
-
-## Data flow
-1. Server Component fetches initial data using `lib/api` (server-side call
-   with the user's session token attached).
-2. Client Components receive data as props, and use `lib/hooks` +
-   React Query for mutations/refetches — never fetch directly in a
-   `"use client"` component body.
-3. Every API call in `lib/api` returns a typed result matching the
-   Express API's response schema. If the schema is unknown, ask instead of
-   inventing shape.
-
-## Module boundaries
-Match the PRD's M1–M13 modules. A component or route for M4 (Plans &
-billing) should not directly import internals of M11 (CRM) — go through
-`lib/api`. If a change looks like it needs to cross module boundaries,
-say so before writing the code.
+- Build contract: `docs/architecture-plan.md` (ADR-0003). Stage: `docs/PROGRESS.md`.
+- **Admin-first** Next.js App Router; `(admin)` / `(client)` / `(trainer)` route groups — do not hardcode forever-Admin-only.
+- UI → use-cases → **ports**; HTTP only in `lib/api` adapters (ADR-0004). Composition root wires deps.
+- **Data:** Server Components fetch; Client Components for interaction. Server Actions mutate. See `nextjs-app-router.mdc` + `state-management.mdc`.
+- Domain: `docs/PRD.md`, `docs/product-flows.md`, `docs/CONTEXT.md`.
+- **Staff first-run:** 0 gyms → `/admin/settings` only (create org / accept invite). Ops routes need a GymOrg. Do not revive `/onboarding/create-gym` as the gate.
+- DataGrants empty states; billing ≠ access; check-in lock is manual only (plan §8).
+- Out of MVP: payment gateway, WhatsApp/SMS, open join codes, multi-branch, custom RBAC, QR check-in.
+- API: sibling `gym-backend-postman` + Postman cloud — never invent endpoints; never vendor `postman/*.json` here.

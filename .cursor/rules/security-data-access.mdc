@@ -1,52 +1,62 @@
 ---
-description: "Authorization stack: role + tenant + DataGrant checks. Apply whenever writing an API route, server action, or any code that reads member data."
-globs: ["app/**/route.ts", "app/**/actions.ts", "lib/api/**/*.ts", "lib/permissions/**/*.ts"]
+description: "Authorization stack: auth + lane/role + tenant + DataGrant. Apply whenever writing a Server Action or any code that reads member data."
+globs: ["app/**/*.tsx", "lib/features/**/actions.ts", "lib/api/**/*.ts", "lib/auth/**/*.ts"]
 alwaysApply: false
 ---
 
-# Authorization is a 3-step stack — never skip a step
+# Authorization is a 4-step stack — never skip a step
 
-For ANY endpoint or server action that touches gym or member data, enforce
-in this exact order:
+**S3 is the enforcement authority.** The API performs auth → role → tenant →
+grant on every request, and it is the only thing standing between a user and
+another tenant's data. The web app's job is to *gate the surface* and *never
+fake or bypass* the answer — not to reimplement the check.
 
-1. **Auth check** — is there a valid Supabase session? If not, 401.
-2. **Role check** — does the role (CLIENT / UNASSIGNED / TRAINER / ADMIN)
-   even have this permission at all, independent of tenant? If not, 403.
-3. **Tenant + grant check**:
-   - Does this ADMIN/TRAINER belong to the same `gym_org_id` as the
-     resource being accessed? If not, 403 — never leak a 404-vs-403 hint
-     that reveals the resource exists in another tenant.
-   - For CLIENT-owned data (progress, nutrition, wearables): does an
-     active `DataGrant` exist for this specific scope
-     (PROGRESS / CALORIES / WEARABLES) between this client and this
-     trainer/admin? If not, 403.
+For any Server Action or RSC that touches gym or member data:
 
-A role alone NEVER unlocks another gym's data or another client's health
-data. If you write an endpoint and only do steps 1–2, treat that as an
-incomplete implementation, not a shortcut — call it out explicitly.
+1. **Auth** — is there a session? `getSession()`; no session → return the
+   `AUTHENTICATION_FAILED` result. Never render an ops surface without one.
+2. **Lane / role** — is this the right lane (`STAFF` vs `CLIENT`)? Cross-lane
+   actions must not be offered in the UI at all. Lane comes from the session
+   cookie, never from a form field or query param.
+3. **Tenant** — resolve the active `gym_org_id` from the session's
+   affiliation and pass it explicitly. Staff with 0 gyms get the
+   Settings-only shell, not an empty ops screen.
+4. **Grant** — for CLIENT-owned data (progress, calories, wearables, plan
+   completions), the API returns it only if a DataGrant exists. A missing
+   grant is **not an error**: render the calm empty state
+   (“Member has not shared X”). Never fill the gap with placeholder data.
 
-## Concrete pattern
+## Concrete pattern (this repo)
+
+Every Admin action opens with a gate helper before doing any work:
 
 ```ts
-// lib/permissions/checkAccess.ts
-export async function requireGrant(
-  clientId: string,
-  requesterId: string,
-  scope: "PROGRESS" | "CALORIES" | "WEARABLES"
-) {
-  const grant = await getActiveGrant(clientId, requesterId, scope);
-  if (!grant) throw new ForbiddenError(`No ${scope} grant`);
-  return grant;
+// lib/features/plans/actions.ts
+async function requireStaffAdminGym() {
+  const session = await getSession();
+  if (!session || session.lane !== "STAFF") return authFailure();
+  const { gymOrgs } = await listGymOrgs({ accessToken: session.accessToken });
+  const gymOrgId = gymOrgs[0]?.id;
+  if (!gymOrgId) return forbidden();
+  return { ok: true, accessToken: session.accessToken, gymOrgId };
 }
 ```
 
-Every route handler that reads M8/M9/M10 data must call the matching
-`requireGrant` before querying — this is not optional decoration.
+Copy this shape for new modules. A Server Action that calls an adapter
+without a gate is an incomplete implementation, not a shortcut.
 
-## Self-check after writing an endpoint
-After generating a new API route or server action, verify out loud:
-- Does it check auth, role, tenant, AND grant (if applicable)?
-- Is `gym_org_id` used in the DB query's WHERE clause, not just checked
-  in application code after fetching?
-- Does the error response avoid confirming whether a resource exists in a
-  tenant the requester can't access?
+## Do not
+
+- Re-derive entitlement in the web app (“unpaid, so hide check-in”) — the API
+  decides; `payment_status` only drives a badge.
+- Trust `gymOrgId`, `lane`, or `roleCode` arriving from the client.
+- Write RLS policies, SQL, or `requireGrant`-style DB checks here — that code
+  belongs in **gym-backend**, not this repo.
+- Reveal whether a resource exists in a tenant the user can't access; surface
+  the API's error code as calm copy and nothing more.
+
+## Self-check after writing an action
+
+- Does it gate auth → lane → tenant before the first adapter call?
+- Is `gymOrgId` sourced from the session, not the caller?
+- Does the grant-missing path render empty copy rather than an error toast?

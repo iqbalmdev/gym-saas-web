@@ -6,7 +6,7 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 
 | Area | Status |
 |---|---|
-| Agent OS (rules, skills, docs) | Done — lean rules + Next/state best practices (`state-management.mdc`) |
+| Agent OS (rules, skills, docs) | Done — drift from `e537810` repaired; Cursor + Claude Code parity |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
 | Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
@@ -18,15 +18,37 @@ Living project stage for agents and humans. Newest log entries first. Do not del
 | Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
 | Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live.
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; stack + folder decisions recorded as ADR-0006 / ADR-0007.
 
 ## Next up
 
-1. Assign trainer / trainer list when Postman exposes a list endpoint.
-2. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
-3. Optional: deeper renewals UX (filters, member name join).
+**Team setup (two contributors — sequence matters, see ADR-0007):**
+
+1. Tooling: Prettier + ESLint architecture rules + Husky/lint-staged + **CI on PRs** (ADR-0006).
+2. shadcn/ui install + `data-theme` variant and token alias onto `crm-tokens.css`.
+3. UI/UX design-system doc (theme tokens, table density, status badges, empty states).
+4. Module-folder migration (ADR-0007) — single commit, one person in the tree.
+5. Split module ownership between contributors; adopt feature branches + PRs.
+
+**Product:**
+
+6. Assign trainer / trainer list when Postman exposes a list endpoint.
+7. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
+8. Optional: deeper renewals UX (filters, member name join).
 
 ## Log
+
+### 2026-08-14 — Agent OS drift repair + stack/folder ADRs (no code change)
+
+- **Cause:** `e537810` ("refresh Cursor rules and skills from PRD orbit bundle") imported a bundle describing a *different* app — Next 15, React Query, react-hook-form, direct Supabase reads, `lib/hooks/`, `lib/permissions/`, `cn()`, `docs/MVP_ROADMAP.md`, `docs/PROGRESS_LOG.md`. None of it existed here. Nothing could detect the contradiction.
+- **Restored to pre-drift:** rules `architecture`, `testing`, `progress-log`; all 7 skills. `playwright-e2e-testing` had lost all 17 `references/` links (files still on disk); `sync-postman-collection` was instructing agents to vendor a collection JSON that `.gitignore` blocks.
+- **Merged (kept good new content):** `code-quality` (+ style bar), `error-handling` (+ Server Action result contract), `git-conventions` (conventional commits, branches, PR contents; re-added secrets/force-push safety).
+- **Rewritten to match reality:** `001-tech-stack` (Next 16 + explicit *not installed* list), `000-project-context` (`STAFF_UNASSIGNED`, real doc paths), `security-data-access` (S3 enforces; web gates and never fakes — no RLS/SQL in this repo).
+- **Deleted:** `cursor-database.mdc` (SQL/RLS guidance; this repo never touches Postgres).
+- **Claude Code parity:** `CLAUDE.md` → `AGENTS.md` symlink; 7 skills symlinked into `.claude/skills/`; `.claude/settings.json` allowlist. AGENTS.md rules table now marks always-on vs glob, since Claude Code does not read `.mdc`.
+- **ADR-0006** UI + tooling stack: adopt shadcn/ui (keep `data-theme`, alias tokens), Prettier/ESLint/Husky + **CI as the enforcement boundary**; defer TanStack Query (access token is httpOnly — would need token exposure or a 29-endpoint BFF) and TanStack Form (not yet justified).
+- **ADR-0007** module-folder architecture: accepted, **implementation deferred**. Target tree, hotspot fix via per-module `services.ts`, and required sequencing recorded. `architecture-plan.md` §5 stays authoritative until the migration lands.
+- Verified: every path referenced by rules/skills resolves (except the deliberate forward-looking `lib/client-state/` glob). `typecheck` clean, 53 unit tests pass. No source changed. Not committed.
 
 ### 2026-08-12 — Roster + attendance + renewals + my-data-grants (tip `91d4aba`)
 

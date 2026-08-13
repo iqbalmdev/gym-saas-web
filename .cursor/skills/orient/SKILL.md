@@ -1,31 +1,36 @@
 ---
 name: orient
-description: Use at the start of a new session, or before picking up any task, to re-establish where the Gym SaaS build actually stands versus the PRD orbit (Foundation -> Stint 1.1-1.4 -> 1.5 subscriptions Admin -> ...). Also use when the user asks "what's next" or "where are we."
+description: Orient before non-trivial Gym SaaS web work. Reads PROGRESS, architecture-plan, and narrow product docs.
 ---
 
 # Orient
 
-Before touching any code, build an accurate picture of current state. Do
-not assume the PRD's target state is the current state — verify.
+Run before non-trivial work.
 
 ## Steps
 
-1. Read `docs/PROGRESS_LOG.md` (if it exists) for the most recent entries.
-2. Read `docs/PRD.md`, `docs/permissions.md`, `docs/MVP_ROADMAP.md` for
-   target scope. Note the module currently marked "Foundation" / "shipped"
-   in the orbit vs. what's actually next.
-3. Grep the repo for the module boundaries in `app/(admin)/` to see which
-   of M1–M13 actually have routes/components already.
-4. Check `lib/permissions/` for which role/tenant/grant checks already
-   exist — don't assume auth is wired up just because routes exist.
-5. Run `git log --oneline -20` to see recent work; cross-check against
-   git-conventions.mdc scope tags (m1..m13) to map commits to modules.
-6. Summarize back to the user in this shape before doing anything else:
-   - What's actually shipped (verified in code, not just claimed)
-   - What's stubbed/UI-only
-   - The single most logical next task, with the module id
-   - Any drift between docs/PRD and what the code actually does — flag it,
-     don't silently resolve it
+1. Read `docs/PROGRESS.md` → **Current stage** + **Next up**.
+2. Note **persona** (`Admin` now; `Trainer` / `Client` later).
+3. Read only the needed parts of `docs/architecture-plan.md` (§1 context, §4 layers, §5 folders, §6 routes; §7 auth; §8 grants).
+4. Skim rules that apply: `nextjs-app-router.mdc`, `state-management.mdc`, `code-quality.mdc` (and others by file glob).
+5. Task-scoped extras (pick one):
 
-Do not start implementing anything during this skill — it's read-only
-reconnaissance. Hand off the summary and wait for the user's go-ahead.
+| Need | Read |
+|---|---|
+| Domain names | `docs/CONTEXT.md` |
+| Product | `docs/PRD.md` / `docs/product-flows.md` |
+| Auth API | `docs/api/client-auth.md` |
+| Staff invites | `docs/api/staff-invites.md` |
+| Postman sync | `docs/postman-sync.md` |
+| Theme | `docs/ui-theme.md` |
+
+6. Prefer **Current stage** over assuming features. Staff first-run = **Settings** (`/admin/settings`), not create-gym.
+7. Libs (Next/Zustand/Zod/Playwright/…) → **Context7 MCP**.
+8. API work → sibling `gym-backend-postman` + **sync-postman-collection** / **verify-api-flow** — never invent endpoints.
+9. After a chunk → update `docs/PROGRESS.md`.
+10. Do not dump every doc into context.
+
+## Skip when
+
+- Pure Cursor/rules meta with no product change
+- Already oriented this session and PROGRESS unchanged
