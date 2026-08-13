@@ -76,44 +76,42 @@ export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPan
 
     return (
         <section
-            className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+            className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
             aria-labelledby="data-grants-heading"
         >
             <div>
-                <h2 id="data-grants-heading" className="text-lg font-semibold tracking-tight text-[var(--color-fg)]">
+                <h2 id="data-grants-heading" className="text-lg font-semibold tracking-tight text-(--color-fg)">
                     Data sharing
                 </h2>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                <p className="mt-1 text-sm text-(--color-fg-muted)">
                     {gymName ? `${gymName} — ` : ''}
                     Date of birth, height, and weight stay shared. Toggle optional profile fields and class grants.
                 </p>
             </div>
 
             {error ? (
-                <p role="alert" className="text-sm text-[var(--color-danger)]">
+                <p role="alert" className="text-sm text-(--color-danger)">
                     {error}
                 </p>
             ) : null}
             {success ? (
-                <p role="status" className="text-sm text-[var(--color-fg)]">
+                <p role="status" className="text-sm text-(--color-fg)">
                     {success}
                 </p>
             ) : null}
 
             <div className="space-y-2">
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
-                    Always shared
-                </p>
-                <p className="text-sm text-[var(--color-fg)]">{REQUIRED_PROFILE.join(' · ')}</p>
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">Always shared</p>
+                <p className="text-sm text-(--color-fg)">{REQUIRED_PROFILE.join(' · ')}</p>
             </div>
 
             <fieldset className="space-y-2">
-                <legend className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
+                <legend className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">
                     Optional profile
                 </legend>
                 <div className="flex flex-wrap gap-3">
                     {PROFILE_OPTIONS.map((option) => (
-                        <label key={option.value} className="flex items-center gap-2 text-sm text-[var(--color-fg)]">
+                        <label key={option.value} className="flex items-center gap-2 text-sm text-(--color-fg)">
                             <input
                                 type="checkbox"
                                 checked={profileAttrs.includes(option.value)}
@@ -127,12 +125,12 @@ export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPan
             </fieldset>
 
             <fieldset className="space-y-2">
-                <legend className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
+                <legend className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">
                     Class grants
                 </legend>
                 <div className="flex flex-wrap gap-3">
                     {GRANT_OPTIONS.map((option) => (
-                        <label key={option.value} className="flex items-center gap-2 text-sm text-[var(--color-fg)]">
+                        <label key={option.value} className="flex items-center gap-2 text-sm text-(--color-fg)">
                             <input
                                 type="checkbox"
                                 checked={classGrants.includes(option.value)}

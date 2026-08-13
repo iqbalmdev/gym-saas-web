@@ -10,7 +10,7 @@ export function AdminStubPage({ title, panelTitle, description }: AdminStubPageP
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-fg)] md:text-3xl">{title}</h1>
+                <h1 className="text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">{title}</h1>
             </div>
             <EmptyState title={panelTitle} description={description} />
         </div>

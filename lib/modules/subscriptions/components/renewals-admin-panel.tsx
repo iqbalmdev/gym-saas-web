@@ -49,18 +49,16 @@ export function RenewalsAdminPanel({ gymName, renewals, windowLabel, listError }
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-fg)] md:text-3xl">
-                    Renewals
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm text-[var(--color-fg-muted)]">
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Renewals</h1>
+                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
                     Subscriptions ending {windowLabel}. Payment badges nudge — they do not auto lock check-in.
                 </p>
             </div>
 
             {(listError || error) && (
                 <p
-                    className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-danger)]"
+                    className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
                     role="alert"
                 >
                     {error ?? listError}
@@ -68,25 +66,25 @@ export function RenewalsAdminPanel({ gymName, renewals, windowLabel, listError }
             )}
 
             <section className="space-y-3">
-                <h2 className="text-sm font-semibold text-[var(--color-fg)]">Renewals due</h2>
+                <h2 className="text-sm font-semibold text-(--color-fg)">Renewals due</h2>
                 {renewals.length === 0 ? (
-                    <p className="text-sm text-[var(--color-fg-muted)]">No renewals in this window.</p>
+                    <p className="text-sm text-(--color-fg-muted)">No renewals in this window.</p>
                 ) : (
-                    <ul className="divide-y divide-[var(--color-border)] rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+                    <ul className="divide-y divide-(--color-border) rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface)">
                         {renewals.map((item) => (
                             <li
                                 key={item.id}
                                 className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between"
                             >
                                 <div className="min-w-0 space-y-1">
-                                    <p className="font-medium text-[var(--color-fg)]">
+                                    <p className="font-medium text-(--color-fg)">
                                         {item.kind} · ends {item.endDate ?? '—'}
                                     </p>
-                                    <p className="text-sm text-[var(--color-fg-muted)]">
+                                    <p className="text-sm text-(--color-fg-muted)">
                                         Client {item.clientUserId.slice(0, 8)}… · ₹{item.priceAmount} /{' '}
                                         {item.durationDays}d
                                     </p>
-                                    <p className="text-xs text-[var(--color-fg-muted)]">
+                                    <p className="text-xs text-(--color-fg-muted)">
                                         {membershipPaymentStatusLabel(item.paymentStatus)}
                                         {item.amountPaid > 0 ? ` · paid ₹${item.amountPaid}` : ''}
                                     </p>

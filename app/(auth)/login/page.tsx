@@ -26,9 +26,9 @@ export default async function LoginPage() {
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">Gym SaaS</p>
-                <h1 className="mt-1 text-2xl font-semibold text-[var(--color-fg)]">Sign in</h1>
-                <p className="mt-2 text-sm text-[var(--color-fg-muted)]">
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">Gym SaaS</p>
+                <h1 className="mt-1 text-2xl font-semibold text-(--color-fg)">Sign in</h1>
+                <p className="mt-2 text-sm text-(--color-fg-muted)">
                     Email code or Google. New accounts choose Staff or Member; returning users keep the same type. No
                     separate sign-up.
                 </p>

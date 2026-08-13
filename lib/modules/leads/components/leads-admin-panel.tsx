@@ -22,7 +22,7 @@ type LeadsAdminPanelProps = {
 };
 
 const fieldClass =
-    'mt-1 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]';
+    'mt-1 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)';
 
 export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, listError }: LeadsAdminPanelProps) {
     const router = useRouter();
@@ -64,9 +64,9 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-fg)] md:text-3xl">Leads</h1>
-                <p className="mt-2 max-w-2xl text-sm text-[var(--color-fg-muted)]">
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Leads</h1>
+                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
                     Capture walk-ins and follow-ups. Example: name “Walk-in Prospect”, phone “9876543210”, source
                     “walk-in”, interest “trial”. Edit any lead below via{' '}
                     <code className="text-xs">PATCH …/leads/:leadId</code>.
@@ -75,16 +75,16 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
 
             {dueFollowUps.length > 0 ? (
                 <section
-                    className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+                    className="rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
                     aria-labelledby="due-followups-heading"
                 >
-                    <h2 id="due-followups-heading" className="text-sm font-medium text-[var(--color-fg)]">
+                    <h2 id="due-followups-heading" className="text-sm font-medium text-(--color-fg)">
                         Due follow-ups ({dueFollowUps.length})
                     </h2>
                     <ul className="mt-3 space-y-2">
                         {dueFollowUps.map((lead) => (
-                            <li key={`due-${lead.id}`} className="text-sm text-[var(--color-fg-muted)]">
-                                <span className="font-medium text-[var(--color-fg)]">{lead.name}</span> · {lead.phone} ·{' '}
+                            <li key={`due-${lead.id}`} className="text-sm text-(--color-fg-muted)">
+                                <span className="font-medium text-(--color-fg)">{lead.name}</span> · {lead.phone} ·{' '}
                                 {formatLeadFollowUp(lead.followUpDate)}
                             </li>
                         ))}
@@ -107,8 +107,8 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                             href={href}
                             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
                                 active
-                                    ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-                                    : 'border border-[var(--color-border)] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]'
+                                    ? 'bg-(--color-accent) text-(--color-accent-fg)'
+                                    : 'border border-(--color-border) text-(--color-fg-muted) hover:text-(--color-fg)'
                             }`}
                         >
                             {label}
@@ -119,12 +119,12 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
 
             <form
                 onSubmit={handleCreate}
-                className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+                className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
             >
-                <h2 className="text-sm font-medium text-[var(--color-fg)]">Capture lead</h2>
+                <h2 className="text-sm font-medium text-(--color-fg)">Capture lead</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label htmlFor="lead-name" className="block text-sm font-medium text-[var(--color-fg)]">
+                        <label htmlFor="lead-name" className="block text-sm font-medium text-(--color-fg)">
                             Name
                         </label>
                         <input
@@ -137,7 +137,7 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         />
                     </div>
                     <div>
-                        <label htmlFor="lead-phone" className="block text-sm font-medium text-[var(--color-fg)]">
+                        <label htmlFor="lead-phone" className="block text-sm font-medium text-(--color-fg)">
                             Phone
                         </label>
                         <input
@@ -151,7 +151,7 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         />
                     </div>
                     <div>
-                        <label htmlFor="lead-source" className="block text-sm font-medium text-[var(--color-fg)]">
+                        <label htmlFor="lead-source" className="block text-sm font-medium text-(--color-fg)">
                             Source
                         </label>
                         <input
@@ -163,7 +163,7 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         />
                     </div>
                     <div>
-                        <label htmlFor="lead-interest" className="block text-sm font-medium text-[var(--color-fg)]">
+                        <label htmlFor="lead-interest" className="block text-sm font-medium text-(--color-fg)">
                             Interest
                         </label>
                         <input
@@ -175,8 +175,8 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         />
                     </div>
                     <div className="sm:col-span-2">
-                        <label htmlFor="lead-notes" className="block text-sm font-medium text-[var(--color-fg)]">
-                            Notes <span className="font-normal text-[var(--color-fg-muted)]">(optional)</span>
+                        <label htmlFor="lead-notes" className="block text-sm font-medium text-(--color-fg)">
+                            Notes <span className="font-normal text-(--color-fg-muted)">(optional)</span>
                         </label>
                         <textarea
                             id="lead-notes"
@@ -189,12 +189,12 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                     </div>
                 </div>
                 {error ? (
-                    <p role="alert" className="text-sm text-[var(--color-danger)]">
+                    <p role="alert" className="text-sm text-(--color-danger)">
                         {error}
                     </p>
                 ) : null}
                 {warning ? (
-                    <p className="text-sm text-[var(--color-fg-muted)]" role="status">
+                    <p className="text-sm text-(--color-fg-muted)" role="status">
                         {warning}
                     </p>
                 ) : null}
@@ -203,20 +203,20 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                 </Button>
             </form>
 
-            <div className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-panel)]">
-                <div className="border-b border-[var(--color-border)]/80 px-5 py-3">
-                    <h2 className="text-sm font-medium text-[var(--color-fg)]">Pipeline for {gymName}</h2>
+            <div className="rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) shadow-(--shadow-panel)">
+                <div className="border-b border-(--color-border)/80 px-5 py-3">
+                    <h2 className="text-sm font-medium text-(--color-fg)">Pipeline for {gymName}</h2>
                 </div>
                 {listError ? (
-                    <p role="alert" className="px-5 py-4 text-sm text-[var(--color-danger)]">
+                    <p role="alert" className="px-5 py-4 text-sm text-(--color-danger)">
                         {listError}
                     </p>
                 ) : leads.length === 0 ? (
-                    <p className="px-5 py-6 text-sm text-[var(--color-fg-muted)]">
+                    <p className="px-5 py-6 text-sm text-(--color-fg-muted)">
                         No leads yet. Capture a walk-in with the form above.
                     </p>
                 ) : (
-                    <ul className="divide-y divide-[var(--color-border)]/70">
+                    <ul className="divide-y divide-(--color-border)/70">
                         {leads.map((lead) => (
                             <LeadEditRow key={lead.id} lead={lead} statusFilter={statusFilter} />
                         ))}
@@ -302,7 +302,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-name-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Name
                         </label>
@@ -318,7 +318,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-phone-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Phone
                         </label>
@@ -335,7 +335,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-source-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Source
                         </label>
@@ -351,7 +351,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-interest-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Interest
                         </label>
@@ -367,7 +367,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div className="sm:col-span-2">
                         <label
                             htmlFor={`edit-notes-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Notes
                         </label>
@@ -383,7 +383,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-followup-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Follow-up date
                         </label>
@@ -399,7 +399,7 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                     <div>
                         <label
                             htmlFor={`edit-status-${lead.id}`}
-                            className="block text-xs font-medium text-[var(--color-fg-muted)]"
+                            className="block text-xs font-medium text-(--color-fg-muted)"
                         >
                             Status
                         </label>
@@ -420,12 +420,12 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                 </div>
 
                 {error ? (
-                    <p role="alert" className="text-sm text-[var(--color-danger)]">
+                    <p role="alert" className="text-sm text-(--color-danger)">
                         {error}
                     </p>
                 ) : null}
                 {warning ? (
-                    <p className="text-sm text-[var(--color-fg-muted)]" role="status">
+                    <p className="text-sm text-(--color-fg-muted)" role="status">
                         {warning}
                     </p>
                 ) : null}

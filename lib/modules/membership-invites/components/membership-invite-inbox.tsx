@@ -76,40 +76,40 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
 
     return (
         <section
-            className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+            className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
             aria-labelledby="membership-invite-inbox-heading"
         >
             <div>
                 <h2
                     id="membership-invite-inbox-heading"
-                    className="text-lg font-semibold tracking-tight text-[var(--color-fg)]"
+                    className="text-lg font-semibold tracking-tight text-(--color-fg)"
                 >
                     Gym invites
                 </h2>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                <p className="mt-1 text-sm text-(--color-fg-muted)">
                     Accept with the same email the gym invited. Date of birth, height, and weight are always shared;
                     extra sharing is optional.
                 </p>
             </div>
 
             {listError ? (
-                <p role="alert" className="text-sm text-[var(--color-danger)]">
+                <p role="alert" className="text-sm text-(--color-danger)">
                     {listError}
                 </p>
             ) : null}
             {error ? (
-                <p role="alert" className="text-sm text-[var(--color-danger)]">
+                <p role="alert" className="text-sm text-(--color-danger)">
                     {error}
                 </p>
             ) : null}
             {success ? (
-                <p role="status" className="text-sm text-[var(--color-fg)]">
+                <p role="status" className="text-sm text-(--color-fg)">
                     {success}
                 </p>
             ) : null}
 
             {!listError && pending.length === 0 ? (
-                <p className="text-sm text-[var(--color-fg-muted)]">
+                <p className="text-sm text-(--color-fg-muted)">
                     No pending gym invites. Ask the desk to invite this email.
                 </p>
             ) : null}
@@ -119,31 +119,31 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                     {pending.map((invite) => (
                         <li
                             key={invite.id}
-                            className="space-y-4 rounded-md border border-[var(--color-border)]/80 px-4 py-4"
+                            className="space-y-4 rounded-md border border-(--color-border)/80 px-4 py-4"
                         >
                             <div className="space-y-1">
-                                <p className="text-sm font-medium text-[var(--color-fg)]">
+                                <p className="text-sm font-medium text-(--color-fg)">
                                     {invite.gym?.name ?? 'Gym invite'}
                                 </p>
-                                <p className="text-sm text-[var(--color-fg-muted)]">
+                                <p className="text-sm text-(--color-fg-muted)">
                                     {membershipInviteStatusLabel(invite.status)}
                                     <span className="mx-2">·</span>
                                     Base {membershipPaymentStatusLabel(invite.basePaymentStatus)}
                                 </p>
-                                <p className="text-xs text-[var(--color-fg-muted)]">
+                                <p className="text-xs text-(--color-fg-muted)">
                                     Invited as {invite.inviteeName} · expires {formatInviteExpiry(invite.expiresAt)}
                                 </p>
                             </div>
 
                             <fieldset className="space-y-2">
-                                <legend className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
+                                <legend className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">
                                     Optional profile
                                 </legend>
                                 <div className="flex flex-wrap gap-3">
                                     {PROFILE_OPTIONS.map((option) => (
                                         <label
                                             key={option.value}
-                                            className="flex items-center gap-2 text-sm text-[var(--color-fg)]"
+                                            className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
                                             <input
                                                 type="checkbox"
@@ -158,14 +158,14 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                             </fieldset>
 
                             <fieldset className="space-y-2">
-                                <legend className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
+                                <legend className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">
                                     Optional sharing
                                 </legend>
                                 <div className="flex flex-wrap gap-3">
                                     {GRANT_OPTIONS.map((option) => (
                                         <label
                                             key={option.value}
-                                            className="flex items-center gap-2 text-sm text-[var(--color-fg)]"
+                                            className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
                                             <input
                                                 type="checkbox"

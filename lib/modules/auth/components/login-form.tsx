@@ -106,10 +106,10 @@ export function LoginForm() {
     if (step === 'google-lane') {
         return (
             <form onSubmit={handleGoogleLaneContinue} className="space-y-4">
-                <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+                <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                     <div>
-                        <h2 className="text-base font-semibold text-[var(--color-fg)]">Confirm your account type</h2>
-                        <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                        <h2 className="text-base font-semibold text-(--color-fg)">Confirm your account type</h2>
+                        <p className="mt-1 text-sm text-(--color-fg-muted)">
                             Choose Staff or Member before continuing with Google. Returning users must pick the same
                             type as before.
                         </p>
@@ -117,7 +117,7 @@ export function LoginForm() {
                     <LaneChooser lane={lane} onChange={setLane} />
                     <OptionalNameField name={name} onChange={setName} />
                     {error ? (
-                        <p className="text-sm text-[var(--color-danger)]" role="alert">
+                        <p className="text-sm text-(--color-danger)" role="alert">
                             {error}
                         </p>
                     ) : null}
@@ -135,17 +135,17 @@ export function LoginForm() {
     if (step === 'lane') {
         return (
             <form onSubmit={handleLaneContinue} className="space-y-4">
-                <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+                <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                     <div>
-                        <h2 className="text-base font-semibold text-[var(--color-fg)]">Confirm your account type</h2>
-                        <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                        <h2 className="text-base font-semibold text-(--color-fg)">Confirm your account type</h2>
+                        <p className="mt-1 text-sm text-(--color-fg-muted)">
                             New account for {email}. This choice is permanent for this email.
                         </p>
                     </div>
                     <LaneChooser lane={lane} onChange={setLane} />
                     <OptionalNameField name={name} onChange={setName} />
                     {error ? (
-                        <p className="text-sm text-[var(--color-danger)]" role="alert">
+                        <p className="text-sm text-(--color-danger)" role="alert">
                             {error}
                         </p>
                     ) : null}
@@ -163,12 +163,12 @@ export function LoginForm() {
     if (step === 'otp') {
         return (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+                <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                     <div>
-                        <label htmlFor="otp" className="block text-sm font-medium text-[var(--color-fg)]">
+                        <label htmlFor="otp" className="block text-sm font-medium text-(--color-fg)">
                             Email code
                         </label>
-                        <p className="mt-1 text-xs text-[var(--color-fg-muted)]">
+                        <p className="mt-1 text-xs text-(--color-fg-muted)">
                             We sent a code to {email}
                             {isNewUser && lane
                                 ? ` · ${lane === 'STAFF' ? 'Staff' : 'Member'}`
@@ -186,12 +186,12 @@ export function LoginForm() {
                             required
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm tracking-widest text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm tracking-widest text-(--color-fg) outline-none focus:border-(--color-accent)"
                             placeholder="6-digit code"
                         />
                     </div>
                     {error ? (
-                        <p className="text-sm text-[var(--color-danger)]" role="alert">
+                        <p className="text-sm text-(--color-danger)" role="alert">
                             {error}
                         </p>
                     ) : null}
@@ -214,9 +214,9 @@ export function LoginForm() {
 
     return (
         <form onSubmit={handleRequestOtp} className="space-y-4">
-            <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+            <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-[var(--color-fg)]">
+                    <label htmlFor="email" className="block text-sm font-medium text-(--color-fg)">
                         Email
                     </label>
                     <input
@@ -227,12 +227,12 @@ export function LoginForm() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                         placeholder="you@gym.com"
                     />
                 </div>
                 {error ? (
-                    <p className="text-sm text-[var(--color-danger)]" role="alert">
+                    <p className="text-sm text-(--color-danger)" role="alert">
                         {error}
                     </p>
                 ) : null}
@@ -241,10 +241,10 @@ export function LoginForm() {
                 </Button>
                 <div className="relative py-1">
                     <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-[var(--color-border)]" />
+                        <div className="w-full border-t border-(--color-border)" />
                     </div>
                     <div className="relative flex justify-center text-xs">
-                        <span className="bg-[var(--color-surface)] px-2 text-[var(--color-fg-muted)]">or</span>
+                        <span className="bg-(--color-surface) px-2 text-(--color-fg-muted)">or</span>
                     </div>
                 </div>
                 <Button
@@ -266,7 +266,7 @@ function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) 
     return (
         <fieldset className="space-y-2">
             <legend className="sr-only">Account type</legend>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
                 <input
                     type="radio"
                     name="lane"
@@ -276,13 +276,13 @@ function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) 
                     className="mt-1"
                 />
                 <span>
-                    <span className="block text-sm font-medium text-[var(--color-fg)]">I work at a gym</span>
-                    <span className="block text-xs text-[var(--color-fg-muted)]">
+                    <span className="block text-sm font-medium text-(--color-fg)">I work at a gym</span>
+                    <span className="block text-xs text-(--color-fg-muted)">
                         Staff / Admin — create or join a gym organization
                     </span>
                 </span>
             </label>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
                 <input
                     type="radio"
                     name="lane"
@@ -292,8 +292,8 @@ function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) 
                     className="mt-1"
                 />
                 <span>
-                    <span className="block text-sm font-medium text-[var(--color-fg)]">I’m a member</span>
-                    <span className="block text-xs text-[var(--color-fg-muted)]">
+                    <span className="block text-sm font-medium text-(--color-fg)">I’m a member</span>
+                    <span className="block text-xs text-(--color-fg-muted)">
                         Client — membership and personal progress
                     </span>
                 </span>
@@ -305,8 +305,8 @@ function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) 
 function OptionalNameField(props: { name: string; onChange: (value: string) => void }) {
     return (
         <div>
-            <label htmlFor="name" className="block text-sm font-medium text-[var(--color-fg)]">
-                Display name <span className="font-normal text-[var(--color-fg-muted)]">(optional)</span>
+            <label htmlFor="name" className="block text-sm font-medium text-(--color-fg)">
+                Display name <span className="font-normal text-(--color-fg-muted)">(optional)</span>
             </label>
             <input
                 id="name"
@@ -314,7 +314,7 @@ function OptionalNameField(props: { name: string; onChange: (value: string) => v
                 maxLength={120}
                 value={props.name}
                 onChange={(e) => props.onChange(e.target.value)}
-                className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                 placeholder="Your name"
             />
         </div>

@@ -33,9 +33,9 @@ export function CreateGymForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+            <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                 <div>
-                    <label htmlFor="gym-name" className="block text-sm font-medium text-[var(--color-fg)]">
+                    <label htmlFor="gym-name" className="block text-sm font-medium text-(--color-fg)">
                         Gym name
                     </label>
                     <input
@@ -46,13 +46,13 @@ export function CreateGymForm() {
                         maxLength={120}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                         placeholder="North Star Fitness"
                     />
                 </div>
                 <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium text-[var(--color-fg)]">
-                        Contact email <span className="font-normal text-[var(--color-fg-muted)]">(optional)</span>
+                    <label htmlFor="contact-email" className="block text-sm font-medium text-(--color-fg)">
+                        Contact email <span className="font-normal text-(--color-fg-muted)">(optional)</span>
                     </label>
                     <input
                         id="contact-email"
@@ -60,12 +60,12 @@ export function CreateGymForm() {
                         type="email"
                         value={contactEmail}
                         onChange={(e) => setContactEmail(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                         placeholder="hello@gym.com"
                     />
                 </div>
                 <div>
-                    <label htmlFor="timezone" className="block text-sm font-medium text-[var(--color-fg)]">
+                    <label htmlFor="timezone" className="block text-sm font-medium text-(--color-fg)">
                         Timezone
                     </label>
                     <input
@@ -73,12 +73,12 @@ export function CreateGymForm() {
                         name="timezone"
                         value={timezone}
                         onChange={(e) => setTimezone(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                     />
-                    <p className="mt-1 text-xs text-[var(--color-fg-muted)]">Default Asia/Kolkata for India desks.</p>
+                    <p className="mt-1 text-xs text-(--color-fg-muted)">Default Asia/Kolkata for India desks.</p>
                 </div>
                 {error ? (
-                    <p className="text-sm text-[var(--color-danger)]" role="alert">
+                    <p className="text-sm text-(--color-danger)" role="alert">
                         {error}
                     </p>
                 ) : null}

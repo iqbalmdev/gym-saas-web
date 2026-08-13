@@ -216,12 +216,12 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
     const sidebarExpanded = mobileNavOpen || expanded;
 
     return (
-        <div className="admin-shell min-h-screen text-[var(--color-fg)]">
+        <div className="admin-shell min-h-screen text-(--color-fg)">
             <div className="flex min-h-screen">
                 {mobileNavOpen ? (
                     <button
                         type="button"
-                        className="fixed inset-0 z-30 bg-[var(--color-fg)]/25 backdrop-blur-[1px] md:hidden"
+                        className="fixed inset-0 z-30 bg-(--color-fg)/25 backdrop-blur-[1px] md:hidden"
                         aria-label="Close navigation"
                         onClick={closeMobileNav}
                     />
@@ -229,7 +229,7 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
 
                 <aside
                     id="admin-mobile-nav"
-                    className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-[var(--color-border)]/70 bg-[var(--color-surface)] py-3 shadow-[var(--shadow-nav)] transition-[transform,width] duration-300 ease-out md:sticky md:z-auto md:shadow-none ${
+                    className={`fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col border-r border-(--color-border)/70 bg-(--color-surface) py-3 shadow-(--shadow-nav) transition-[transform,width] duration-300 ease-out md:sticky md:z-auto md:shadow-none ${
                         mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                     } ${sidebarExpanded ? 'w-[14rem]' : 'w-[4.25rem]'}`}
                     aria-label="Admin modules"
@@ -248,7 +248,7 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                             title="Gym SaaS"
                             onClick={closeMobileNav}
                         >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)] text-xs font-bold text-[var(--color-accent-fg)]">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-(--color-accent) text-xs font-bold text-(--color-accent-fg)">
                                 G
                             </span>
                             {sidebarExpanded ? (
@@ -257,7 +257,7 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                                         Gym SaaS
                                     </span>
                                     {gymName ? (
-                                        <span className="block truncate text-xs text-[var(--color-fg-muted)]">
+                                        <span className="block truncate text-xs text-(--color-fg-muted)">
                                             {gymName}
                                         </span>
                                     ) : null}
@@ -300,8 +300,8 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                                         sidebarExpanded ? 'gap-2.5 px-3 py-2.5' : 'justify-center px-0 py-2.5'
                                     } ${
                                         active
-                                            ? 'bg-[var(--color-accent)] font-medium text-[var(--color-accent-fg)]'
-                                            : 'text-[var(--color-fg-muted)] hover:bg-[var(--color-canvas)] hover:text-[var(--color-fg)]'
+                                            ? 'bg-(--color-accent) font-medium text-(--color-accent-fg)'
+                                            : 'text-(--color-fg-muted) hover:bg-(--color-canvas) hover:text-(--color-fg)'
                                     }`}
                                 >
                                     <NavGlyph icon={item.icon} />
@@ -312,17 +312,17 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                     </nav>
 
                     <div
-                        className={`mt-2 flex w-full border-t border-[var(--color-border)]/80 px-2 pt-3 ${
+                        className={`mt-2 flex w-full border-t border-(--color-border)/80 px-2 pt-3 ${
                             sidebarExpanded ? 'items-center justify-between gap-2' : 'flex-col items-center gap-2'
                         }`}
                     >
-                        {sidebarExpanded ? <p className="text-xs text-[var(--color-fg-muted)]">Appearance</p> : null}
+                        {sidebarExpanded ? <p className="text-xs text-(--color-fg-muted)">Appearance</p> : null}
                         <ThemeToggle />
                     </div>
                 </aside>
 
                 <div className="flex min-w-0 flex-1 flex-col">
-                    <header className="sticky top-0 z-20 border-b border-[var(--color-border)]/80 bg-[var(--color-surface)]/90 px-4 py-3 shadow-[var(--shadow-nav)] backdrop-blur-md md:px-6">
+                    <header className="sticky top-0 z-20 border-b border-(--color-border)/80 bg-(--color-surface)/90 px-4 py-3 shadow-(--shadow-nav) backdrop-blur-md md:px-6">
                         <div className="flex w-full items-center justify-between gap-3">
                             <div className="flex min-w-0 items-center gap-2">
                                 <Button
@@ -341,7 +341,7 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                                     className="flex min-w-0 items-center gap-2.5"
                                     title={gymName ? `${gymName} · Gym SaaS` : 'Gym SaaS'}
                                 >
-                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)] text-xs font-bold text-[var(--color-accent-fg)]">
+                                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-(--color-accent) text-xs font-bold text-(--color-accent-fg)">
                                         G
                                     </span>
                                     <span className="min-w-0">
@@ -349,7 +349,7 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                                             {gymName ?? 'Gym SaaS'}
                                         </span>
                                         {gymName ? (
-                                            <span className="block truncate text-xs text-[var(--color-fg-muted)]">
+                                            <span className="block truncate text-xs text-(--color-fg-muted)">
                                                 Admin
                                             </span>
                                         ) : null}
@@ -360,10 +360,10 @@ export function AdminShell({ children, user, mode = 'full', gymName = null, setu
                             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                                 <div className="hidden text-right sm:block">
                                     <p className="text-sm leading-tight font-medium">{user.displayName}</p>
-                                    <p className="text-xs text-[var(--color-fg-muted)]">{user.roleCode}</p>
+                                    <p className="text-xs text-(--color-fg-muted)">{user.roleCode}</p>
                                 </div>
                                 <div
-                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-canvas-accent)] text-xs font-semibold text-[var(--color-fg)] ring-2 ring-[var(--color-surface)]"
+                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-(--color-canvas-accent) text-xs font-semibold text-(--color-fg) ring-2 ring-(--color-surface)"
                                     title={user.email}
                                     aria-label={user.displayName}
                                 >

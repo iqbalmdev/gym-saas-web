@@ -47,10 +47,10 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
     return (
         <section className="space-y-3" aria-labelledby="roster-heading">
             <div>
-                <h2 id="roster-heading" className="text-sm font-semibold text-[var(--color-fg)]">
+                <h2 id="roster-heading" className="text-sm font-semibold text-(--color-fg)">
                     Active roster
                 </h2>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                <p className="mt-1 text-sm text-(--color-fg-muted)">
                     Payment badges are informational. Check-in block is a manual safety valve — entitlement still
                     follows subscription dates.
                 </p>
@@ -58,7 +58,7 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
 
             {(listError || error) && (
                 <p
-                    className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-danger)]"
+                    className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
                     role="alert"
                 >
                     {error ?? listError}
@@ -66,13 +66,11 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
             )}
 
             {active.length === 0 ? (
-                <p className="text-sm text-[var(--color-fg-muted)]">
-                    No active members yet. Accepted invites appear here.
-                </p>
+                <p className="text-sm text-(--color-fg-muted)">No active members yet. Accepted invites appear here.</p>
             ) : (
-                <div className="overflow-x-auto rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+                <div className="overflow-x-auto rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface)">
                     <table className="min-w-full text-left text-sm">
-                        <thead className="border-b border-[var(--color-border)] text-xs tracking-wide text-[var(--color-fg-muted)] uppercase">
+                        <thead className="border-b border-(--color-border) text-xs tracking-wide text-(--color-fg-muted) uppercase">
                             <tr>
                                 <th className="px-4 py-3 font-medium">Member</th>
                                 <th className="px-4 py-3 font-medium">Payment</th>
@@ -80,18 +78,18 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
                                 <th className="px-4 py-3 font-medium">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--color-border)]">
+                        <tbody className="divide-y divide-(--color-border)">
                             {active.map((member) => (
                                 <tr key={member.membershipId}>
                                     <td className="px-4 py-3">
-                                        <p className="font-medium text-[var(--color-fg)]">{member.clientName}</p>
-                                        <p className="text-xs text-[var(--color-fg-muted)]">
+                                        <p className="font-medium text-(--color-fg)">{member.clientName}</p>
+                                        <p className="text-xs text-(--color-fg-muted)">
                                             {member.clientEmail}
                                             {member.clientPhone ? ` · ${member.clientPhone}` : ''}
                                         </p>
                                     </td>
                                     <td className="px-4 py-3">
-                                        <span className="rounded-md border border-[var(--color-border)] px-2 py-1 text-xs font-medium text-[var(--color-fg)]">
+                                        <span className="rounded-md border border-(--color-border) px-2 py-1 text-xs font-medium text-(--color-fg)">
                                             {member.basePaymentStatus
                                                 ? membershipPaymentStatusLabel(member.basePaymentStatus)
                                                 : '—'}
@@ -99,7 +97,7 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
                                     </td>
                                     <td className="px-4 py-3">
                                         <span
-                                            className="text-xs font-medium text-[var(--color-fg)]"
+                                            className="text-xs font-medium text-(--color-fg)"
                                             data-testid={`check-in-status-${member.membershipId}`}
                                         >
                                             {member.checkInBlocked ? 'Blocked' : 'Allowed'}

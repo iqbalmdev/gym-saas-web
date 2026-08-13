@@ -117,17 +117,17 @@ export function GoogleOAuthCallbackClient() {
     if (phase === 'need-lane') {
         return (
             <form onSubmit={handleLaneSubmit} className="space-y-4">
-                <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
+                <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
                     <div>
-                        <h1 className="text-base font-semibold text-[var(--color-fg)]">Confirm your account type</h1>
-                        <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                        <h1 className="text-base font-semibold text-(--color-fg)">Confirm your account type</h1>
+                        <p className="mt-1 text-sm text-(--color-fg-muted)">
                             Choose Staff or Member for this Google account. This matches your first sign-in and cannot
                             change later.
                         </p>
                     </div>
                     <fieldset className="space-y-2">
                         <legend className="sr-only">Account type</legend>
-                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
                             <input
                                 type="radio"
                                 name="lane"
@@ -137,15 +137,13 @@ export function GoogleOAuthCallbackClient() {
                                 className="mt-1"
                             />
                             <span>
-                                <span className="block text-sm font-medium text-[var(--color-fg)]">
-                                    I work at a gym
-                                </span>
-                                <span className="block text-xs text-[var(--color-fg-muted)]">
+                                <span className="block text-sm font-medium text-(--color-fg)">I work at a gym</span>
+                                <span className="block text-xs text-(--color-fg-muted)">
                                     Staff / Admin — create or join a gym organization
                                 </span>
                             </span>
                         </label>
-                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--color-border)] p-3 hover:bg-[var(--color-canvas)]">
+                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
                             <input
                                 type="radio"
                                 name="lane"
@@ -155,16 +153,16 @@ export function GoogleOAuthCallbackClient() {
                                 className="mt-1"
                             />
                             <span>
-                                <span className="block text-sm font-medium text-[var(--color-fg)]">I’m a member</span>
-                                <span className="block text-xs text-[var(--color-fg-muted)]">
+                                <span className="block text-sm font-medium text-(--color-fg)">I’m a member</span>
+                                <span className="block text-xs text-(--color-fg-muted)">
                                     Client — membership and personal progress
                                 </span>
                             </span>
                         </label>
                     </fieldset>
                     <div>
-                        <label htmlFor="google-name" className="block text-sm font-medium text-[var(--color-fg)]">
-                            Display name <span className="font-normal text-[var(--color-fg-muted)]">(optional)</span>
+                        <label htmlFor="google-name" className="block text-sm font-medium text-(--color-fg)">
+                            Display name <span className="font-normal text-(--color-fg-muted)">(optional)</span>
                         </label>
                         <input
                             id="google-name"
@@ -172,12 +170,12 @@ export function GoogleOAuthCallbackClient() {
                             maxLength={120}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                             placeholder="Your name"
                         />
                     </div>
                     {error ? (
-                        <p className="text-sm text-[var(--color-danger)]" role="alert">
+                        <p className="text-sm text-(--color-danger)" role="alert">
                             {error}
                         </p>
                     ) : null}
@@ -186,7 +184,7 @@ export function GoogleOAuthCallbackClient() {
                     </Button>
                     <Link
                         href="/login"
-                        className="inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+                        className="inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-sm font-medium text-(--color-fg-muted) hover:text-(--color-fg)"
                     >
                         Back to sign in
                     </Link>
@@ -197,14 +195,14 @@ export function GoogleOAuthCallbackClient() {
 
     if (phase === 'error') {
         return (
-            <div className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
-                <h1 className="text-base font-semibold text-[var(--color-fg)]">Could not finish Google sign-in</h1>
-                <p className="text-sm text-[var(--color-danger)]" role="alert">
+            <div className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
+                <h1 className="text-base font-semibold text-(--color-fg)">Could not finish Google sign-in</h1>
+                <p className="text-sm text-(--color-danger)" role="alert">
                     {error ?? 'Something went wrong. Please try again.'}
                 </p>
                 <Link
                     href="/login"
-                    className="inline-flex w-full items-center justify-center rounded-md bg-[var(--color-accent)] px-3 py-2 text-sm font-medium text-[var(--color-accent-fg)] hover:opacity-90"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-(--color-accent) px-3 py-2 text-sm font-medium text-(--color-accent-fg) hover:opacity-90"
                 >
                     Back to sign in
                 </Link>
@@ -213,9 +211,9 @@ export function GoogleOAuthCallbackClient() {
     }
 
     return (
-        <div className="space-y-2 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-panel)]">
-            <h1 className="text-base font-semibold text-[var(--color-fg)]">Finishing Google sign-in…</h1>
-            <p className="text-sm text-[var(--color-fg-muted)]">One moment while we set up your account.</p>
+        <div className="space-y-2 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-panel)">
+            <h1 className="text-base font-semibold text-(--color-fg)">Finishing Google sign-in…</h1>
+            <p className="text-sm text-(--color-fg-muted)">One moment while we set up your account.</p>
         </div>
     );
 }

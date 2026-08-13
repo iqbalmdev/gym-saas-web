@@ -54,16 +54,11 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
     return (
         <section className="space-y-4" aria-labelledby="staff-invites-heading">
             <div>
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">
-                    Gym organization
-                </p>
-                <h2
-                    id="staff-invites-heading"
-                    className="mt-1 text-lg font-semibold tracking-tight text-[var(--color-fg)]"
-                >
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">Gym organization</p>
+                <h2 id="staff-invites-heading" className="mt-1 text-lg font-semibold tracking-tight text-(--color-fg)">
                     {gymName}
                 </h2>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                <p className="mt-1 text-sm text-(--color-fg-muted)">
                     Invite Staff to this gym with their staff code. Trainers are unlimited; Admins are capped by the
                     API.
                 </p>
@@ -71,14 +66,11 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
 
             <form
                 onSubmit={handleCreate}
-                className="space-y-4 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+                className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
             >
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label
-                            htmlFor="invitee-staff-code"
-                            className="block text-sm font-medium text-[var(--color-fg)]"
-                        >
+                        <label htmlFor="invitee-staff-code" className="block text-sm font-medium text-(--color-fg)">
                             Staff code
                         </label>
                         <input
@@ -87,16 +79,13 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                             required
                             value={staffCode}
                             onChange={(event) => setStaffCode(event.target.value)}
-                            className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                             placeholder="STF-XXXX"
                             autoComplete="off"
                         />
                     </div>
                     <div>
-                        <label
-                            htmlFor="invite-target-role"
-                            className="block text-sm font-medium text-[var(--color-fg)]"
-                        >
+                        <label htmlFor="invite-target-role" className="block text-sm font-medium text-(--color-fg)">
                             Role
                         </label>
                         <select
@@ -104,7 +93,7 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                             name="targetRole"
                             value={targetRole}
                             onChange={(event) => setTargetRole(event.target.value as StaffInviteTargetRole)}
-                            className="mt-2 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
                         >
                             <option value="TRAINER">Trainer</option>
                             <option value="ADMIN">Admin</option>
@@ -112,7 +101,7 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                     </div>
                 </div>
                 {error ? (
-                    <p role="alert" className="text-sm text-[var(--color-danger)]">
+                    <p role="alert" className="text-sm text-(--color-danger)">
                         {error}
                     </p>
                 ) : null}
@@ -121,33 +110,33 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                 </Button>
             </form>
 
-            <div className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-panel)]">
-                <div className="border-b border-[var(--color-border)]/80 px-5 py-3">
-                    <h3 className="text-sm font-medium text-[var(--color-fg)]">Invites for {gymName}</h3>
+            <div className="rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) shadow-(--shadow-panel)">
+                <div className="border-b border-(--color-border)/80 px-5 py-3">
+                    <h3 className="text-sm font-medium text-(--color-fg)">Invites for {gymName}</h3>
                 </div>
                 {listError ? (
-                    <p role="alert" className="px-5 py-4 text-sm text-[var(--color-danger)]">
+                    <p role="alert" className="px-5 py-4 text-sm text-(--color-danger)">
                         {listError}
                     </p>
                 ) : invites.length === 0 ? (
-                    <p className="px-5 py-6 text-sm text-[var(--color-fg-muted)]">
+                    <p className="px-5 py-6 text-sm text-(--color-fg-muted)">
                         No staff invites yet. Enter a staff code above to invite a Trainer or Admin.
                     </p>
                 ) : (
-                    <ul className="divide-y divide-[var(--color-border)]/70">
+                    <ul className="divide-y divide-(--color-border)/70">
                         {invites.map((invite) => (
                             <li
                                 key={invite.id}
                                 className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div className="min-w-0 space-y-1">
-                                    <p className="text-sm font-medium text-[var(--color-fg)]">{gymName}</p>
-                                    <p className="text-sm text-[var(--color-fg-muted)]">
+                                    <p className="text-sm font-medium text-(--color-fg)">{gymName}</p>
+                                    <p className="text-sm text-(--color-fg-muted)">
                                         {staffInviteRoleLabel(invite.targetRole)}
                                         <span className="mx-2">·</span>
                                         {staffInviteStatusLabel(invite.status)}
                                     </p>
-                                    <p className="text-xs text-[var(--color-fg-muted)]">
+                                    <p className="text-xs text-(--color-fg-muted)">
                                         Expires {formatInviteExpiry(invite.expiresAt)}
                                     </p>
                                 </div>

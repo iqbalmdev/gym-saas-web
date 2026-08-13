@@ -67,8 +67,8 @@ export default async function SettingsPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-fg)] md:text-3xl">Settings</h1>
-                <p className="mt-2 max-w-2xl text-sm text-[var(--color-fg-muted)]">
+                <h1 className="text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Settings</h1>
+                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
                     {gymOrgId
                         ? `Managing ${gymName}. Invite Trainers and desk Admins with an existing staff code.`
                         : 'Create your GymOrg to unlock Admin tools, or accept a staff invite if a gym already invited you.'}
@@ -76,8 +76,8 @@ export default async function SettingsPage() {
             </div>
 
             {session.staffCode ? (
-                <p className="text-sm text-[var(--color-fg-muted)]">
-                    Your staff code: <span className="font-medium text-[var(--color-fg)]">{session.staffCode}</span>
+                <p className="text-sm text-(--color-fg-muted)">
+                    Your staff code: <span className="font-medium text-(--color-fg)">{session.staffCode}</span>
                 </p>
             ) : null}
 
@@ -91,11 +91,11 @@ export default async function SettingsPage() {
                             <div>
                                 <h2
                                     id="create-gym-heading"
-                                    className="text-lg font-semibold tracking-tight text-[var(--color-fg)]"
+                                    className="text-lg font-semibold tracking-tight text-(--color-fg)"
                                 >
                                     Create your gym
                                 </h2>
-                                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                                <p className="mt-1 text-sm text-(--color-fg-muted)">
                                     You become the owner Admin. Then invite staff from this page.
                                 </p>
                             </div>

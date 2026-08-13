@@ -43,24 +43,23 @@ export default async function AdminSectionLayout({ children }: { children: React
     const displayName = session.name ?? session.email;
     const setupBanner =
         mode === 'settings-only' ? (
-            <div className="mb-6 rounded-[var(--radius-panel)] border border-[var(--color-border)]/80 bg-[var(--color-surface)] p-4 text-sm text-[var(--color-fg-muted)] shadow-[var(--shadow-panel)]">
+            <div className="mb-6 rounded-(--radius-panel) border border-(--color-border)/80 bg-(--color-surface) p-4 text-sm text-(--color-fg-muted) shadow-(--shadow-panel)">
                 Create your gym or accept a staff invite on this page
                 {session.staffCode ? (
                     <>
                         {' '}
-                        · your staff code is{' '}
-                        <span className="font-medium text-[var(--color-fg)]">{session.staffCode}</span>
+                        · your staff code is <span className="font-medium text-(--color-fg)">{session.staffCode}</span>
                     </>
                 ) : null}
                 .
             </div>
         ) : session.roleCode === 'STAFF_UNASSIGNED' ? (
-            <div className="mb-6 rounded-[var(--radius-panel)] border border-[var(--color-border)]/80 bg-[var(--color-surface)] p-4 text-sm text-[var(--color-fg-muted)] shadow-[var(--shadow-panel)]">
+            <div className="mb-6 rounded-(--radius-panel) border border-(--color-border)/80 bg-(--color-surface) p-4 text-sm text-(--color-fg-muted) shadow-(--shadow-panel)">
                 Your staff account is ready
                 {session.staffCode ? ` · ${session.staffCode}` : ''}. Invite Trainers from{' '}
                 <Link
                     href="/admin/settings"
-                    className="font-medium text-[var(--color-fg)] underline-offset-2 hover:underline"
+                    className="font-medium text-(--color-fg) underline-offset-2 hover:underline"
                 >
                     Settings
                 </Link>{' '}

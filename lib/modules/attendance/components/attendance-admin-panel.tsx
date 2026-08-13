@@ -71,36 +71,34 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
     return (
         <div className="space-y-6">
             <div>
-                <p className="text-xs font-medium tracking-wide text-[var(--color-fg-muted)] uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--color-fg)] md:text-3xl">
-                    Attendance
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm text-[var(--color-fg-muted)]">
+                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Attendance</h1>
+                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
                     Desk-mark members for today ({day}). Entitlement follows subscription dates, not payment status.
                 </p>
             </div>
 
             {(listError || error) && (
                 <p
-                    className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-danger)]"
+                    className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
                     role="alert"
                 >
                     {error ?? listError}
                 </p>
             )}
 
-            <section className="rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-panel)] md:p-6">
-                <h2 className="text-sm font-semibold text-[var(--color-fg)]">Desk mark</h2>
+            <section className="rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-4 shadow-(--shadow-panel) md:p-6">
+                <h2 className="text-sm font-semibold text-(--color-fg)">Desk mark</h2>
                 {members.length === 0 ? (
-                    <p className="mt-3 text-sm text-[var(--color-fg-muted)]">
+                    <p className="mt-3 text-sm text-(--color-fg-muted)">
                         No active members to mark. Accept a membership invite first.
                     </p>
                 ) : (
                     <form className="mt-4 space-y-3" onSubmit={handleDeskMark}>
                         <label className="block text-sm">
-                            <span className="font-medium text-[var(--color-fg)]">Search</span>
+                            <span className="font-medium text-(--color-fg)">Search</span>
                             <input
-                                className="mt-1 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-canvas)] px-3 py-2 text-sm"
+                                className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
                                 value={query}
                                 onChange={(event) => setQuery(event.target.value)}
                                 placeholder="Name, email, or phone"
@@ -108,9 +106,9 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
                             />
                         </label>
                         <label className="block text-sm">
-                            <span className="font-medium text-[var(--color-fg)]">Member</span>
+                            <span className="font-medium text-(--color-fg)">Member</span>
                             <select
-                                className="mt-1 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-canvas)] px-3 py-2 text-sm"
+                                className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
                                 value={clientUserId}
                                 onChange={(event) => setClientUserId(event.target.value)}
                                 required
@@ -132,21 +130,21 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
             </section>
 
             <section className="space-y-3">
-                <h2 className="text-sm font-semibold text-[var(--color-fg)]">Today&apos;s attendance</h2>
+                <h2 className="text-sm font-semibold text-(--color-fg)">Today&apos;s attendance</h2>
                 {attendances.length === 0 ? (
-                    <p className="text-sm text-[var(--color-fg-muted)]">No attendance recorded for today yet.</p>
+                    <p className="text-sm text-(--color-fg-muted)">No attendance recorded for today yet.</p>
                 ) : (
-                    <ul className="divide-y divide-[var(--color-border)] rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+                    <ul className="divide-y divide-(--color-border) rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface)">
                         {attendances.map((item) => (
                             <li
                                 key={item.id}
                                 className="flex flex-col gap-1 px-4 py-3 md:flex-row md:items-center md:justify-between"
                             >
                                 <div>
-                                    <p className="font-medium text-[var(--color-fg)]">
+                                    <p className="font-medium text-(--color-fg)">
                                         {nameByUserId.get(item.clientUserId) ?? item.clientUserId}
                                     </p>
-                                    <p className="text-xs text-[var(--color-fg-muted)]">
+                                    <p className="text-xs text-(--color-fg-muted)">
                                         {item.recordedBy === 'ADMIN' ? 'Desk' : 'Self'} · {formatTime(item.occurredAt)}
                                         {item.baseStarted ? ' · base started' : ''}
                                     </p>

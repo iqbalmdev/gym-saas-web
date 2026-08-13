@@ -39,22 +39,18 @@ export function StaffInviteInbox({ invites, listError, staffCode }: StaffInviteI
 
     return (
         <section
-            className="space-y-3 rounded-[var(--radius-panel)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-panel)]"
+            className="space-y-3 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
             aria-labelledby="staff-invite-inbox-heading"
         >
             <div>
-                <h2
-                    id="staff-invite-inbox-heading"
-                    className="text-lg font-semibold tracking-tight text-[var(--color-fg)]"
-                >
+                <h2 id="staff-invite-inbox-heading" className="text-lg font-semibold tracking-tight text-(--color-fg)">
                     Your staff invites
                 </h2>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">
+                <p className="mt-1 text-sm text-(--color-fg-muted)">
                     Accept an invite to join a gym as Trainer or Admin
                     {staffCode ? (
                         <>
-                            . Your staff code is <span className="font-medium text-[var(--color-fg)]">{staffCode}</span>
-                            .
+                            . Your staff code is <span className="font-medium text-(--color-fg)">{staffCode}</span>.
                         </>
                     ) : (
                         '.'
@@ -63,39 +59,39 @@ export function StaffInviteInbox({ invites, listError, staffCode }: StaffInviteI
             </div>
 
             {listError ? (
-                <p role="alert" className="text-sm text-[var(--color-danger)]">
+                <p role="alert" className="text-sm text-(--color-danger)">
                     {listError}
                 </p>
             ) : null}
             {error ? (
-                <p role="alert" className="text-sm text-[var(--color-danger)]">
+                <p role="alert" className="text-sm text-(--color-danger)">
                     {error}
                 </p>
             ) : null}
 
             {!listError && actionable.length === 0 ? (
-                <p className="text-sm text-[var(--color-fg-muted)]">
+                <p className="text-sm text-(--color-fg-muted)">
                     No pending invites. Share your staff code with a gym Admin, or create your own gym below.
                 </p>
             ) : null}
 
             {actionable.length > 0 ? (
-                <ul className="divide-y divide-[var(--color-border)]/70 rounded-md border border-[var(--color-border)]/80">
+                <ul className="divide-y divide-(--color-border)/70 rounded-md border border-(--color-border)/80">
                     {actionable.map((invite) => (
                         <li
                             key={invite.id}
                             className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                         >
                             <div className="min-w-0 space-y-1">
-                                <p className="text-sm font-medium text-[var(--color-fg)]">
+                                <p className="text-sm font-medium text-(--color-fg)">
                                     {invite.gym?.name ?? 'Gym invite'}
                                 </p>
-                                <p className="text-sm text-[var(--color-fg-muted)]">
+                                <p className="text-sm text-(--color-fg-muted)">
                                     Join as {staffInviteRoleLabel(invite.targetRole)}
                                     <span className="mx-2">·</span>
                                     {staffInviteStatusLabel(invite.status)}
                                 </p>
-                                <p className="text-xs text-[var(--color-fg-muted)]">
+                                <p className="text-xs text-(--color-fg-muted)">
                                     Expires {formatInviteExpiry(invite.expiresAt)}
                                 </p>
                             </div>
