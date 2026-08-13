@@ -14,8 +14,21 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 | Language | TypeScript 5 strict. `any` banned — `unknown` + type guard, or a generic |
 | Validation | **Zod 3** at the adapter boundary |
 | Styling | **Tailwind CSS 4** + semantic CSS variables (`lib/theme/*`) |
+| Components | **shadcn/ui** in `components/ui/` (`@base-ui/react`, cva, `cn()`) |
+| Icons | **lucide-react** |
 | Unit tests | **Vitest 4** (`lib/**/*.test.ts`) |
 | E2E | **Playwright** (`e2e/`, POM + fixtures) |
+
+## UI tokens (ADR-0006)
+
+- Dark mode switches on `html[data-theme]`, **not** a `.dark` class. shadcn's
+  variant is repointed in `app/globals.css`.
+- shadcn's token names (`--background`, `--primary`, …) are **aliases** onto the
+  CRM tokens (`--color-canvas`, `--color-accent`, …). Never put a literal colour
+  in `globals.css` or a feature — retheme by editing `lib/theme/crm-tokens.css`.
+- The alias block is defined once; `--color-*` already swaps per theme.
+- Use the canonical Tailwind 4 shorthand `text-(--color-fg)`, not
+  `text-[var(--color-fg)]`.
 
 ## Data access
 
@@ -32,7 +45,9 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 ## Not installed — do not reach for these
 
 `react-hook-form` · `@tanstack/react-query` · `swr` · `zustand` ·
-`@supabase/supabase-js` · `clsx` / `tailwind-merge` (there is no `cn()` helper)
+`@supabase/supabase-js`
+
+(`clsx` / `tailwind-merge` **are** installed — use `cn()` from `@/lib/utils`.)
 
 Forms use `useState` + `useTransition` + Server Actions. Server data is
 fetched in RSCs, not client-side. Zustand is **documented but not installed**
