@@ -10,15 +10,29 @@ Gym SaaS Next.js web — **Admin-first**.
 
 Docs index: `docs/README.md`.
 
-## Rules (best practices)
+## Rules (`.cursor/rules`)
 
-| Rule | Focus |
-|---|---|
-| `nextjs-app-router.mdc` | RSC default, Server Actions, client leaves |
-| `state-management.mdc` | Server data vs useState vs URL vs Zustand (UI only) |
-| `code-quality.mdc` | SOLID / ports / DI |
-| `architecture.mdc` | Settings-first, folders, no invent endpoints |
-| `testing.mdc` | Vitest port fakes + Playwright POM |
+Cursor auto-loads the **always-on** rules below. **Claude Code does not read
+`.mdc` files** — if you are Claude Code, read the always-on rules at session
+start, and the glob-scoped ones when you touch matching files.
+
+| Rule | Load | Focus |
+|---|---|---|
+| `000-project-context.mdc` | always | Surfaces, lanes, tenancy, domain non-negotiables |
+| `001-tech-stack.mdc` | always | Locked versions; what is **not** installed |
+| `code-quality.mdc` | always | SOLID / ports / DI / style |
+| `git-conventions.mdc` | always | Commits, branches, PR contents |
+| `security-data-grants.mdc` | always | DataGrants, billing ≠ access |
+| `postman-sync.mdc` | always | Sibling repo is API SSOT |
+| `context7-docs.mdc` | always | Library docs before inventing APIs |
+| `architecture.mdc` | glob | Settings-first, folders, no invent endpoints |
+| `nextjs-app-router.mdc` | glob | RSC default, Server Actions, client leaves |
+| `state-management.mdc` | glob | Server data vs useState vs URL vs Zustand (UI only) |
+| `security-data-access.mdc` | glob | Auth → lane → tenant → grant gate on Server Actions |
+| `error-handling.mdc` | glob | Calm errors; typed action results |
+| `testing.mdc` | glob | Vitest port fakes + Playwright POM |
+| `ui-theme.mdc` | glob | Semantic tokens only |
+| `progress-log.mdc` | always | Keep `docs/PROGRESS.md` current |
 
 ## Skills (`.cursor/skills`)
 

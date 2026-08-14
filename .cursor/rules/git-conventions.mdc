@@ -1,16 +1,30 @@
 ---
-description: "Commit and branch conventions"
-alwaysApply: false
+description: Git, commit, and branch conventions
+alwaysApply: true
 ---
 
-# Git conventions
+# Git
 
-- Conventional commits: `feat(m4-plans): add addon price snapshot on renewal`
-  — scope is the module id when applicable (m1..m13), otherwise the area
-  (infra, ci, docs).
-- Branch naming: `feat/m4-renewal-snapshot`, `fix/m11-crm-pipeline-filter`.
-- One logical change per commit. Don't bundle an unrelated refactor into a
+## Safety
+
+- Commit only when the user asks.
+- Never commit secrets (`.env`, keys, tokens).
+- No force-push `main` unless explicitly requested.
+
+## Commits
+
+- Conventional commits, module id as scope when applicable:
+  `feat(m4-plans): add addon price snapshot on renewal`.
+  Otherwise use the area — `infra`, `ci`, `docs`, `test`.
+- Small commits per tracer-bullet slice; imperative, why-focused messages.
+- One logical change per commit. Don’t bundle an unrelated refactor into a
   feature commit — call it out and suggest splitting instead.
-- PR description must state which module (M1–M13) and which PRD section it
-  implements, and list any deferred-scope item it deliberately does NOT
-  touch (see docs/MVP_ROADMAP.md "Explicitly deferred").
+
+## Branches & PRs
+
+- Branch per slice: `feat/m4-renewal-snapshot`, `fix/m11-crm-pipeline-filter`.
+  Do not commit features directly to `main`.
+- PR description states the **module (M1–M13)** and the PRD / `architecture-plan.md`
+  section it implements, plus any deliberately deferred scope it does **not** touch
+  (plan §13 non-goals).
+- PR must satisfy the compliance checklist in `docs/architecture-plan.md` §12.

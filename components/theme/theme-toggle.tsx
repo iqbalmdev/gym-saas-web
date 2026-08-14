@@ -41,6 +41,9 @@ export function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Mount-safe by design: SSR and the pre-paint boot script can disagree on
+    // theme, so the toggle only renders its real state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

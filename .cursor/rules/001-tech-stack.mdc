@@ -5,26 +5,43 @@ alwaysApply: true
 
 # Tech stack (Web Admin — S2)
 
-- Next.js 15, App Router ONLY. No Pages Router, no `getServerSideProps`,
-  no `getStaticProps`.
-- React 19, functional components + hooks only. No class components.
-- TypeScript 5.x, strict mode. `any` is banned — use `unknown` + a type
-  guard, or a proper generic.
-- Data layer: talks to the Express API (S3), not directly to Postgres, for
-  writes. Read-heavy dashboard queries MAY use the Supabase JS client
-  directly with row-level security — ask before assuming which, don't guess.
-- Auth: Supabase email OTP session, verified server-side in middleware /
-  route handlers. Never trust a role or gym_org_id sent from the client.
-- Styling: Tailwind CSS. Use `cn()` from `@/lib/utils` for conditional
-  classes. No styled-components, no CSS-in-JS libraries.
-- State: server state via fetch in Server Components / route handlers +
-  React Query (or SWR — pick one and stay consistent) for client-side
-  mutations. No ad-hoc global state libraries without asking first.
-- Forms: react-hook-form + zod for validation, mirrored on the API side.
+Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
+
+| Concern | Choice |
+|---|---|
+| Framework | **Next.js 16** App Router only — no Pages Router, no `getServerSideProps` |
+| UI | React 19, function components + hooks. No class components |
+| Language | TypeScript 5 strict. `any` banned — `unknown` + type guard, or a generic |
+| Validation | **Zod 3** at the adapter boundary |
+| Styling | **Tailwind CSS 4** + semantic CSS variables (`lib/theme/*`) |
+| Unit tests | **Vitest 4** (`lib/**/*.test.ts`) |
+| E2E | **Playwright** (`e2e/`, POM + fixtures) |
+
+## Data access
+
+- The web app calls the **Express API (S3) over HTTPS only**. It does not use
+  the Supabase client, and it does not query Postgres — for reads or writes.
+- Transport lives in `lib/api/*-adapter.ts` behind ports in `lib/ports/`.
+  Bind at `lib/api/composition.ts` — the single composition root.
+- Reads: Server Components call use-cases. Mutations: Server Actions →
+  use-case → adapter → `revalidatePath` / `redirect`.
+- Session: httpOnly cookie set after OTP/Google verify (ADR-0005). Never
+  trust a lane, role, or `gym_org_id` sent from the client.
+
+## Not installed — do not reach for these
+
+`react-hook-form` · `@tanstack/react-query` · `swr` · `zustand` ·
+`@supabase/supabase-js` · `clsx` / `tailwind-merge` (there is no `cn()` helper)
+
+Forms use `useState` + `useTransition` + Server Actions. Server data is
+fetched in RSCs, not client-side. Zustand is **documented but not installed**
+(`state-management.mdc`) — install it only when a real shared-chrome slice
+needs it, and say so first.
 
 ## Banned outright
+
 - `any`
 - Pages Router APIs
-- default exports for components (named exports only)
-- inline `fetch` calls scattered through client components — go through a
-  typed API client in `@/lib/api`
+- default exports for components
+- `fetch` of domain APIs inside client components — go through ports
+- adapter imports outside `lib/api/composition.ts`

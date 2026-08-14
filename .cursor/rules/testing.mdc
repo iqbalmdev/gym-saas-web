@@ -1,18 +1,39 @@
 ---
-description: "Testing expectations"
-globs: ["**/*.test.ts", "**/*.test.tsx", "app/**/route.ts", "lib/permissions/**/*.ts"]
+description: Vitest + Playwright testing — ports fakes, no infra in unit tests
+globs: lib/**/*.test.ts, e2e/**/*.ts, e2e/**/*.tsx
 alwaysApply: false
 ---
 
 # Testing
 
-- Any new function in `lib/permissions/` MUST ship with a test covering:
-  the happy path, missing role, wrong tenant, and (if applicable) missing
-  DataGrant. These four cases are the minimum, not a suggestion.
-- API routes get at least one integration test per HTTP status they can
-  return (200, 401, 403, 404, 422).
-- Use React Testing Library for components — test behavior (what the user
-  sees/does), not implementation details (internal state, class names).
-- Don't mock the permission-check layer in integration tests for
-  security-sensitive routes — that's the exact thing being tested.
-- Snapshot tests are discouraged for anything with dynamic dates/prices.
+**Unit:** Vitest — `npm test` (`lib/**/*.test.ts`).  
+**E2E:** Playwright — `npm run test:e2e` (`e2e/`, POM + fixtures). Skill: **playwright-e2e-testing**.  
+API contract smokes: **verify-api-flow** / Postman — not Playwright.
+
+## Unit rules
+
+- Test use-cases / mappers / pure helpers through their public API.
+- Inject **fakes that implement ports** — do not mock JSX or Next internals.
+- Unit tests must **not** import real HTTP clients, `fetch` adapters under test, or hit the network.
+- Prefer red → green → refactor for new seams.
+- Cover display edges: unpaid badge ≠ lock; missing DataGrant → empty copy.
+
+```ts
+// Fake the port — do not call the real API adapter in unit tests
+const fakeGymOrgs: GymOrgsReader = {
+  list: async () => ({ gymOrgs: [] }),
+};
+```
+
+## E2E rules
+
+- Page Objects + fixtures (`e2e/fixtures/`, `e2e/pages/`).
+- Prefer role/label locators; never assert CSS class names.
+- Use `GYM_SAAS_E2E_FIXTURES` server fakes for SSR/auth gates — browser `page.route` cannot intercept Server Actions.
+- Zustand UI stores: unit-test the **store factory** via `getState`/`setState` — do not mount full pages for chrome toggles.
+---
+
+# Naming
+
+- Unit: `<subject>.test.ts` next to the module (e.g. `resolve-post-auth-path.test.ts`).
+- E2E: `<flow>.spec.ts` under `e2e/`.

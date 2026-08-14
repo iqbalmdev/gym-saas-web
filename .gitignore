@@ -39,6 +39,7 @@ Thumbs.db
 *.local
 postman/
 .vercel
+.claude/settings.local.json
 
 # typescript / next
 *.tsbuildinfo

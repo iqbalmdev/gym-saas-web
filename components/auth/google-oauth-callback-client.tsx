@@ -35,6 +35,9 @@ export function GoogleOAuthCallbackClient() {
   const [name, setName] = useState("");
   const [isPending, startTransition] = useTransition();
 
+  // The OAuth hash exists only in the browser, so the whole callback result is
+  // necessarily resolved after mount.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const parsed = parseOAuthCallbackHash(window.location.hash);
     // Drop secrets from the address bar once read.
@@ -76,6 +79,7 @@ export function GoogleOAuthCallbackClient() {
     finish(nextTokens, pending);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function finish(nextTokens: Tokens, pending: GoogleOAuthPending) {
     setPhase("working");

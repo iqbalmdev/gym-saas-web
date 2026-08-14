@@ -47,6 +47,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     // Boot script already set data-theme; sync React state without fighting it.
     const resolved = readDocumentTheme();
+    // The boot script owns theme before paint; React can only sync to it after
+    // mount without causing a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(resolved);
     document.documentElement.dataset.themeReady = "true";
   }, []);

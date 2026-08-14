@@ -208,15 +208,22 @@ export function AdminShell({
 
   useEffect(() => {
     const stored = localStorage.getItem(SIDEBAR_EXPANDED_KEY);
+    // localStorage is unreadable during SSR, so the stored rail preference can
+    // only be applied after mount.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (stored === "0") {
       setExpanded(false);
     } else if (stored === "1") {
       setExpanded(true);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
     document.documentElement.dataset.adminShellReady = "true";
   }, []);
 
   useEffect(() => {
+    // Close the mobile drawer on navigation. Could become a key-based reset
+    // later; harmless as an effect because it only runs on pathname change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileNavOpen(false);
   }, [pathname]);
 
