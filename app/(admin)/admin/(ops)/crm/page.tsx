@@ -1,10 +1,10 @@
-import { LeadsAdminPanel } from '@/lib/modules/leads/components/leads-admin-panel';
+import { LeadsAdminPanel } from '@/modules/leads/components/leads-admin-panel';
 import { createAppServices } from '@/lib/api/composition';
 import { ApiClientError } from '@/lib/api/errors';
 import { getSession, isStaffSession } from '@/lib/auth/session';
-import { leadErrorMessage } from '@/lib/modules/leads/leads-errors';
-import { listStaffGymOrgs } from '@/lib/modules/gym-orgs/list-staff-gym-orgs';
-import type { Lead, LeadStatus } from '@/lib/modules/leads/leads-ports';
+import { leadErrorMessage } from '@/modules/leads/leads-errors';
+import { listStaffGymOrgs } from '@/modules/gym-orgs/list-staff-gym-orgs';
+import type { Lead, LeadStatus } from '@/modules/leads/leads-ports';
 
 type CrmPageProps = {
     searchParams: Promise<{ status?: string }>;

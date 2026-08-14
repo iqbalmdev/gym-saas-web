@@ -17,7 +17,7 @@ alwaysApply: true
 
 - Factory-inject deps; no hidden fetch globals in features.
 - Validate at adapter boundary (Zod); no cast-and-pray.
-- Endpoint paths in `lib/modules/<module>/<module>-endpoints.ts` — no scattered magic strings.
+- Endpoint paths in `modules/<module>/<module>-endpoints.ts` — no scattered magic strings.
 - Strict TypeScript; no `any` (use `unknown` + a type guard, or a generic); glossary names from `docs/CONTEXT.md`.
 - Calm errors in UI — never stack traces.
 - Choose **state tier** before coding (`state-management.mdc`) — do not default to a global client store.

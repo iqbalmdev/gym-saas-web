@@ -6,8 +6,13 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { adminNavItems, resolveAdminHomeHref, type AdminNavIcon, type AdminShellMode } from '@/lib/admin/admin-nav';
-import { signOutAction } from '@/lib/modules/auth/auth-actions';
+import {
+    adminNavItems,
+    resolveAdminHomeHref,
+    type AdminNavIcon,
+    type AdminShellMode,
+} from '@/components/admin/admin-nav';
+import { signOutAction } from '@/modules/auth/auth-actions';
 
 const SIDEBAR_EXPANDED_KEY = 'gym-saas-sidebar-expanded';
 

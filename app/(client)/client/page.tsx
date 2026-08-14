@@ -1,10 +1,10 @@
-import { DataGrantsPanel } from '@/lib/modules/membership-invites/components/data-grants-panel';
-import { MembershipInviteInbox } from '@/lib/modules/membership-invites/components/membership-invite-inbox';
+import { DataGrantsPanel } from '@/modules/membership-invites/components/data-grants-panel';
+import { MembershipInviteInbox } from '@/modules/membership-invites/components/membership-invite-inbox';
 import { createAppServices } from '@/lib/api/composition';
 import { ApiClientError } from '@/lib/api/errors';
 import { getSession, isClientSession } from '@/lib/auth/session';
-import { membershipInviteErrorMessage } from '@/lib/modules/membership-invites/membership-invites-errors';
-import type { MembershipInvite, MyDataGrants } from '@/lib/modules/membership-invites/membership-invites-ports';
+import { membershipInviteErrorMessage } from '@/modules/membership-invites/membership-invites-errors';
+import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
 
 type LoadedGrants = {
     gymOrgId: string;

@@ -16,7 +16,7 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 | Styling | **Tailwind CSS 4** + semantic CSS variables (`lib/theme/*`) |
 | Components | **shadcn/ui** in `components/ui/` (`@base-ui/react`, cva, `cn()`) |
 | Icons | **lucide-react** |
-| Unit tests | **Vitest 4** (`lib/**/*.test.ts`) |
+| Unit tests | **Vitest 4** (`modules/**`, `lib/**`, `components/**` `*.test.ts`) |
 | E2E | **Playwright** (`e2e/`, POM + fixtures) |
 
 ## UI tokens (ADR-0006)
@@ -34,9 +34,9 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 
 - The web app calls the **Express API (S3) over HTTPS only**. It does not use
   the Supabase client, and it does not query Postgres — for reads or writes.
-- Transport lives in `lib/modules/<module>/<module>-adapter.ts` behind that
+- Transport lives in `modules/<module>/<module>-adapter.ts` behind that
   module's ports. Each module binds its own `<module>-services.ts`; the single
-  composition root `lib/api/composition.ts` just spreads them (ADR-0007).
+  composition root `lib/api/composition.ts` just spreads them (ADR-0007/0008).
 - Reads: Server Components call use-cases. Mutations: Server Actions →
   use-case → adapter → `revalidatePath` / `redirect`.
 - Session: httpOnly cookie set after OTP/Google verify (ADR-0005). Never

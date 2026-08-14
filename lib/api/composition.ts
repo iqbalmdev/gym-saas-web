@@ -1,13 +1,13 @@
 import { createHttpClient, getApiBaseUrl } from '@/lib/api/client';
-import { attendanceServices } from '@/lib/modules/attendance/attendance-services';
-import { authServices } from '@/lib/modules/auth/auth-services';
-import { gymOrgsServices } from '@/lib/modules/gym-orgs/gym-orgs-services';
-import { leadsServices } from '@/lib/modules/leads/leads-services';
-import { membershipInvitesServices } from '@/lib/modules/membership-invites/membership-invites-services';
-import { plansServices } from '@/lib/modules/plans/plans-services';
-import { rosterServices } from '@/lib/modules/roster/roster-services';
-import { staffInvitesServices } from '@/lib/modules/staff-invites/staff-invites-services';
-import { subscriptionsServices } from '@/lib/modules/subscriptions/subscriptions-services';
+import { attendanceServices } from '@/modules/attendance/attendance-services';
+import { authServices } from '@/modules/auth/auth-services';
+import { gymOrgsServices } from '@/modules/gym-orgs/gym-orgs-services';
+import { leadsServices } from '@/modules/leads/leads-services';
+import { membershipInvitesServices } from '@/modules/membership-invites/membership-invites-services';
+import { plansServices } from '@/modules/plans/plans-services';
+import { rosterServices } from '@/modules/roster/roster-services';
+import { staffInvitesServices } from '@/modules/staff-invites/staff-invites-services';
+import { subscriptionsServices } from '@/modules/subscriptions/subscriptions-services';
 
 /**
  * Composition root — the only place that binds ports → adapters (DIP).

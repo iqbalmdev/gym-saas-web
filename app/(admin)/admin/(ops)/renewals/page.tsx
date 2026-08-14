@@ -1,10 +1,10 @@
-import { RenewalsAdminPanel } from '@/lib/modules/subscriptions/components/renewals-admin-panel';
+import { RenewalsAdminPanel } from '@/modules/subscriptions/components/renewals-admin-panel';
 import { createAppServices } from '@/lib/api/composition';
 import { ApiClientError } from '@/lib/api/errors';
 import { getSession, isStaffSession } from '@/lib/auth/session';
-import { subscriptionErrorMessage } from '@/lib/modules/subscriptions/subscriptions-errors';
-import { listStaffGymOrgs } from '@/lib/modules/gym-orgs/list-staff-gym-orgs';
-import type { RenewalDueItem } from '@/lib/modules/subscriptions/subscriptions-ports';
+import { subscriptionErrorMessage } from '@/modules/subscriptions/subscriptions-errors';
+import { listStaffGymOrgs } from '@/modules/gym-orgs/list-staff-gym-orgs';
+import type { RenewalDueItem } from '@/modules/subscriptions/subscriptions-ports';
 
 function isoDateOffset(days: number): string {
     const date = new Date();

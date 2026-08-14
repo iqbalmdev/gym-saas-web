@@ -1,12 +1,12 @@
 ---
 description: Vitest + Playwright testing — ports fakes, no infra in unit tests
-globs: lib/**/*.test.ts, e2e/**/*.ts, e2e/**/*.tsx
+globs: modules/**/*.test.ts, lib/**/*.test.ts, components/**/*.test.ts, e2e/**/*.ts, e2e/**/*.tsx
 alwaysApply: false
 ---
 
 # Testing
 
-**Unit:** Vitest — `npm test` (`lib/**/*.test.ts`).  
+**Unit:** Vitest — `npm test` (`modules/**/*.test.ts`, `lib/**/*.test.ts`, `components/**/*.test.ts`).  
 **E2E:** Playwright — `npm run test:e2e` (`e2e/`, POM + fixtures). Skill: **playwright-e2e-testing**.  
 API contract smokes: **verify-api-flow** / Postman — not Playwright.
 

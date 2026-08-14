@@ -3,29 +3,25 @@
  * Server Actions and RSC call these — browser `page.route` cannot intercept them.
  */
 import { ApiClientError } from '@/lib/api/errors';
-import type { Attendance, AttendanceReader, AttendanceWriter } from '@/lib/modules/attendance/attendance-ports';
-import type { AuthGateway, AuthLane, AuthUser } from '@/lib/modules/auth/auth-ports';
-import type { GymOrgsReader, GymOrgsWriter } from '@/lib/modules/gym-orgs/gym-orgs-ports';
-import type { Lead, LeadsReader, LeadsWriter } from '@/lib/modules/leads/leads-ports';
+import type { Attendance, AttendanceReader, AttendanceWriter } from '@/modules/attendance/attendance-ports';
+import type { AuthGateway, AuthLane, AuthUser } from '@/modules/auth/auth-ports';
+import type { GymOrgsReader, GymOrgsWriter } from '@/modules/gym-orgs/gym-orgs-ports';
+import type { Lead, LeadsReader, LeadsWriter } from '@/modules/leads/leads-ports';
 import type {
     MembershipInvite,
     MembershipInvitesReader,
     MembershipInvitesWriter,
     MyDataGrants,
-} from '@/lib/modules/membership-invites/membership-invites-ports';
-import type { MembershipPlan, PlansReader, PlansWriter } from '@/lib/modules/plans/plans-ports';
-import type { MembershipMutation, RosterMember, RosterReader, RosterWriter } from '@/lib/modules/roster/roster-ports';
-import type {
-    StaffInvite,
-    StaffInvitesReader,
-    StaffInvitesWriter,
-} from '@/lib/modules/staff-invites/staff-invites-ports';
+} from '@/modules/membership-invites/membership-invites-ports';
+import type { MembershipPlan, PlansReader, PlansWriter } from '@/modules/plans/plans-ports';
+import type { MembershipMutation, RosterMember, RosterReader, RosterWriter } from '@/modules/roster/roster-ports';
+import type { StaffInvite, StaffInvitesReader, StaffInvitesWriter } from '@/modules/staff-invites/staff-invites-ports';
 import type {
     RenewalDueItem,
     Subscription,
     SubscriptionsReader,
     SubscriptionsWriter,
-} from '@/lib/modules/subscriptions/subscriptions-ports';
+} from '@/modules/subscriptions/subscriptions-ports';
 
 export const E2E_FIXTURES_ENV = 'GYM_SAAS_E2E_FIXTURES';
 

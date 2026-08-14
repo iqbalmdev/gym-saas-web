@@ -57,7 +57,7 @@ const eslintConfig = defineConfig([
     {
         name: 'gym-saas/named-exports-only',
         // Next.js requires default exports in app/ (pages, layouts) — exempt there.
-        files: ['components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
+        files: ['components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}', 'modules/**/*.{ts,tsx}'],
         rules: {
             'no-restricted-syntax': [
                 'error',
@@ -73,7 +73,7 @@ const eslintConfig = defineConfig([
     // --- disjoint set 1: ports declare contracts only -------------------------
     {
         name: 'gym-saas/ports-declare-contracts-only',
-        files: ['lib/modules/*/*-ports.ts'],
+        files: ['modules/*/*-ports.ts'],
         rules: {
             'no-restricted-imports': [
                 'error',
@@ -82,11 +82,11 @@ const eslintConfig = defineConfig([
                         {
                             group: [
                                 '@/lib/api/*',
-                                '@/lib/modules/*/*-adapter',
-                                '@/lib/modules/*/*-use-cases',
-                                '@/lib/modules/*/*-actions',
-                                '@/lib/modules/*/*-services',
-                                '@/lib/modules/*/components/*',
+                                '@/modules/*/*-adapter',
+                                '@/modules/*/*-use-cases',
+                                '@/modules/*/*-actions',
+                                '@/modules/*/*-services',
+                                '@/modules/*/components/*',
                                 '@/components/*',
                             ],
                             message:
@@ -101,7 +101,7 @@ const eslintConfig = defineConfig([
     // --- disjoint set 2: adapters own transport, nothing above it -------------
     {
         name: 'gym-saas/adapters-own-transport',
-        files: ['lib/modules/*/*-adapter.ts'],
+        files: ['modules/*/*-adapter.ts'],
         rules: {
             'no-restricted-imports': [
                 'error',
@@ -109,10 +109,10 @@ const eslintConfig = defineConfig([
                     patterns: [
                         {
                             group: [
-                                '@/lib/modules/*/*-use-cases',
-                                '@/lib/modules/*/*-actions',
-                                '@/lib/modules/*/*-services',
-                                '@/lib/modules/*/components/*',
+                                '@/modules/*/*-use-cases',
+                                '@/modules/*/*-actions',
+                                '@/modules/*/*-services',
+                                '@/modules/*/components/*',
                                 '@/components/*',
                             ],
                             message:
@@ -127,12 +127,12 @@ const eslintConfig = defineConfig([
     // --- disjoint set 3: everything above the transport layer -----------------
     {
         name: 'gym-saas/transport-stays-in-adapters',
-        files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}'],
+        files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}', 'modules/**/*.{ts,tsx}'],
         ignores: [
             'lib/api/**', // the HTTP kernel and the E2E fixture set themselves
-            'lib/modules/*/*-ports.ts', // set 1
-            'lib/modules/*/*-adapter.ts', // set 2
-            'lib/modules/*/*-services.ts', // the sanctioned port → adapter binding
+            'modules/*/*-ports.ts', // set 1
+            'modules/*/*-adapter.ts', // set 2
+            'modules/*/*-services.ts', // the sanctioned port → adapter binding
             '**/*.test.ts',
             '**/*.test.tsx',
         ],
@@ -144,7 +144,7 @@ const eslintConfig = defineConfig([
                 {
                     patterns: [
                         {
-                            group: ['@/lib/api/client', '@/lib/modules/*/*-adapter', '@/lib/api/e2e-fixtures'],
+                            group: ['@/lib/api/client', '@/modules/*/*-adapter', '@/lib/api/e2e-fixtures'],
                             message:
                                 'HTTP belongs in adapters, bound in <module>-services.ts (ADR-0004/0007). Resolve ports via createAppServices() from @/lib/api/composition.',
                         },
@@ -156,7 +156,7 @@ const eslintConfig = defineConfig([
                 {
                     name: 'fetch',
                     message:
-                        'No domain fetch outside lib/modules/*/*-adapter.ts (ADR-0004). Read via ports in a Server Component, mutate via a Server Action.',
+                        'No domain fetch outside modules/*/*-adapter.ts (ADR-0004). Read via ports in a Server Component, mutate via a Server Action.',
                 },
             ],
         },

@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from '@/lib/modules/auth/auth-ports';
+import type { AuthSession, AuthUser } from '@/modules/auth/auth-ports';
 
 /**
  * Admin web session snapshot (ADR-0005) — serializable cookie payload.

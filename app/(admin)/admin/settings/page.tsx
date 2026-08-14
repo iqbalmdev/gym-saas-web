@@ -1,11 +1,11 @@
-import { CreateGymForm } from '@/lib/modules/gym-orgs/components/create-gym-form';
-import { StaffInvitesAdminPanel } from '@/lib/modules/staff-invites/components/staff-invites-admin-panel';
-import { StaffInviteInbox } from '@/lib/modules/staff-invites/components/staff-invite-inbox';
+import { CreateGymForm } from '@/modules/gym-orgs/components/create-gym-form';
+import { StaffInvitesAdminPanel } from '@/modules/staff-invites/components/staff-invites-admin-panel';
+import { StaffInviteInbox } from '@/modules/staff-invites/components/staff-invite-inbox';
 import { createAppServices } from '@/lib/api/composition';
 import { ApiClientError } from '@/lib/api/errors';
 import { getSession, isStaffSession } from '@/lib/auth/session';
-import { staffInviteErrorMessage } from '@/lib/modules/staff-invites/staff-invites-errors';
-import type { StaffInvite } from '@/lib/modules/staff-invites/staff-invites-ports';
+import { staffInviteErrorMessage } from '@/modules/staff-invites/staff-invites-errors';
+import type { StaffInvite } from '@/modules/staff-invites/staff-invites-ports';
 
 export default async function SettingsPage() {
     const session = await getSession();

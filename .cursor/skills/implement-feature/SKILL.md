@@ -13,9 +13,9 @@ description: Implement one Gym SaaS web vertical slice (Admin, Trainer, or Clien
 4. Keep out-of-MVP items out (plan §13).
 5. **Choose state tier** (rule `state-management.mdc`) before coding UI.
 
-## Module layout (ADR-0007)
+## Module layout (ADR-0007 / ADR-0008)
 
-Everything for a slice lives in **one folder**, `lib/modules/<module>/`:
+Everything for a slice lives in **one folder**, `modules/<module>/`:
 
 ```
 <module>-ports.ts       interfaces + DTOs      <module>-errors.ts    calm copy
