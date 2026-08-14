@@ -8,7 +8,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 |---|---|
 | Agent OS (rules, skills, docs) | Done — drift from `e537810` repaired; Cursor + Claude Code parity |
 | Tooling + CI | Done — Prettier/ESLint architecture rules/Husky/lint-staged + GitHub Actions (ADR-0006) |
-| Folder architecture | Done — module folders `lib/modules/<module>/` (ADR-0007) |
+| Folder architecture | Done — top-level `modules/<module>/`; `lib/` is shared infrastructure (ADR-0007, ADR-0008) |
 | UI foundation | Done — shadcn/ui on `data-theme`, tokens aliased to the CRM palette (ADR-0006) |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
@@ -21,7 +21,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
 | Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006) and the tree is now module-folders (ADR-0007).
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007).
 
 ## Next up
 

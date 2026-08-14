@@ -69,13 +69,13 @@ Inspired by pragmatic Clean Architecture in React ([Kondov](https://alexkondov.c
 ┌──────────────────────────────────────────────────────────┐
 │ Presentation  app/(persona)/*, components/*              │  props → markup; named event handlers only
 ├──────────────────────────────────────────────────────────┤
-│ Application   lib/modules/*/<m>-use-cases.ts             │  orchestrate; map to view models; depend on PORTS
+│ Application   modules/*/<m>-use-cases.ts                 │  orchestrate; map to view models; depend on PORTS
 ├──────────────────────────────────────────────────────────┤
-│ Ports         lib/modules/*/<m>-ports.ts (interfaces)    │  RenewalsReader, GymOrgWriter, AuthGateway, …
+│ Ports         modules/*/<m>-ports.ts (interfaces)        │  RenewalsReader, GymOrgWriter, AuthGateway, …
 ├──────────────────────────────────────────────────────────┤
-│ Adapters      lib/modules/*/<m>-adapter.ts, lib/auth/…   │  implement ports; endpoints + schema validation
+│ Adapters      modules/*/<m>-adapter.ts, lib/auth/…       │  implement ports; endpoints + schema validation
 ├──────────────────────────────────────────────────────────┤
-│ Display       lib/modules/*/<m>-errors|labels.ts         │  pure DTO → labels/badges/relative dates
+│ Display       modules/*/<m>-errors|labels.ts             │  pure DTO → labels/badges/relative dates
 ├──────────────────────────────────────────────────────────┤
 │ Design system lib/theme, components/ui                   │  tokens only — no domain rules
 └──────────────────────────────────────────────────────────┘
@@ -125,16 +125,16 @@ Composition root (route / server entry / factory)
 ### Example shape (Renewals inbox)
 
 ```typescript
-// lib/modules/subscriptions/subscriptions-ports.ts
+// modules/subscriptions/subscriptions-ports.ts
 export type RenewalsReader = {
   listDueWithinDays: (input: { days: number; gymOrgId: string }) => Promise<RenewalLineDto[]>;
 };
 
-// lib/modules/subscriptions/subscriptions-adapter.ts — implements the port (HTTP + Zod)
+// modules/subscriptions/subscriptions-adapter.ts — implements the port (HTTP + Zod)
 
-// lib/modules/subscriptions/subscriptions-use-cases.ts — depends on the port only
+// modules/subscriptions/subscriptions-use-cases.ts — depends on the port only
 
-// lib/modules/subscriptions/components/renewals-admin-panel.tsx — view model + handlers
+// modules/subscriptions/components/renewals-admin-panel.tsx — view model + handlers
 ```
 
 ### Kondov habits we keep
@@ -149,8 +149,8 @@ export type RenewalsReader = {
 
 ## 5. Target folder structure
 
-**Module-folder layout (ADR-0007).** Domain slices colocate; only genuinely
-shared infrastructure stays global.
+**Module-folder layout (ADR-0007, amended by ADR-0008).** Domain slices live at
+top-level `modules/`; only genuinely shared infrastructure stays in `lib/`.
 
 ```text
 gym-saas-web/
@@ -164,25 +164,25 @@ gym-saas-web/
 │   ├── (trainer)/                 # Phase B — do not delete the group idea
 │   ├── (client)/                  # Phase B — optional web
 │   └── api/                       # optional BFF route handlers only if ADR’d
+├── modules/<module>/              # one folder per module — the vertical slice
+│   ├── <module>-ports.ts          # interfaces (DIP) — RosterReader, PlansWriter, …
+│   ├── <module>-adapter.ts        # HTTP + Zod   (+ <module>-adapter.test.ts)
+│   ├── <module>-endpoints.ts      # this module’s paths
+│   ├── <module>-use-cases.ts      # depends on ports only
+│   ├── <module>-actions.ts        # "use server" gate → use-case
+│   ├── <module>-errors.ts         # calm copy  (+ -labels.ts where needed)
+│   ├── <module>-services.ts       # this module’s port → adapter binding
+│   └── components/                # module UI (admin/ + client/ when both)
 ├── components/                    # shared only — no module UI
 │   ├── ui/                        # buttons, empty-state, badges
 │   ├── theme/                     # provider + toggle
-│   └── admin/                     # admin-shell, admin-stub-page (chrome)
-├── lib/
-│   ├── modules/<module>/          # one folder per module — the vertical slice
-│   │   ├── <module>-ports.ts      # interfaces (DIP) — RosterReader, PlansWriter, …
-│   │   ├── <module>-adapter.ts    # HTTP + Zod   (+ <module>-adapter.test.ts)
-│   │   ├── <module>-endpoints.ts  # this module’s paths
-│   │   ├── <module>-use-cases.ts  # depends on ports only
-│   │   ├── <module>-actions.ts    # "use server" gate → use-case
-│   │   ├── <module>-errors.ts     # calm copy  (+ -labels.ts where needed)
-│   │   ├── <module>-services.ts   # this module’s port → adapter binding
-│   │   └── components/            # module UI (admin/ + client/ when both)
+│   └── admin/                     # admin-shell, admin-nav, admin-stub-page (chrome)
+├── lib/                           # shared infrastructure only
 │   ├── api/                       # HTTP kernel: client, errors, endpoints,
 │   │   └── composition.ts         # DI root — spreads module services
-│   ├── admin/                     # admin-nav (cross-cutting UI logic)
 │   ├── auth/                      # session cookie + guards
-│   └── theme/
+│   ├── theme/
+│   └── utils.ts
 ├── docs/                          # product + this plan + progress/
 ├── .cursor/ · .claude/            # rules, skills, mcp.json
 └── .agents/skills/                # Matt Pocock skills
@@ -258,13 +258,13 @@ User → email OTP request → isNewUser? lane chooser : skip
 - Check-in lock = manual **block check-in** only.
 - Coaching hard-stop = Trainer addon expiry / Admin end addon.
 
-Implement display mappers in `lib/modules/<module>/<module>-errors.ts` / `-labels.ts`; never branch “deny check-in because unpaid” in the web UI.
+Implement display mappers in `modules/<module>/<module>-errors.ts` / `-labels.ts`; never branch “deny check-in because unpaid” in the web UI.
 
 ---
 
 ## 9. API client contract (web)
 
-Adapters live beside their ports in `lib/modules/<module>/` and **implement** them.
+Adapters live beside their ports in `modules/<module>/` and **implement** them.
 
 ```text
 lib/api/                       # shared HTTP kernel only
@@ -274,7 +274,7 @@ lib/api/                       # shared HTTP kernel only
   e2e-fixtures.ts              # deterministic fakes for Playwright
   composition.ts               # DI root — spreads module services
 
-lib/modules/subscriptions/     # one module, everything it owns
+modules/subscriptions/         # one module, everything it owns
   subscriptions-ports.ts       # RenewalsReader, …
   subscriptions-adapter.ts     # implements the port (HTTP + Zod)
   subscriptions-endpoints.ts   # this module's named paths
