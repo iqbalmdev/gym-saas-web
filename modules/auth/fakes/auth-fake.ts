@@ -26,6 +26,13 @@ export function createFakeAuthGateway(overrides?: Partial<AuthGateway>): AuthGat
         }),
         completeGoogle: async () => ({ user }),
         getMe: async () => ({ user }),
+        refreshSession: async () => ({
+            session: {
+                accessToken: 'test-access-refreshed',
+                refreshToken: 'test-refresh-refreshed',
+                expiresIn: 3600,
+            },
+        }),
         ...overrides,
     };
 }

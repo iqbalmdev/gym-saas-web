@@ -268,7 +268,7 @@ Adapters live beside their ports in `modules/<module>/` and **implement** them.
 
 ```text
 lib/api/                       # shared HTTP kernel only
-  client.ts                    # base URL, auth header, refresh retry once
+  client.ts                    # base URL, auth header
   errors.ts                    # map status → calm user message codes
   endpoints.ts                 # shared paths (health)
   e2e-fixtures.ts              # deterministic fakes for Playwright
@@ -287,6 +287,7 @@ modules/subscriptions/         # one module, everything it owns
 - Errors: never dump raw payloads in UI (error-handling rule).
 - Verification path: Postman MCP / `verify-api-flow` skill (OTP → token → endpoint).
 - `<module>-services.ts` binds port → adapter; nothing above it imports adapter concretes (enforced in `eslint.config.mjs`).
+- **Refresh is not a client.ts retry-once.** Server Components can't write cookies, and `POST /auth/refresh` rotates the refresh token (old one invalidated) — a reactive retry-in-client.ts would recover one render and then hard-lock the next request on the now-burned token. `proxy.ts` (root; Next 16's renamed `middleware.ts`) refreshes the session cookie proactively, shortly before the access token expires, since it's the one place that sees both the incoming request cookie and can write the outgoing response cookie ahead of a plain page GET. See `docs/api/client-auth.md` (Refresh session) and `lib/auth/session-model.ts`.
 ---
 
 ## 10. UI / theme architecture

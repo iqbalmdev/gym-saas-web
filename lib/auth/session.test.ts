@@ -6,6 +6,8 @@ import {
     encodeSession,
     isClientSession,
     isStaffSession,
+    needsRefresh,
+    rotateSessionSnapshot,
     type SessionSnapshot,
 } from '@/lib/auth/session-model';
 import type { AuthSession, AuthUser } from '@/modules/auth/auth-ports';
@@ -77,5 +79,58 @@ describe('isClientSession', () => {
     it('allows CLIENT lane into Client home', () => {
         const snapshot: SessionSnapshot = buildSessionSnapshot(session, clientUser);
         expect(isClientSession(snapshot)).toBe(true);
+    });
+});
+
+describe('rotateSessionSnapshot', () => {
+    it('replaces tokens and expiry but keeps identity fields from the previous snapshot', () => {
+        const previous = buildSessionSnapshot(session, staffUser);
+        const rotated = rotateSessionSnapshot(previous, {
+            accessToken: 'new-access',
+            refreshToken: 'new-refresh',
+            expiresIn: 3600,
+        });
+
+        expect(rotated.accessToken).toBe('new-access');
+        expect(rotated.refreshToken).toBe('new-refresh');
+        expect(rotated.expiresAt).toBeGreaterThan(previous.expiresAt - 1000);
+        expect(rotated.userId).toBe(previous.userId);
+        expect(rotated.email).toBe(previous.email);
+        expect(rotated.name).toBe(previous.name);
+        expect(rotated.lane).toBe(previous.lane);
+        expect(rotated.roleCode).toBe(previous.roleCode);
+        expect(rotated.staffCode).toBe(previous.staffCode);
+    });
+});
+
+describe('needsRefresh', () => {
+    it('is false when the access token has plenty of time left', () => {
+        const snapshot = buildSessionSnapshot(session, staffUser); // expires in 1h
+        expect(needsRefresh(snapshot)).toBe(false);
+    });
+
+    it('is true once inside the default 60s buffer', () => {
+        const snapshot: SessionSnapshot = {
+            ...buildSessionSnapshot(session, staffUser),
+            expiresAt: Date.now() + 30_000,
+        };
+        expect(needsRefresh(snapshot)).toBe(true);
+    });
+
+    it('is true once already expired', () => {
+        const snapshot: SessionSnapshot = {
+            ...buildSessionSnapshot(session, staffUser),
+            expiresAt: Date.now() - 1,
+        };
+        expect(needsRefresh(snapshot)).toBe(true);
+    });
+
+    it('respects a custom buffer', () => {
+        const snapshot: SessionSnapshot = {
+            ...buildSessionSnapshot(session, staffUser),
+            expiresAt: Date.now() + 120_000,
+        };
+        expect(needsRefresh(snapshot, 60_000)).toBe(false);
+        expect(needsRefresh(snapshot, 180_000)).toBe(true);
     });
 });

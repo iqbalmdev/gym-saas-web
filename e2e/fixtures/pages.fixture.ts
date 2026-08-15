@@ -59,10 +59,8 @@ export const test = base.extend<Pages & AuthFixtures>({
     },
 
     staffAdmin: async ({ context, page }, use) => {
+        // No `sidebar_state` cookie means the shell defaults to expanded (SSR-known, no flash).
         await context.addCookies([encodeStaffSessionCookie()]);
-        await page.addInitScript(() => {
-            localStorage.setItem('gym-saas-sidebar-expanded', '1');
-        });
         const shell = new AdminShellPage(page);
         await shell.gotoDashboard();
         await shell.expectShellReady();

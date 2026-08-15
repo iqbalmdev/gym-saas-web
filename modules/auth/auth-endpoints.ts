@@ -5,4 +5,5 @@ export const endpoints = {
     googleStart: '/auth/google/start',
     googleComplete: '/auth/google/complete',
     me: '/auth/me',
+    refresh: '/auth/refresh',
 } as const;

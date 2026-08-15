@@ -7,10 +7,20 @@ import {
     encodeSession,
     isClientSession,
     isStaffSession,
+    needsRefresh,
+    rotateSessionSnapshot,
     type SessionSnapshot,
 } from '@/lib/auth/session-model';
 
-export { SESSION_COOKIE_NAME, buildSessionSnapshot, isClientSession, isStaffSession, type SessionSnapshot };
+export {
+    SESSION_COOKIE_NAME,
+    buildSessionSnapshot,
+    isClientSession,
+    isStaffSession,
+    needsRefresh,
+    rotateSessionSnapshot,
+    type SessionSnapshot,
+};
 
 /**
  * Admin web session (ADR-0005) — httpOnly cookie only.

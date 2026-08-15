@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -40,6 +41,9 @@ export default async function AdminSectionLayout({ children }: { children: React
         mode = 'full';
     }
 
+    const sidebarStateCookie = (await cookies()).get('sidebar_state')?.value;
+    const defaultSidebarOpen = sidebarStateCookie !== 'false';
+
     const displayName = session.name ?? session.email;
     const setupBanner =
         mode === 'settings-only' ? (
@@ -71,6 +75,7 @@ export default async function AdminSectionLayout({ children }: { children: React
         <AdminShell
             mode={mode}
             gymName={gymName}
+            defaultSidebarOpen={defaultSidebarOpen}
             user={{
                 displayName,
                 email: session.email,

@@ -1,3 +1,14 @@
+import {
+    CalendarCheck2,
+    LayoutDashboard,
+    RefreshCw,
+    Settings2,
+    Users,
+    Users2,
+    Wallet,
+    type LucideIcon,
+} from 'lucide-react';
+
 export type AdminNavIcon = 'home' | 'renewals' | 'leads' | 'members' | 'attendance' | 'plans' | 'settings';
 
 export type AdminNavItem = {
@@ -7,6 +18,17 @@ export type AdminNavItem = {
 };
 
 export type AdminShellMode = 'settings-only' | 'full';
+
+/** Maps the persisted `AdminNavIcon` key onto its `lucide-react` glyph. */
+export const ADMIN_NAV_ICONS: Readonly<Record<AdminNavIcon, LucideIcon>> = {
+    home: LayoutDashboard,
+    renewals: RefreshCw,
+    leads: Users2,
+    members: Users,
+    attendance: CalendarCheck2,
+    plans: Wallet,
+    settings: Settings2,
+};
 
 const ALL_ADMIN_NAV: ReadonlyArray<AdminNavItem> = [
     { href: '/admin', label: 'Dashboard', icon: 'home' },
@@ -30,4 +52,16 @@ export function adminNavItems(mode: AdminShellMode): ReadonlyArray<AdminNavItem>
 
 export function resolveAdminHomeHref(mode: AdminShellMode): string {
     return mode === 'settings-only' ? '/admin/settings' : '/admin';
+}
+
+/** `/admin` is the Dashboard route — every other module also starts with it, so it needs an exact match. */
+export function isAdminNavItemActive(pathname: string, item: AdminNavItem): boolean {
+    if (item.href === '/admin') {
+        return pathname === '/admin';
+    }
+    return pathname.startsWith(item.href);
+}
+
+export function getActiveAdminNavItem(pathname: string, mode: AdminShellMode): AdminNavItem | undefined {
+    return adminNavItems(mode).find((item) => isAdminNavItemActive(pathname, item));
 }

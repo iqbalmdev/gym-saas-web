@@ -178,6 +178,21 @@ export function createE2eAuthGateway(): AuthGateway {
                 }),
             };
         },
+
+        async refreshSession() {
+            // Fixture runs are far shorter than the 1h `expiresIn` below, so
+            // proxy's refresh path is not expected to fire in E2E — this exists
+            // only to satisfy the port contract. It intentionally does not try
+            // to round-trip the fixed 'e2e-refresh-token' back to a specific
+            // lane's access token (other fakes key off exact token constants).
+            return {
+                session: {
+                    accessToken: E2E_STAFF_TOKEN_NO_GYM,
+                    refreshToken: 'e2e-refresh-token',
+                    expiresIn: 3600,
+                },
+            };
+        },
     };
 }
 

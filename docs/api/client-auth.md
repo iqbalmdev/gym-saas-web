@@ -142,6 +142,27 @@ Without `redirect_to`, local/dev may use the API’s Postman helper at `{apiHost
 
 Call after cold start to restore UI from a stored token.
 
+### Refresh session
+
+`POST /auth/refresh` — public (refresh token in body, no Bearer)
+
+```json
+{ "refreshToken": "…" }
+```
+
+- **200**
+  ```json
+  {
+    "session": { "accessToken": "…", "refreshToken": "…", "expiresIn": 3600 }
+  }
+  ```
+  - No `user` in the response — callers keep the identity fields from the last login/refresh.
+  - **Rotates** the refresh token: the old one is invalidated on success, always persist the new one.
+- **401** `AUTHENTICATION_FAILED` — refresh token invalid, expired, or already used
+- **422** `VALIDATION_ERROR`
+
+Web: called from `proxy.ts` (Next 16's `middleware.ts` equivalent) shortly before the access token expires, so the user is never bounced back to `/login` while the refresh token is still good. See `lib/auth/session-model.ts` (`rotateSessionSnapshot`, `needsRefresh`).
+
 ---
 
 ## Gym orgs (STAFF after login)

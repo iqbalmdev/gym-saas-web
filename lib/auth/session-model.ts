@@ -33,6 +33,24 @@ export function buildSessionSnapshot(session: AuthSession, user: AuthUser): Sess
     };
 }
 
+/**
+ * Rebuilds a snapshot after `POST /auth/refresh`, which rotates the token
+ * pair but returns no `user` — identity fields carry over from `previous`.
+ */
+export function rotateSessionSnapshot(previous: SessionSnapshot, session: AuthSession): SessionSnapshot {
+    return {
+        ...previous,
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+        expiresAt: Date.now() + session.expiresIn * 1000,
+    };
+}
+
+/** True once the access token is within `bufferMs` of `expiresAt` (default 60s). */
+export function needsRefresh(snapshot: SessionSnapshot, bufferMs = 60_000): boolean {
+    return snapshot.expiresAt - Date.now() <= bufferMs;
+}
+
 export function encodeSession(snapshot: SessionSnapshot): string {
     return Buffer.from(JSON.stringify(snapshot), 'utf8').toString('base64url');
 }

@@ -14,21 +14,22 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Matt Pocock skills | Done (`.agents/skills`) |
 | Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
 | Client/Admin auth guide | Done — `docs/api/client-auth.md` |
+| Silent session refresh | Done — `proxy.ts` rotates the access/refresh pair via `POST /auth/refresh` before it expires; no more hourly forced re-login (Google-lane refresh-token compatibility still to verify) |
 | Auth research notes | Archived — `docs/archive/research/` |
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
 | Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
-| Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
+| Admin CRM-light chrome | Done — Base UI `Sidebar` primitive (icon rail + `Sheet` mobile drawer + cookie-persisted state), light/dark tokens, Settings-only first-run; Client persona shares the same header atoms |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007).
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav.
 
 ## Next up
 
 **Team setup:**
 
 1. **UI/UX design-system doc** — now unblocked, and it can document real tokens: the shadcn↔CRM alias map, table density, status badges (payment / membership / lead pipeline), and empty states including missing-DataGrant copy.
-2. **Adopt shadcn components per surface** — table, dialog, sheet, dropdown, select, badge. Add them as screens need them, not all at once.
+2. **Adopt shadcn components per surface** — table, dialog, dropdown, select, badge (`sheet`/`tooltip`/`separator`/`skeleton`/`input` landed with the Admin sidebar rebuild). Add them as screens need them, not all at once.
 3. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
 4. **Module ownership split** with Iqbal, then feature branches + PRs.
 
@@ -37,6 +38,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 6. Assign trainer / trainer list when Postman exposes a list endpoint.
 7. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
 8. Optional: deeper renewals UX (filters, member name join).
+9. Verify (`verify-api-flow`) whether `POST /auth/refresh` rotates Google-lane refresh tokens too, or only OTP-lane ones.
 
 ## Log
 
