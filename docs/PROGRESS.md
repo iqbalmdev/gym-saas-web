@@ -14,7 +14,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Matt Pocock skills | Done (`.agents/skills`) |
 | Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
 | Client/Admin auth guide | Done — `docs/api/client-auth.md` |
-| Silent session refresh | Done — `proxy.ts` rotates the access/refresh pair via `POST /auth/refresh` before it expires; no more hourly forced re-login (Google-lane refresh-token compatibility still to verify) |
+| Silent session refresh | Done — `proxy.ts` rotates the access/refresh pair via `POST /auth/refresh` before it expires; cookie `Max-Age` decoupled from the access-token TTL (`2026-08-16` fix, see progress log) so it survives to be refreshed instead of the browser dropping it at the 1h mark. Verified live against prod (`2026-08-16`): rotation + 401-on-stale-token both confirmed; Google-lane compatibility inferred high-confidence (shared Supabase issuer), not directly browser-tested |
 | Auth research notes | Archived — `docs/archive/research/` |
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
@@ -38,7 +38,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 6. Assign trainer / trainer list when Postman exposes a list endpoint.
 7. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
 8. Optional: deeper renewals UX (filters, member name join).
-9. Verify (`verify-api-flow`) whether `POST /auth/refresh` rotates Google-lane refresh tokens too, or only OTP-lane ones.
+9. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).
 
 ## Log
 

@@ -19,6 +19,17 @@ export type SessionSnapshot = {
 
 export const SESSION_COOKIE_NAME = 'gym_saas_session';
 
+/**
+ * Browser-side cookie lifetime — deliberately independent of the access
+ * token's `expiresAt` inside the payload. If the cookie's own `Max-Age` were
+ * pinned to that ~1h window instead, the browser would delete the cookie
+ * itself the moment no request happens to land in the last minute before
+ * expiry — before `proxy.ts`'s silent refresh ever gets a chance to run.
+ * This bounds how long an unused *refresh token* can sit in the browser, not
+ * the (much shorter, silently-renewed) access token.
+ */
+export const SESSION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
 export function buildSessionSnapshot(session: AuthSession, user: AuthUser): SessionSnapshot {
     return {
         accessToken: session.accessToken,
