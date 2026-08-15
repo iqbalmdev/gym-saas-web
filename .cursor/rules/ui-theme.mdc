@@ -1,6 +1,6 @@
 ---
 description: Semantic UI theme tokens — no hardcoded brand look
-globs: app/**/*.{ts,tsx,css}, components/**/*.{ts,tsx,css}, lib/theme/**/*.{ts,tsx,css}
+globs: app/**/*.{ts,tsx,css}, components/**/*.{ts,tsx,css}, lib/theme/**/*.{ts,tsx,css}, modules/**/components/*.{ts,tsx}
 alwaysApply: false
 ---
 

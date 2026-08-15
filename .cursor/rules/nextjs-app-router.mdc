@@ -1,6 +1,6 @@
 ---
 description: Next.js App Router best practices for Gym SaaS web
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, modules/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
@@ -24,7 +24,7 @@ alwaysApply: false
 
 - Route groups: `(auth)`, `(admin)`; keep `(trainer)` / `(client)` viable.
 - Staff with 0 gyms: Settings-only shell (`/admin/settings`); ops under `(ops)` require a GymOrg.
-- Shared UI: `components/ui`, `lib/*`. Persona UI: `components/admin|trainer|client`.
+- Shared UI: `components/ui`, `lib/*` (HTTP kernel, session, theme). Module UI: `modules/<module>/components/`. Admin chrome: `components/admin/`.
 
 ## State
 

@@ -1,10 +1,17 @@
 ---
-description: Keep docs/PROGRESS.md as the live project stage
+description: Keep docs/PROGRESS.md as the live project stage; log entries live in docs/progress/
 alwaysApply: true
 ---
 
 # Progress log
 
 - **Read** `docs/PROGRESS.md` (Current stage + Next up) before non-trivial work.
-- **Write** after a meaningful chunk: refresh Current stage / Next up; prepend a dated Log entry (newest first).
-- Do not delete old log entries. Do not treat plan files as stage SSOT.
+  For history, read the newest files in `docs/progress/`.
+- **Write** after a meaningful chunk:
+  1. Refresh **Current stage** / **Next up** in `docs/PROGRESS.md`.
+  2. Add a **new file** `docs/progress/YYYY-MM-DD-<slug>.md` starting with an
+     `# YYYY-MM-DD — Title` heading.
+- **One file per entry.** Never append to an existing entry and never edit an old
+  one — the single-file log conflicted on every parallel change, which is why it
+  was split (ADR-0007).
+- Do not treat plan files as stage SSOT.

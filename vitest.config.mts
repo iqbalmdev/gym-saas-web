@@ -1,19 +1,19 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  test: {
-    environment: "node",
-    include: ["lib/**/*.test.ts"],
-    exclude: ["e2e/**", "node_modules/**", ".next/**"],
-  },
-  resolve: {
-    alias: {
-      "@": root,
+    test: {
+        environment: 'node',
+        include: ['modules/**/*.test.ts', 'lib/**/*.test.ts', 'components/**/*.test.ts'],
+        exclude: ['e2e/**', 'node_modules/**', '.next/**'],
     },
-  },
+    resolve: {
+        alias: {
+            '@': root,
+        },
+    },
 });

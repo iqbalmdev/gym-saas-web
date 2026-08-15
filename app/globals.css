@@ -1,20 +1,134 @@
-@import "tailwindcss";
-@import "../lib/theme/crm-tokens.css";
+@import 'tailwindcss';
+@import '../lib/theme/crm-tokens.css';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/*
+ * shadcn keys dark mode off a `.dark` class by default. This app switches on
+ * `html[data-theme]` (FOUC-safe boot script + localStorage), so point the
+ * variant at that instead of introducing a second mechanism. (ADR-0006)
+ */
+@custom-variant dark (&:is([data-theme='dark'] *));
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --font-heading: var(--font-geist-sans);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * shadcn's token names, aliased onto the CRM semantic tokens rather than
+ * carrying a second palette (ADR-0006). Retheming stays a `crm-tokens.css`
+ * edit — nothing here holds a literal color.
+ *
+ * There is deliberately NO dark-mode duplicate of this block: the `--color-*`
+ * tokens already swap on `html[data-theme="dark"]`, so these aliases follow.
+ */
+:root {
+    --background: var(--color-canvas);
+    --foreground: var(--color-fg);
+
+    --card: var(--color-surface);
+    --card-foreground: var(--color-fg);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-fg);
+
+    /* shadcn "primary" is the high-contrast action colour — our accent. */
+    --primary: var(--color-accent);
+    --primary-foreground: var(--color-accent-fg);
+
+    /* shadcn "secondary"/"muted"/"accent" are all quiet surfaces, not brand. */
+    --secondary: var(--color-canvas-accent);
+    --secondary-foreground: var(--color-fg);
+    --muted: var(--color-canvas-accent);
+    --muted-foreground: var(--color-fg-muted);
+    --accent: var(--color-canvas-accent);
+    --accent-foreground: var(--color-fg);
+
+    --destructive: var(--color-danger);
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--color-accent);
+
+    /* Ops charts reuse the semantic status palette — no orphan chart colours. */
+    --chart-1: var(--color-info);
+    --chart-2: var(--color-success);
+    --chart-3: var(--color-warning);
+    --chart-4: var(--color-danger);
+    --chart-5: var(--color-fg-muted);
+
+    --sidebar: var(--color-surface);
+    --sidebar-foreground: var(--color-fg);
+    --sidebar-primary: var(--color-accent);
+    --sidebar-primary-foreground: var(--color-accent-fg);
+    --sidebar-accent: var(--color-canvas-accent);
+    --sidebar-accent-foreground: var(--color-fg);
+    --sidebar-border: var(--color-border);
+    --sidebar-ring: var(--color-accent);
+
+    /* Control radius (buttons/inputs). Panels keep --radius-panel. */
+    --radius: var(--radius-control);
 }
 
 body {
-  background: var(--color-canvas);
-  color: var(--color-fg);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+    background: var(--color-canvas);
+    color: var(--color-fg);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 .admin-shell {
-  background:
-    radial-gradient(1200px 600px at 10% -10%, var(--color-shell-glow-a) 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, var(--color-shell-glow-b) 0%, transparent 50%),
-    linear-gradient(180deg, var(--color-canvas-accent) 0%, var(--color-canvas) 45%);
+    background:
+        radial-gradient(1200px 600px at 10% -10%, var(--color-shell-glow-a) 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, var(--color-shell-glow-b) 0%, transparent 50%),
+        linear-gradient(180deg, var(--color-canvas-accent) 0%, var(--color-canvas) 45%);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    html {
+        @apply font-sans;
+    }
 }

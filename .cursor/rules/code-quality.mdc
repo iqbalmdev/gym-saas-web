@@ -7,17 +7,17 @@ alwaysApply: true
 
 ## Layering (SOLID)
 
-- **S:** Components render · use-cases orchestrate · `lib/api` transports · `lib/display` maps DTO → UI · client UI stores (Zustand) hold chrome only.
+- **S:** Components render · use-cases orchestrate · `<module>-adapter.ts` transports · `<module>-errors|labels.ts` map DTO → UI · client UI stores (Zustand) hold chrome only.
 - **O:** Extend via new mappers/modules — don’t edit the HTTP client for every screen.
 - **L:** Real + fake port impls honor the same types.
 - **I:** Small ports (`RenewalsReader`, auth, gym-orgs) — not one god `Api`.
-- **D:** UI/use-cases depend on ports; wire at `lib/api/composition.ts`.
+- **D:** UI/use-cases depend on ports; wire at `<module>-services.ts`, spread by `lib/api/composition.ts`.
 
 ## Habits
 
 - Factory-inject deps; no hidden fetch globals in features.
 - Validate at adapter boundary (Zod); no cast-and-pray.
-- Endpoint paths in `lib/api/endpoints.ts` — no scattered magic strings.
+- Endpoint paths in `modules/<module>/<module>-endpoints.ts` — no scattered magic strings.
 - Strict TypeScript; no `any` (use `unknown` + a type guard, or a generic); glossary names from `docs/CONTEXT.md`.
 - Calm errors in UI — never stack traces.
 - Choose **state tier** before coding (`state-management.mdc`) — do not default to a global client store.

@@ -1,5 +1,5 @@
-import { GoogleOAuthCallbackClient } from "@/components/auth/google-oauth-callback-client";
+import { GoogleOAuthCallbackClient } from '@/modules/auth/components/google-oauth-callback-client';
 
 export default function GoogleOAuthCallbackPage() {
-  return <GoogleOAuthCallbackClient />;
+    return <GoogleOAuthCallbackClient />;
 }

@@ -7,6 +7,7 @@ Keep this tree small. Prefer code + Current stage over essays.
 | Doc | Use |
 |---|---|
 | `PROGRESS.md` | Live stage + Next up |
+| `progress/` | Dated log entries, one file each |
 | `architecture-plan.md` | Build contract (ADR-0003) |
 | `architecture.md` | Short pointer |
 | `PRD.md` | Product requirements |

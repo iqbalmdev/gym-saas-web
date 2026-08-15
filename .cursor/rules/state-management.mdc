@@ -1,6 +1,6 @@
 ---
 description: Client vs server state — useState, Context, URL, Zustand (UI only)
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/client-state/**/*.ts
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, modules/**/*.{ts,tsx}, lib/client-state/**/*.ts
 alwaysApply: false
 ---
 

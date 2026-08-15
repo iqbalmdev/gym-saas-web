@@ -1,29 +1,29 @@
 {
-  "mcpServers": {
-    "supabase": {
-      "url": "https://mcp.supabase.com/mcp?features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
-    },
-    "postman": {
-      "url": "https://mcp.postman.com/mcp"
-    },
-    "github": {
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
-      }
-    },
-    "vercel": {
-      "url": "https://mcp.vercel.com"
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
-    },
-    "context7": {
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
-      }
+    "mcpServers": {
+        "supabase": {
+            "url": "https://mcp.supabase.com/mcp?features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching"
+        },
+        "postman": {
+            "url": "https://mcp.postman.com/mcp"
+        },
+        "github": {
+            "url": "https://api.githubcopilot.com/mcp/",
+            "headers": {
+                "Authorization": "Bearer ${env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+            }
+        },
+        "vercel": {
+            "url": "https://mcp.vercel.com"
+        },
+        "playwright": {
+            "command": "npx",
+            "args": ["-y", "@playwright/mcp@latest"]
+        },
+        "context7": {
+            "url": "https://mcp.context7.com/mcp",
+            "headers": {
+                "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
+            }
+        }
     }
-  }
 }

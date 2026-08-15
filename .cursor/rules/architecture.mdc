@@ -1,6 +1,6 @@
 ---
 description: Gym SaaS web architecture — Admin-first, ports/adapters, Settings-first Staff
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/**/*.{ts,tsx}
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/**/*.{ts,tsx}, modules/**/*.{ts,tsx}
 alwaysApply: false
 ---
 
@@ -8,7 +8,7 @@ alwaysApply: false
 
 - Build contract: `docs/architecture-plan.md` (ADR-0003). Stage: `docs/PROGRESS.md`.
 - **Admin-first** Next.js App Router; `(admin)` / `(client)` / `(trainer)` route groups — do not hardcode forever-Admin-only.
-- UI → use-cases → **ports**; HTTP only in `lib/api` adapters (ADR-0004). Composition root wires deps.
+- UI → use-cases → **ports**; HTTP only in `modules/<module>/<module>-adapter.ts` (ADR-0004/0008). Composition root (`lib/api/composition.ts`) wires deps.
 - **Data:** Server Components fetch; Client Components for interaction. Server Actions mutate. See `nextjs-app-router.mdc` + `state-management.mdc`.
 - Domain: `docs/PRD.md`, `docs/product-flows.md`, `docs/CONTEXT.md`.
 - **Staff first-run:** 0 gyms → `/admin/settings` only (create org / accept invite). Ops routes need a GymOrg. Do not revive `/onboarding/create-gym` as the gate.

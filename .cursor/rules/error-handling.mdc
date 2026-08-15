@@ -1,6 +1,6 @@
 ---
 description: Calm error and empty states for web UI
-globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, lib/display/**/*.ts, lib/features/**/*.ts
+globs: app/**/*.{ts,tsx}, components/**/*.{ts,tsx}, modules/**/*.ts
 alwaysApply: false
 ---
 
@@ -15,6 +15,6 @@ alwaysApply: false
 ## Server Actions
 
 - Actions return a typed result (`{ ok: true } | { ok: false; code; message }`) — they do not throw into JSX.
-- Branch on the API `error.code`; map to copy in `lib/display/<module>-errors.ts`. Never invent codes.
+- Branch on the API `error.code`; map to copy in `modules/<module>/<module>-errors.ts`. Never invent codes.
 - Every mutation surfaces a **visible** failure state. No silent `.catch(() => {})`.
 - Zod validation failures map back to the offending field where the form allows it — not one generic toast for a 5-field form.
