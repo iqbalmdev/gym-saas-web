@@ -30,6 +30,10 @@ const verifySchema = z.object({
     user: userSchema,
 });
 
+const refreshSchema = z.object({
+    session: sessionSchema,
+});
+
 const meSchema = z.object({
     user: userSchema,
 });
@@ -87,6 +91,15 @@ export function createAuthAdapter(http: HttpClient): AuthGateway {
                 accessToken,
             });
             return meSchema.parse(raw);
+        },
+
+        async refreshSession({ refreshToken }) {
+            const raw = await http.request<unknown>({
+                path: endpoints.refresh,
+                method: 'POST',
+                body: { refreshToken },
+            });
+            return refreshSchema.parse(raw);
         },
     };
 }

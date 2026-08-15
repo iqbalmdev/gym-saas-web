@@ -39,4 +39,9 @@ export type AuthGateway = {
      */
     completeGoogle: (input: { accessToken: string; lane: AuthLane; name?: string }) => Promise<{ user: AuthUser }>;
     getMe: (input: { accessToken: string }) => Promise<{ user: AuthUser }>;
+    /**
+     * Rotates the access + refresh token pair. The old refresh token is
+     * invalidated on success — always persist the returned one.
+     */
+    refreshSession: (input: { refreshToken: string }) => Promise<{ session: AuthSession }>;
 };
