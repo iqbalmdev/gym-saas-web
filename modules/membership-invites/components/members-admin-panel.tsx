@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     formatInviteExpiry,
     membershipInviteStatusLabel,
@@ -111,8 +114,8 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                         <div className="grid gap-3 md:grid-cols-2">
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Name</span>
-                                <input
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Input
+                                    className="mt-1"
                                     value={inviteeName}
                                     onChange={(event) => setInviteeName(event.target.value)}
                                     placeholder="Alex Client"
@@ -122,9 +125,9 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Email</span>
-                                <input
+                                <Input
                                     type="email"
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                    className="mt-1"
                                     value={invitedEmail}
                                     onChange={(event) => setInvitedEmail(event.target.value)}
                                     placeholder="alex.client@example.com"
@@ -134,8 +137,8 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Phone (optional)</span>
-                                <input
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Input
+                                    className="mt-1"
                                     value={inviteePhone}
                                     onChange={(event) => setInviteePhone(event.target.value)}
                                     placeholder="+15551234567"
@@ -144,70 +147,83 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Base plan</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Select
                                     value={basePlanId}
-                                    onChange={(event) => setBasePlanId(event.target.value)}
-                                    required
+                                    onValueChange={(value) => setBasePlanId(value ?? '')}
                                     disabled={isPending}
                                 >
-                                    {basePlans.map((plan) => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Base plan">
+                                        <SelectValue placeholder="Select a base plan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {basePlans.map((plan) => (
+                                            <SelectItem key={plan.id} value={plan.id}>
+                                                {plan.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Base payment</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Select
                                     value={basePaymentStatus}
-                                    onChange={(event) =>
-                                        setBasePaymentStatus(event.target.value as MembershipPaymentStatus)
-                                    }
+                                    onValueChange={(value) => setBasePaymentStatus(value as MembershipPaymentStatus)}
                                     disabled={isPending}
                                 >
-                                    {PAYMENT_OPTIONS.map((status) => (
-                                        <option key={status} value={status}>
-                                            {membershipPaymentStatusLabel(status)}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Base payment">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {PAYMENT_OPTIONS.map((status) => (
+                                            <SelectItem key={status} value={status}>
+                                                {membershipPaymentStatusLabel(status)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Add-on (optional)</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
-                                    value={addonPlanId}
-                                    onChange={(event) => setAddonPlanId(event.target.value)}
+                                <Select
+                                    value={addonPlanId || 'none'}
+                                    onValueChange={(value) => setAddonPlanId(!value || value === 'none' ? '' : value)}
                                     disabled={isPending || addonPlans.length === 0}
                                 >
-                                    <option value="">None</option>
-                                    {addonPlans.map((plan) => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Add-on plan">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">None</SelectItem>
+                                        {addonPlans.map((plan) => (
+                                            <SelectItem key={plan.id} value={plan.id}>
+                                                {plan.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             {addonPlanId ? (
                                 <label className="block text-sm">
                                     <span className="font-medium text-(--color-fg)">Add-on payment</span>
-                                    <select
-                                        className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                    <Select
                                         value={addonPaymentStatus}
-                                        onChange={(event) =>
-                                            setAddonPaymentStatus(event.target.value as MembershipPaymentStatus)
+                                        onValueChange={(value) =>
+                                            setAddonPaymentStatus(value as MembershipPaymentStatus)
                                         }
                                         disabled={isPending}
                                     >
-                                        {PAYMENT_OPTIONS.map((status) => (
-                                            <option key={status} value={status}>
-                                                {membershipPaymentStatusLabel(status)}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <SelectTrigger className="mt-1 w-full" aria-label="Add-on payment">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PAYMENT_OPTIONS.map((status) => (
+                                                <SelectItem key={status} value={status}>
+                                                    {membershipPaymentStatusLabel(status)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </label>
                             ) : null}
                         </div>
@@ -244,9 +260,9 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="rounded-md border border-(--color-border) px-2 py-1 text-xs font-medium text-(--color-fg)">
+                                    <Badge variant={invite.status === 'PENDING' ? 'secondary' : 'outline'}>
                                         {membershipInviteStatusLabel(invite.status)}
-                                    </span>
+                                    </Badge>
                                     {invite.status === 'PENDING' ? (
                                         <Button
                                             type="button"

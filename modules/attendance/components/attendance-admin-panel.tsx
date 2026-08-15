@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { deskMarkAttendanceAction } from '@/modules/attendance/attendance-actions';
 import type { Attendance } from '@/modules/attendance/attendance-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -97,8 +99,8 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
                     <form className="mt-4 space-y-3" onSubmit={handleDeskMark}>
                         <label className="block text-sm">
                             <span className="font-medium text-(--color-fg)">Search</span>
-                            <input
-                                className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                            <Input
+                                className="mt-1"
                                 value={query}
                                 onChange={(event) => setQuery(event.target.value)}
                                 placeholder="Name, email, or phone"
@@ -107,20 +109,22 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
                         </label>
                         <label className="block text-sm">
                             <span className="font-medium text-(--color-fg)">Member</span>
-                            <select
-                                className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                            <Select
                                 value={clientUserId}
-                                onChange={(event) => setClientUserId(event.target.value)}
-                                required
+                                onValueChange={(value) => setClientUserId(value ?? '')}
                                 disabled={isPending}
-                                aria-label="Member"
                             >
-                                {filteredMembers.map((member) => (
-                                    <option key={member.membershipId} value={member.clientUserId}>
-                                        {member.clientName} · {member.clientEmail}
-                                    </option>
-                                ))}
-                            </select>
+                                <SelectTrigger className="mt-1 w-full" aria-label="Member">
+                                    <SelectValue placeholder="Select a member" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {filteredMembers.map((member) => (
+                                        <SelectItem key={member.membershipId} value={member.clientUserId}>
+                                            {member.clientName} · {member.clientEmail}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </label>
                         <Button type="submit" disabled={isPending || !clientUserId}>
                             {isPending ? 'Marking…' : 'Mark attendance'}

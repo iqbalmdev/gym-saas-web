@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { createGymOrgAction } from '@/modules/auth/auth-actions';
 
 export function CreateGymForm() {
@@ -38,7 +39,7 @@ export function CreateGymForm() {
                     <label htmlFor="gym-name" className="block text-sm font-medium text-(--color-fg)">
                         Gym name
                     </label>
-                    <input
+                    <Input
                         id="gym-name"
                         name="name"
                         required
@@ -46,7 +47,7 @@ export function CreateGymForm() {
                         maxLength={120}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                        className="mt-2"
                         placeholder="North Star Fitness"
                     />
                 </div>
@@ -54,13 +55,13 @@ export function CreateGymForm() {
                     <label htmlFor="contact-email" className="block text-sm font-medium text-(--color-fg)">
                         Contact email <span className="font-normal text-(--color-fg-muted)">(optional)</span>
                     </label>
-                    <input
+                    <Input
                         id="contact-email"
                         name="contactEmail"
                         type="email"
                         value={contactEmail}
                         onChange={(e) => setContactEmail(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                        className="mt-2"
                         placeholder="hello@gym.com"
                     />
                 </div>
@@ -68,12 +69,12 @@ export function CreateGymForm() {
                     <label htmlFor="timezone" className="block text-sm font-medium text-(--color-fg)">
                         Timezone
                     </label>
-                    <input
+                    <Input
                         id="timezone"
                         name="timezone"
                         value={timezone}
                         onChange={(e) => setTimezone(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                        className="mt-2"
                     />
                     <p className="mt-1 text-xs text-(--color-fg-muted)">Default Asia/Kolkata for India desks.</p>
                 </div>

@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { requestOtpAction, verifyOtpAction } from '@/modules/auth/auth-actions';
 import { writeGoogleOAuthPending } from '@/modules/auth/google-oauth-pending';
 import { buildGoogleOAuthStartUrl } from '@/modules/auth/google-oauth-start';
@@ -176,7 +178,7 @@ export function LoginForm() {
                                   ? ''
                                   : ' · welcome back'}
                         </p>
-                        <input
+                        <Input
                             id="otp"
                             name="otp"
                             inputMode="numeric"
@@ -186,7 +188,7 @@ export function LoginForm() {
                             required
                             value={otp}
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm tracking-widest text-(--color-fg) outline-none focus:border-(--color-accent)"
+                            className="mt-2 tracking-widest"
                             placeholder="6-digit code"
                         />
                     </div>
@@ -219,7 +221,7 @@ export function LoginForm() {
                     <label htmlFor="email" className="block text-sm font-medium text-(--color-fg)">
                         Email
                     </label>
-                    <input
+                    <Input
                         id="email"
                         name="email"
                         type="email"
@@ -227,7 +229,7 @@ export function LoginForm() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                        className="mt-2"
                         placeholder="you@gym.com"
                     />
                 </div>
@@ -264,40 +266,28 @@ export function LoginForm() {
 function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) => void }) {
     const { lane, onChange } = props;
     return (
-        <fieldset className="space-y-2">
+        <fieldset>
             <legend className="sr-only">Account type</legend>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
-                <input
-                    type="radio"
-                    name="lane"
-                    value="STAFF"
-                    checked={lane === 'STAFF'}
-                    onChange={() => onChange('STAFF')}
-                    className="mt-1"
-                />
-                <span>
-                    <span className="block text-sm font-medium text-(--color-fg)">I work at a gym</span>
-                    <span className="block text-xs text-(--color-fg-muted)">
-                        Staff / Admin — create or join a gym organization
+            <RadioGroup name="lane" value={lane ?? undefined} onValueChange={(value) => onChange(value as AuthLane)}>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
+                    <RadioGroupItem value="STAFF" className="mt-1" />
+                    <span>
+                        <span className="block text-sm font-medium text-(--color-fg)">I work at a gym</span>
+                        <span className="block text-xs text-(--color-fg-muted)">
+                            Staff / Admin — create or join a gym organization
+                        </span>
                     </span>
-                </span>
-            </label>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
-                <input
-                    type="radio"
-                    name="lane"
-                    value="CLIENT"
-                    checked={lane === 'CLIENT'}
-                    onChange={() => onChange('CLIENT')}
-                    className="mt-1"
-                />
-                <span>
-                    <span className="block text-sm font-medium text-(--color-fg)">I’m a member</span>
-                    <span className="block text-xs text-(--color-fg-muted)">
-                        Client — membership and personal progress
+                </label>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-(--color-border) p-3 hover:bg-(--color-canvas)">
+                    <RadioGroupItem value="CLIENT" className="mt-1" />
+                    <span>
+                        <span className="block text-sm font-medium text-(--color-fg)">I’m a member</span>
+                        <span className="block text-xs text-(--color-fg-muted)">
+                            Client — membership and personal progress
+                        </span>
                     </span>
-                </span>
-            </label>
+                </label>
+            </RadioGroup>
         </fieldset>
     );
 }
@@ -308,13 +298,13 @@ function OptionalNameField(props: { name: string; onChange: (value: string) => v
             <label htmlFor="name" className="block text-sm font-medium text-(--color-fg)">
                 Display name <span className="font-normal text-(--color-fg-muted)">(optional)</span>
             </label>
-            <input
+            <Input
                 id="name"
                 name="name"
                 maxLength={120}
                 value={props.name}
                 onChange={(e) => props.onChange(e.target.value)}
-                className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                className="mt-2"
                 placeholder="Your name"
             />
         </div>

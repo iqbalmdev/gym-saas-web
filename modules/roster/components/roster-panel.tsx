@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { membershipPaymentStatusLabel } from '@/modules/membership-invites/membership-invites-labels';
 import { offboardMemberAction, setCheckInBlockAction } from '@/modules/roster/roster-actions';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -68,42 +70,42 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
             {active.length === 0 ? (
                 <p className="text-sm text-(--color-fg-muted)">No active members yet. Accepted invites appear here.</p>
             ) : (
-                <div className="overflow-x-auto rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface)">
-                    <table className="min-w-full text-left text-sm">
-                        <thead className="border-b border-(--color-border) text-xs tracking-wide text-(--color-fg-muted) uppercase">
-                            <tr>
-                                <th className="px-4 py-3 font-medium">Member</th>
-                                <th className="px-4 py-3 font-medium">Payment</th>
-                                <th className="px-4 py-3 font-medium">Check-in</th>
-                                <th className="px-4 py-3 font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--color-border)">
+                <div className="overflow-hidden rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface)">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="border-(--color-border) text-xs tracking-wide text-(--color-fg-muted) uppercase hover:bg-transparent">
+                                <TableHead className="px-4 py-3 text-(--color-fg-muted)">Member</TableHead>
+                                <TableHead className="px-4 py-3 text-(--color-fg-muted)">Payment</TableHead>
+                                <TableHead className="px-4 py-3 text-(--color-fg-muted)">Check-in</TableHead>
+                                <TableHead className="px-4 py-3 text-(--color-fg-muted)">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {active.map((member) => (
-                                <tr key={member.membershipId}>
-                                    <td className="px-4 py-3">
+                                <TableRow key={member.membershipId} className="border-(--color-border)">
+                                    <TableCell className="px-4 py-3 whitespace-normal">
                                         <p className="font-medium text-(--color-fg)">{member.clientName}</p>
                                         <p className="text-xs text-(--color-fg-muted)">
                                             {member.clientEmail}
                                             {member.clientPhone ? ` · ${member.clientPhone}` : ''}
                                         </p>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span className="rounded-md border border-(--color-border) px-2 py-1 text-xs font-medium text-(--color-fg)">
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3">
+                                        <Badge variant="outline">
                                             {member.basePaymentStatus
                                                 ? membershipPaymentStatusLabel(member.basePaymentStatus)
                                                 : '—'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3">
-                                        <span
-                                            className="text-xs font-medium text-(--color-fg)"
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3">
+                                        <Badge
+                                            variant={member.checkInBlocked ? 'destructive' : 'secondary'}
                                             data-testid={`check-in-status-${member.membershipId}`}
                                         >
                                             {member.checkInBlocked ? 'Blocked' : 'Allowed'}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3">
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3 whitespace-normal">
                                         <div className="flex flex-wrap gap-2">
                                             <Button
                                                 type="button"
@@ -124,11 +126,11 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
                                                 Offboard
                                             </Button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </tbody>
-                    </table>
+                        </TableBody>
+                    </Table>
                 </div>
             )}
         </section>

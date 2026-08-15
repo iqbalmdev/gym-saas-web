@@ -4,6 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { formatLeadFollowUp, LEAD_STATUSES, leadStatusLabel } from '@/modules/leads/leads-labels';
 import {
     changeLeadStatusAction,
@@ -20,9 +23,6 @@ type LeadsAdminPanelProps = {
     statusFilter: LeadStatus | 'ALL';
     listError: string | null;
 };
-
-const fieldClass =
-    'mt-1 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)';
 
 export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, listError }: LeadsAdminPanelProps) {
     const router = useRouter();
@@ -127,12 +127,12 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         <label htmlFor="lead-name" className="block text-sm font-medium text-(--color-fg)">
                             Name
                         </label>
-                        <input
+                        <Input
                             id="lead-name"
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className={fieldClass}
+                            className="mt-1"
                             placeholder="Walk-in Prospect"
                         />
                     </div>
@@ -140,13 +140,13 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         <label htmlFor="lead-phone" className="block text-sm font-medium text-(--color-fg)">
                             Phone
                         </label>
-                        <input
+                        <Input
                             id="lead-phone"
                             required
                             inputMode="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
-                            className={fieldClass}
+                            className="mt-1"
                             placeholder="9876543210"
                         />
                     </div>
@@ -154,11 +154,11 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         <label htmlFor="lead-source" className="block text-sm font-medium text-(--color-fg)">
                             Source
                         </label>
-                        <input
+                        <Input
                             id="lead-source"
                             value={source}
                             onChange={(e) => setSource(e.target.value)}
-                            className={fieldClass}
+                            className="mt-1"
                             placeholder="walk-in"
                         />
                     </div>
@@ -166,11 +166,11 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         <label htmlFor="lead-interest" className="block text-sm font-medium text-(--color-fg)">
                             Interest
                         </label>
-                        <input
+                        <Input
                             id="lead-interest"
                             value={interest}
                             onChange={(e) => setInterest(e.target.value)}
-                            className={fieldClass}
+                            className="mt-1"
                             placeholder="trial"
                         />
                     </div>
@@ -178,12 +178,12 @@ export function LeadsAdminPanel({ gymName, leads, dueFollowUps, statusFilter, li
                         <label htmlFor="lead-notes" className="block text-sm font-medium text-(--color-fg)">
                             Notes <span className="font-normal text-(--color-fg-muted)">(optional)</span>
                         </label>
-                        <textarea
+                        <Textarea
                             id="lead-notes"
                             rows={2}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            className={fieldClass}
+                            className="mt-1"
                             placeholder="Asked about evening batch"
                         />
                     </div>
@@ -306,13 +306,13 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Name
                         </label>
-                        <input
+                        <Input
                             id={`edit-name-${lead.id}`}
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
+                            className="mt-1"
                         />
                     </div>
                     <div>
@@ -322,14 +322,14 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Phone
                         </label>
-                        <input
+                        <Input
                             id={`edit-phone-${lead.id}`}
                             required
                             inputMode="tel"
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
+                            className="mt-1"
                         />
                     </div>
                     <div>
@@ -339,13 +339,13 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Source
                         </label>
-                        <input
+                        <Input
                             id={`edit-source-${lead.id}`}
                             value={source}
                             onChange={(e) => setSource(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
                             placeholder="walk-in"
+                            className="mt-1"
                         />
                     </div>
                     <div>
@@ -355,13 +355,13 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Interest
                         </label>
-                        <input
+                        <Input
                             id={`edit-interest-${lead.id}`}
                             value={interest}
                             onChange={(e) => setInterest(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
                             placeholder="trial"
+                            className="mt-1"
                         />
                     </div>
                     <div className="sm:col-span-2">
@@ -371,13 +371,13 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Notes
                         </label>
-                        <textarea
+                        <Textarea
                             id={`edit-notes-${lead.id}`}
                             rows={2}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
+                            className="mt-1"
                         />
                     </div>
                     <div>
@@ -387,13 +387,13 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Follow-up date
                         </label>
-                        <input
+                        <Input
                             id={`edit-followup-${lead.id}`}
                             type="date"
                             value={followUpDate}
                             onChange={(e) => setFollowUpDate(e.target.value)}
                             disabled={isPending}
-                            className={fieldClass}
+                            className="mt-1"
                         />
                     </div>
                     <div>
@@ -403,19 +403,22 @@ function LeadEditRow({ lead, statusFilter }: { lead: Lead; statusFilter: LeadSta
                         >
                             Status
                         </label>
-                        <select
-                            id={`edit-status-${lead.id}`}
+                        <Select
                             value={lead.status}
                             disabled={isPending}
-                            onChange={(e) => handleStatus(e.target.value as LeadStatus)}
-                            className={fieldClass}
+                            onValueChange={(value) => handleStatus(value as LeadStatus)}
                         >
-                            {LEAD_STATUSES.map((status) => (
-                                <option key={status} value={status}>
-                                    {leadStatusLabel(status)}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger id={`edit-status-${lead.id}`} className="mt-1 w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {LEAD_STATUSES.map((status) => (
+                                    <SelectItem key={status} value={status}>
+                                        {leadStatusLabel(status)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 

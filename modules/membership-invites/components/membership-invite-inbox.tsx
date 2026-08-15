@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     formatInviteExpiry,
     membershipInviteStatusLabel,
@@ -145,10 +146,9 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                                             key={option.value}
                                             className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
-                                            <input
-                                                type="checkbox"
+                                            <Checkbox
                                                 checked={profileAttrs.includes(option.value)}
-                                                onChange={() => toggleProfile(option.value)}
+                                                onCheckedChange={() => toggleProfile(option.value)}
                                                 disabled={isPending}
                                             />
                                             {option.label}
@@ -167,10 +167,9 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                                             key={option.value}
                                             className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
-                                            <input
-                                                type="checkbox"
+                                            <Checkbox
                                                 checked={classGrants.includes(option.value)}
-                                                onChange={() => toggleGrant(option.value)}
+                                                onCheckedChange={() => toggleGrant(option.value)}
                                                 disabled={isPending}
                                             />
                                             {option.label}

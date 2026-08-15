@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatPlanDuration, formatPlanPrice, planCapabilityLabel, planKindLabel } from '@/modules/plans/plans-labels';
 import { createPlanAction, deletePlanAction, setPlanActiveAction } from '@/modules/plans/plans-actions';
 import type { MembershipPlan, PlanKind } from '@/modules/plans/plans-ports';
@@ -119,12 +121,12 @@ export function PlansAdminPanel({ gymName, plans, kindFilter, listError }: Plans
                         <label htmlFor="plan-name" className="block text-sm font-medium text-(--color-fg)">
                             Name
                         </label>
-                        <input
+                        <Input
                             id="plan-name"
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm outline-none focus:border-(--color-accent)"
+                            className="mt-2"
                             placeholder={kind === 'ADDON' ? 'PT Coaching' : 'Monthly'}
                         />
                     </div>
@@ -132,42 +134,42 @@ export function PlansAdminPanel({ gymName, plans, kindFilter, listError }: Plans
                         <label htmlFor="plan-kind" className="block text-sm font-medium text-(--color-fg)">
                             Kind
                         </label>
-                        <select
-                            id="plan-kind"
-                            value={kind}
-                            onChange={(e) => setKind(e.target.value as PlanKind)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm outline-none focus:border-(--color-accent)"
-                        >
-                            <option value="BASE">Base membership</option>
-                            <option value="ADDON">Add-on (Trainer coaching)</option>
-                        </select>
+                        <Select value={kind} onValueChange={(value) => setKind(value as PlanKind)}>
+                            <SelectTrigger id="plan-kind" className="mt-2 w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="BASE">Base membership</SelectItem>
+                                <SelectItem value="ADDON">Add-on (Trainer coaching)</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div>
                         <label htmlFor="plan-duration" className="block text-sm font-medium text-(--color-fg)">
                             Duration (days)
                         </label>
-                        <input
+                        <Input
                             id="plan-duration"
                             type="number"
                             min={1}
                             required
                             value={durationDays}
                             onChange={(e) => setDurationDays(e.target.value)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm outline-none focus:border-(--color-accent)"
+                            className="mt-2"
                         />
                     </div>
                     <div>
                         <label htmlFor="plan-price" className="block text-sm font-medium text-(--color-fg)">
                             Price (INR)
                         </label>
-                        <input
+                        <Input
                             id="plan-price"
                             type="number"
                             min={0}
                             required
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm outline-none focus:border-(--color-accent)"
+                            className="mt-2"
                         />
                     </div>
                 </div>

@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition, type FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     formatInviteExpiry,
     staffInviteRoleLabel,
@@ -73,13 +75,13 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                         <label htmlFor="invitee-staff-code" className="block text-sm font-medium text-(--color-fg)">
                             Staff code
                         </label>
-                        <input
+                        <Input
                             id="invitee-staff-code"
                             name="staffCode"
                             required
                             value={staffCode}
                             onChange={(event) => setStaffCode(event.target.value)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                            className="mt-2"
                             placeholder="STF-XXXX"
                             autoComplete="off"
                         />
@@ -88,16 +90,19 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                         <label htmlFor="invite-target-role" className="block text-sm font-medium text-(--color-fg)">
                             Role
                         </label>
-                        <select
-                            id="invite-target-role"
-                            name="targetRole"
+                        <Select
                             value={targetRole}
-                            onChange={(event) => setTargetRole(event.target.value as StaffInviteTargetRole)}
-                            className="mt-2 w-full rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-fg) outline-none focus:border-(--color-accent)"
+                            onValueChange={(value) => setTargetRole(value as StaffInviteTargetRole)}
+                            name="targetRole"
                         >
-                            <option value="TRAINER">Trainer</option>
-                            <option value="ADMIN">Admin</option>
-                        </select>
+                            <SelectTrigger id="invite-target-role" className="mt-2 w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="TRAINER">Trainer</SelectItem>
+                                <SelectItem value="ADMIN">Admin</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 {error ? (

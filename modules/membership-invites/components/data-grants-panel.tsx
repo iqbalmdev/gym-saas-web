@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { updateMyDataGrantsAction } from '@/modules/membership-invites/membership-invites-actions';
 import type {
     MyDataGrants,
@@ -112,10 +113,9 @@ export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPan
                 <div className="flex flex-wrap gap-3">
                     {PROFILE_OPTIONS.map((option) => (
                         <label key={option.value} className="flex items-center gap-2 text-sm text-(--color-fg)">
-                            <input
-                                type="checkbox"
+                            <Checkbox
                                 checked={profileAttrs.includes(option.value)}
-                                onChange={() => toggleProfile(option.value)}
+                                onCheckedChange={() => toggleProfile(option.value)}
                                 disabled={isPending}
                             />
                             {option.label}
@@ -131,10 +131,9 @@ export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPan
                 <div className="flex flex-wrap gap-3">
                     {GRANT_OPTIONS.map((option) => (
                         <label key={option.value} className="flex items-center gap-2 text-sm text-(--color-fg)">
-                            <input
-                                type="checkbox"
+                            <Checkbox
                                 checked={classGrants.includes(option.value)}
-                                onChange={() => toggleGrant(option.value)}
+                                onCheckedChange={() => toggleGrant(option.value)}
                                 disabled={isPending}
                             />
                             {option.label}
