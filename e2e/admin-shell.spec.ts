@@ -5,20 +5,21 @@ test.describe('Admin collapsible sidebar', () => {
         await test.step('Expanded: Renewals label is visible', async () => {
             await expect(staffAdmin.moduleLink('Renewals')).toBeVisible();
             await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
-            await expect(staffAdmin.collapseSidebar).toBeVisible();
+            await expect(staffAdmin.sidebarTrigger).toBeVisible();
+            expect(await staffAdmin.sidebarState()).toBe('expanded');
         });
 
         await test.step('Collapse to icon rail', async () => {
-            await staffAdmin.collapseSidebar.click();
-            await expect(staffAdmin.expandSidebar).toBeVisible();
-            const renewals = staffAdmin.moduleLink('Renewals');
-            await expect(renewals).toBeVisible();
-            await expect(renewals).toHaveAttribute('aria-label', 'Renewals');
-            await expect(renewals).not.toHaveText('Renewals');
+            await staffAdmin.sidebarTrigger.click();
+            expect(await staffAdmin.sidebarState()).toBe('collapsed');
+            // Still reachable by its accessible name — shadcn clips the label visually
+            // (icon-rail width) rather than removing it, and shows it again as a tooltip.
+            await expect(staffAdmin.moduleLink('Renewals')).toBeVisible();
         });
 
         await test.step('Expand again restores labels', async () => {
-            await staffAdmin.expandSidebar.click();
+            await staffAdmin.sidebarTrigger.click();
+            expect(await staffAdmin.sidebarState()).toBe('expanded');
             await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
         });
     });
@@ -29,14 +30,19 @@ test.describe('Admin collapsible sidebar', () => {
         await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     });
 
-    test('mobile header keeps brand and sign out spaced apart', async ({ staffAdmin, page }) => {
+    test('mobile header opens the sidebar drawer, brand lives inside it', async ({ staffAdmin, page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
-        await expect(page.getByRole('link', { name: 'Gym SaaS' }).first()).toBeVisible();
         await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
-        await expect(page.getByRole('button', { name: 'Open navigation' })).toBeVisible();
-        await page.getByRole('button', { name: 'Open navigation' }).click();
-        await expect(staffAdmin.moduleLink('Renewals')).toBeVisible();
-        await expect(staffAdmin.moduleLink('Renewals')).toHaveText('Renewals');
+        await expect(staffAdmin.sidebarTrigger).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Gym SaaS' })).toHaveCount(0);
+
+        await staffAdmin.sidebarTrigger.click();
+        await expect(page.getByRole('link', { name: 'Gym SaaS' })).toBeVisible();
+        // The mobile drawer is a modal Sheet, not a `complementary` landmark, so query it
+        // directly rather than through `staffAdmin.sidebar` (desktop-only aria-label/role).
+        const renewals = page.getByRole('link', { name: 'Renewals', exact: true });
+        await expect(renewals).toBeVisible();
+        await expect(renewals).toHaveText('Renewals');
     });
 });
 

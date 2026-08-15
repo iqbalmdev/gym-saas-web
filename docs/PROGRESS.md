@@ -19,16 +19,16 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
 | Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
-| Admin CRM-light chrome | Done — collapsible sidebar + light/dark tokens + mobile drawer + Settings-only first-run |
+| Admin CRM-light chrome | Done — Base UI `Sidebar` primitive (icon rail + `Sheet` mobile drawer + cookie-persisted state), light/dark tokens, Settings-only first-run; Client persona shares the same header atoms |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007).
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav.
 
 ## Next up
 
 **Team setup:**
 
 1. **UI/UX design-system doc** — now unblocked, and it can document real tokens: the shadcn↔CRM alias map, table density, status badges (payment / membership / lead pipeline), and empty states including missing-DataGrant copy.
-2. **Adopt shadcn components per surface** — table, dialog, sheet, dropdown, select, badge. Add them as screens need them, not all at once.
+2. **Adopt shadcn components per surface** — table, dialog, dropdown, select, badge (`sheet`/`tooltip`/`separator`/`skeleton`/`input` landed with the Admin sidebar rebuild). Add them as screens need them, not all at once.
 3. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
 4. **Module ownership split** with Iqbal, then feature branches + PRs.
 
