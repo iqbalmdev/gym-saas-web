@@ -10,6 +10,7 @@ export class SettingsPage {
     readonly acceptInviteButton: Locator;
     readonly staffInvitesHeading: Locator;
     readonly staffCodeInput: Locator;
+    readonly roleSelect: Locator;
     readonly sendInviteButton: Locator;
     readonly revokeButton: Locator;
 
@@ -27,11 +28,23 @@ export class SettingsPage {
         this.acceptInviteButton = page.getByRole('button', { name: 'Accept' });
         this.staffInvitesHeading = page.locator('#staff-invites-heading');
         this.staffCodeInput = page.getByLabel('Staff code');
+        this.roleSelect = page.getByRole('combobox', { name: 'Role' });
         this.sendInviteButton = page.getByRole('button', { name: 'Send invite' });
         this.revokeButton = page.getByRole('button', { name: 'Revoke' }).first();
     }
 
     async goto() {
         await this.page.goto('/admin/settings');
+    }
+
+    /**
+     * `roleSelect` is a Base UI `Select` (role="combobox" trigger + a
+     * portalled role="listbox" popup) — not a native `<select>`, so this
+     * opens it and clicks the matching `role="option"` rather than
+     * `selectOption()`.
+     */
+    async selectRole(name: string) {
+        await this.roleSelect.click();
+        await this.page.getByRole('option', { name, exact: true }).click();
     }
 }

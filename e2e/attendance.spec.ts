@@ -8,13 +8,10 @@ test.describe('Attendance desk', () => {
         await expect(attendancePage.deskMarkHeading).toBeVisible();
         await expect(attendancePage.memberSelect).toBeVisible();
 
-        const adaOption = attendancePage.memberSelect.locator('option', {
-            hasText: 'Ada Client',
-        });
+        await attendancePage.memberSelect.click();
+        const adaOption = attendancePage.memberOption('Ada Client');
         await expect(adaOption).toHaveCount(1);
-        const adaValue = await adaOption.getAttribute('value');
-        expect(adaValue).toBeTruthy();
-        await attendancePage.memberSelect.selectOption(adaValue!);
+        await adaOption.click();
 
         await attendancePage.markButton.click();
         await expect(attendancePage.todayHeading).toBeVisible();

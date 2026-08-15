@@ -29,7 +29,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 **Team setup:**
 
 1. **UI/UX design-system doc** — now unblocked, and it can document real tokens: the shadcn↔CRM alias map, table density, status badges (payment / membership / lead pipeline), and empty states including missing-DataGrant copy.
-2. **Adopt shadcn components per surface** — table, dialog, dropdown, select, badge (`sheet`/`tooltip`/`separator`/`skeleton`/`input` landed with the Admin sidebar rebuild). Add them as screens need them, not all at once.
+2. **Adopt shadcn components per surface** — Done: `table`/`select`/`badge`/`checkbox`/`radio-group`/`textarea` landed across every Admin panel and the auth flows (roster, attendance, leads, members, plans, staff-invites, login, Google callback, create-gym, data-grants, membership-invite inbox); `dialog`/`dropdown-menu` installed but not yet consumed by a screen.
 3. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
 4. **Module ownership split** with Iqbal, then feature branches + PRs.
 
