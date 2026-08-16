@@ -20,6 +20,24 @@ alwaysApply: false
 - Do not use Server Actions as a general-purpose GET replacement when parallel reads matter.
 - Session lane/role gates on the server; never trust client-only role flags.
 
+## Navigation & streaming (ADR-0009)
+
+- **Page shells must not `await` a domain API call.** Pages may await `getSession()`
+  (cookie) and `searchParams` only. Domain reads go in a `<Module>Data` server
+  component behind `<Suspense>` — including the `listStaffGymOrgs` gym lookup.
+  A network call above the boundary blocks even the skeleton.
+- **Add `loading.tsx` per route segment.** Next prefetches it, so navigation paints
+  instantly instead of waiting for the RSC response. Reuse the module's panel skeleton;
+  use placeholder bars for the header rather than duplicating page copy.
+- **Navigate with `<Link>`, never a raw `<a href>`.** A raw anchor is a full document
+  reload — it tears down and re-hydrates the whole app. This is a real bug that shipped
+  once; `e2e/plans.spec.ts` guards it.
+- **Filters/tabs belong in the page shell, above the data boundary** (`FilterTabs`), so
+  they stay visible and clickable while the list streams. Key the `<Suspense>` on the
+  active filter so switching shows the skeleton instead of stale rows.
+- Layouts are **not** re-rendered on soft navigation, and React `cache()` dedupes only
+  within one request — a lookup in a page runs again on every navigation.
+
 ## Routing & tenancy
 
 - Route groups: `(auth)`, `(admin)`; keep `(trainer)` / `(client)` viable.
