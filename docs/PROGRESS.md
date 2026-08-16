@@ -8,7 +8,7 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 |---|---|
 | Agent OS (rules, skills, docs) | Done — drift from `e537810` repaired; Cursor + Claude Code parity |
 | Tooling + CI | Done — Prettier/ESLint architecture rules/Husky/lint-staged + GitHub Actions (ADR-0006); `typecheck` runs `next typegen` first so `LayoutProps` exists on a clean CI checkout |
-| Folder architecture | Done — top-level `modules/<module>/`; `lib/` is shared infrastructure (ADR-0007, ADR-0008) |
+| Folder architecture | Done — top-level `modules/<module>/`; `lib/` is shared infrastructure (ADR-0007, ADR-0008). E2E fixtures split into `lib/api/e2e/store.ts` (shared state) + nine per-module fakes, closing ADR-0007's last deferred consequence — no shared-file hotspots remain |
 | UI foundation | Done — shadcn/ui on `data-theme`, tokens aliased to the CRM palette (ADR-0006) |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
@@ -21,17 +21,19 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
 | Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
 | Admin CRM-light chrome | Done — Base UI `Sidebar` primitive (icon rail + `Sheet` mobile drawer + cookie-persisted state), light/dark tokens, Settings-only first-run; Client persona shares the same header atoms |
+| Admin navigation latency | Done — page shells do no network work; `loading.tsx` per ops route; filter tabs are `<Link>` in the shell (was a raw `<a>` full-page reload) (ADR-0009) |
+| Client data layer | Done — **TanStack Query v5** across all six Admin modules (ADR-0011): RSC `prefetchQuery` + `<HydrationBoundary>` for first paint, `/api/*` route handlers for refetch, mutations wrapping the existing Server Actions so the auth→lane→tenant gate never moved. Retired all `*-data.tsx`, every `useOptimistic` block, and 18 of 22 `router.refresh()` sites. Navigation between ops screens now serves from cache instead of re-paying ~400ms per hop. CLIENT persona migrated too; the 4 remaining `router.refresh()` calls are session creation and Admin-shell-mode changes, which cache invalidation cannot re-render |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav.
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav. Admin navigation reworked to stream the page shell and stop reloading the document on filter clicks (ADR-0009).
 
 ## Next up
 
 **Team setup:**
 
-1. **UI/UX design-system doc** — now unblocked, and it can document real tokens: the shadcn↔CRM alias map, table density, status badges (payment / membership / lead pipeline), and empty states including missing-DataGrant copy.
+1. ~~Apply the status-badge scale~~ — **Done.** `lib/ui/status-tone.ts` (`StatusTone` + `statusToneBadgeVariant()`), `badge.tsx` got `success`/`warning` variants, and every domain status (`roster-panel`, `members-admin-panel`, `membership-invite-inbox`, `staff-invites-admin-panel`) is now a `<Badge>` with the correct tone — no more bare-text statuses, no more `roster-panel` payment badges all rendering `outline`.
 2. **Adopt shadcn components per surface** — Done: `table`/`select`/`badge`/`checkbox`/`radio-group`/`textarea` landed across every Admin panel and the auth flows (roster, attendance, leads, members, plans, staff-invites, login, Google callback, create-gym, data-grants, membership-invite inbox); `dialog`/`dropdown-menu` installed but not yet consumed by a screen.
-3. **Split `lib/api/e2e-fixtures.ts`** (1173 lines) into a shared kernel + per-module fakes — its own commit (ADR-0007 consequences).
-4. **Module ownership split** with Iqbal, then feature branches + PRs.
+3. **Module ownership split** with Iqbal, then feature branches + PRs — now unblocked on the tooling side: the last shared hotspot (`e2e-fixtures.ts`) is split per module.
+4. ~~Embed `gymOrgId` / `gymName` in the session~~ — **no longer needed for latency**: the gym lookup is cached client-side by TanStack, so navigation no longer re-pays it. Still an option if the *first* load's sequential hop matters (would need HMAC signing first — ADR-0010 work is stashed, not landed).
 
 **Product:**
 
