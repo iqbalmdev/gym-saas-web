@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eLeadsAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eLeadsAdapter } from '@/modules/leads/leads-e2e-fixtures';
 import { createLeadsAdapter } from '@/modules/leads/leads-adapter';
 import {
     createChangeLeadStatus,

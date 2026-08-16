@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eGymOrgsAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-e2e-fixtures';
 import { createCreateGymOrg } from '@/modules/gym-orgs/create-gym-org';
 import { createGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-adapter';
 import { createListGymOrgs } from '@/modules/gym-orgs/list-gym-orgs';

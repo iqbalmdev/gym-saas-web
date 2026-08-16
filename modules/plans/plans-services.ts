@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2ePlansAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2ePlansAdapter } from '@/modules/plans/plans-e2e-fixtures';
 import { createPlansAdapter } from '@/modules/plans/plans-adapter';
 import {
     createCreatePlan,

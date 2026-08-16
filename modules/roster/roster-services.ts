@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eRosterAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eRosterAdapter } from '@/modules/roster/roster-e2e-fixtures';
 import { createRosterAdapter } from '@/modules/roster/roster-adapter';
 import {
     createListRosterMembers,

@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eMembershipInvitesAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eMembershipInvitesAdapter } from '@/modules/membership-invites/membership-invites-e2e-fixtures';
 import { createMembershipInvitesAdapter } from '@/modules/membership-invites/membership-invites-adapter';
 import {
     createAcceptMembershipInvite,

@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eStaffInvitesAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eStaffInvitesAdapter } from '@/modules/staff-invites/staff-invites-e2e-fixtures';
 import { createAcceptStaffInvite } from '@/modules/staff-invites/accept-staff-invite';
 import { createCreateStaffInvite } from '@/modules/staff-invites/create-staff-invite';
 import { createListGymStaffInvites } from '@/modules/staff-invites/list-gym-staff-invites';
