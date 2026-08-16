@@ -1,4 +1,8 @@
+import { inviteStatusTone, type StatusTone } from '@/lib/ui/status-tone';
 import type { StaffInviteStatus, StaffInviteTargetRole } from '@/modules/staff-invites/staff-invites-ports';
+
+/** Membership and staff invites share one enum shape and one tone mapping — see `inviteStatusTone`. */
+export const staffInviteStatusTone: (status: StaffInviteStatus) => StatusTone = inviteStatusTone;
 
 export function staffInviteRoleLabel(role: StaffInviteTargetRole): string {
     switch (role) {
