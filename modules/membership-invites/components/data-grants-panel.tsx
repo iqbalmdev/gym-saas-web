@@ -1,11 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { updateMyDataGrantsAction } from '@/modules/membership-invites/membership-invites-actions';
+import { useUpdateMyDataGrants } from '@/modules/membership-invites/membership-invites-hooks';
 import type {
     MyDataGrants,
     OptionalClassGrant,
@@ -34,16 +33,17 @@ const GRANT_OPTIONS: { value: OptionalClassGrant; label: string }[] = [
 ];
 
 export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPanelProps) {
-    const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
     const [profileAttrs, setProfileAttrs] = useState<OptionalProfileAttribute[]>(() =>
         PROFILE_OPTIONS.map((option) => option.value).filter((value) => dataGrants.profileAttributes.includes(value)),
     );
     const [classGrants, setClassGrants] = useState<OptionalClassGrant[]>(() =>
         GRANT_OPTIONS.map((option) => option.value).filter((value) => dataGrants.classGrants.includes(value)),
     );
-    const [isPending, startTransition] = useTransition();
+
+    const updateGrants = useUpdateMyDataGrants();
+    const isPending = updateGrants.isPending;
+    const error = updateGrants.error?.message ?? null;
+    const success = updateGrants.isSuccess ? 'Sharing preferences saved.' : null;
 
     function toggleProfile(value: OptionalProfileAttribute) {
         setProfileAttrs((current) =>
@@ -58,20 +58,10 @@ export function DataGrantsPanel({ gymOrgId, gymName, dataGrants }: DataGrantsPan
     }
 
     function handleSave() {
-        setError(null);
-        setSuccess(null);
-        startTransition(async () => {
-            const result = await updateMyDataGrantsAction({
-                gymOrgId,
-                optionalProfileAttributes: profileAttrs,
-                optionalClassGrants: classGrants,
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setSuccess('Sharing preferences saved.');
-            router.refresh();
+        updateGrants.mutate({
+            gymOrgId,
+            optionalProfileAttributes: profileAttrs,
+            optionalClassGrants: classGrants,
         });
     }
 
