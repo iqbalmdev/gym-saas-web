@@ -1,56 +1,49 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
 import {
     formatInviteExpiry,
     staffInviteRoleLabel,
     staffInviteStatusLabel,
+    staffInviteStatusTone,
 } from '@/modules/staff-invites/staff-invites-labels';
-import { createStaffInviteAction, revokeStaffInviteAction } from '@/modules/staff-invites/staff-invites-actions';
-import type { StaffInvite, StaffInviteTargetRole } from '@/modules/staff-invites/staff-invites-ports';
+import {
+    useCreateStaffInvite,
+    useGymStaffInvites,
+    useRevokeStaffInvite,
+} from '@/modules/staff-invites/staff-invites-hooks';
+import type { StaffInviteTargetRole } from '@/modules/staff-invites/staff-invites-ports';
 
 type StaffInvitesAdminPanelProps = {
     gymName: string;
-    invites: StaffInvite[];
-    listError: string | null;
 };
 
-export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInvitesAdminPanelProps) {
-    const router = useRouter();
+export function StaffInvitesAdminPanel({ gymName }: StaffInvitesAdminPanelProps) {
     const [staffCode, setStaffCode] = useState('');
     const [targetRole, setTargetRole] = useState<StaffInviteTargetRole>('TRAINER');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
 
-    function handleCreate(event: FormEvent<HTMLFormElement>) {
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data: invites = [], error: listQueryError } = useGymStaffInvites();
+    const createInvite = useCreateStaffInvite();
+    const revokeInvite = useRevokeStaffInvite();
+
+    const isPending = createInvite.isPending || revokeInvite.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = createInvite.error?.message ?? revokeInvite.error?.message ?? null;
+
+    function handleCreate(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError(null);
-        startTransition(async () => {
-            const result = await createStaffInviteAction({ staffCode, targetRole });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setStaffCode('');
-            router.refresh();
-        });
+        createInvite.mutate({ staffCode, targetRole }, { onSuccess: () => setStaffCode('') });
     }
 
     function handleRevoke(inviteId: string) {
-        setError(null);
-        startTransition(async () => {
-            const result = await revokeStaffInviteAction({ inviteId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        revokeInvite.mutate({ inviteId });
     }
 
     return (
@@ -96,7 +89,9 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                             name="targetRole"
                         >
                             <SelectTrigger id="invite-target-role" className="mt-2 w-full">
-                                <SelectValue />
+                                <SelectValue>
+                                    {(value: StaffInviteTargetRole) => staffInviteRoleLabel(value)}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="TRAINER">Trainer</SelectItem>
@@ -136,11 +131,14 @@ export function StaffInvitesAdminPanel({ gymName, invites, listError }: StaffInv
                             >
                                 <div className="min-w-0 space-y-1">
                                     <p className="text-sm font-medium text-(--color-fg)">{gymName}</p>
-                                    <p className="text-sm text-(--color-fg-muted)">
-                                        {staffInviteRoleLabel(invite.targetRole)}
-                                        <span className="mx-2">·</span>
-                                        {staffInviteStatusLabel(invite.status)}
-                                    </p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <p className="text-sm text-(--color-fg-muted)">
+                                            {staffInviteRoleLabel(invite.targetRole)}
+                                        </p>
+                                        <Badge variant={statusToneBadgeVariant(staffInviteStatusTone(invite.status))}>
+                                            {staffInviteStatusLabel(invite.status)}
+                                        </Badge>
+                                    </div>
                                     <p className="text-xs text-(--color-fg-muted)">
                                         Expires {formatInviteExpiry(invite.expiresAt)}
                                     </p>

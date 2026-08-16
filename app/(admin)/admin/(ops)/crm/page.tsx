@@ -1,14 +1,29 @@
-import { LeadsAdminPanel } from '@/modules/leads/components/leads-admin-panel';
-import { createAppServices } from '@/lib/api/composition';
-import { ApiClientError } from '@/lib/api/errors';
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query';
+import { Suspense } from 'react';
+
+import { FilterTabs, type FilterTab } from '@/components/admin/filter-tabs';
 import { getSession, isStaffSession } from '@/lib/auth/session';
-import { leadErrorMessage } from '@/modules/leads/leads-errors';
+import { getQueryClient } from '@/lib/query/query-client';
 import { listStaffGymOrgs } from '@/modules/gym-orgs/list-staff-gym-orgs';
-import type { Lead, LeadStatus } from '@/modules/leads/leads-ports';
+import { LeadsAdminPanel } from '@/modules/leads/components/leads-admin-panel';
+import { LeadsAdminPanelSkeleton } from '@/modules/leads/components/leads-admin-panel-skeleton';
+import { LEAD_STATUSES, leadStatusLabel } from '@/modules/leads/leads-labels';
+import type { LeadStatus } from '@/modules/leads/leads-ports';
+import { leadsKeys } from '@/modules/leads/leads-query-keys';
+import { listLeadsPageForGym } from '@/modules/leads/leads-queries';
 
 type CrmPageProps = {
     searchParams: Promise<{ status?: string }>;
 };
+
+const STATUS_TABS: readonly FilterTab[] = [
+    { value: 'ALL', label: 'All', href: '/admin/crm' },
+    ...LEAD_STATUSES.map((status) => ({
+        value: status,
+        label: leadStatusLabel(status),
+        href: `/admin/crm?status=${status}`,
+    })),
+];
 
 function parseStatus(raw: string | undefined): LeadStatus | 'ALL' {
     if (raw === 'NEW' || raw === 'CONTACTED' || raw === 'TRIAL' || raw === 'CONVERTED' || raw === 'LOST') {
@@ -17,7 +32,32 @@ function parseStatus(raw: string | undefined): LeadStatus | 'ALL' {
     return 'ALL';
 }
 
+/** Prefetches the pipeline server-side, then hands the warm cache to TanStack (ADR-0011). */
+async function LeadsPipeline({ accessToken, statusFilter }: { accessToken: string; statusFilter: LeadStatus | 'ALL' }) {
+    const gymOrgs = await listStaffGymOrgs(accessToken);
+    const gym = gymOrgs[0];
+    if (!gym) {
+        // Unreachable in practice: (ops)/layout.tsx redirects 0-gym Staff to Settings.
+        return null;
+    }
+
+    const queryClient = getQueryClient();
+    await queryClient.prefetchQuery({
+        queryKey: leadsKeys.page(statusFilter),
+        queryFn: () => listLeadsPageForGym({ accessToken, gymOrgId: gym.id, statusFilter }),
+    });
+
+    return (
+        <HydrationBoundary state={dehydrate(queryClient)}>
+            <LeadsAdminPanel gymName={gym.name} statusFilter={statusFilter} />
+        </HydrationBoundary>
+    );
+}
+
 export default async function CrmPage({ searchParams }: CrmPageProps) {
+    // Only cookie + searchParams work here — no API calls, so this shell
+    // streams immediately and the skeleton paints without waiting on the
+    // backend. The gym lookup lives inside <LeadsData>.
     const session = await getSession();
     if (!session || !isStaffSession(session)) {
         return null;
@@ -25,45 +65,25 @@ export default async function CrmPage({ searchParams }: CrmPageProps) {
 
     const params = await searchParams;
     const statusFilter = parseStatus(params.status);
-    const gymOrgs = await listStaffGymOrgs(session.accessToken);
-    const gym = gymOrgs[0];
-    if (!gym) {
-        return null;
-    }
-
-    let leads: Lead[] = [];
-    let dueFollowUps: Lead[] = [];
-    let listError: string | null = null;
-
-    try {
-        const { listLeads, listDueFollowUps } = createAppServices();
-        const [listResult, dueResult] = await Promise.all([
-            listLeads({
-                accessToken: session.accessToken,
-                gymOrgId: gym.id,
-                status: statusFilter === 'ALL' ? undefined : statusFilter,
-            }),
-            listDueFollowUps({
-                accessToken: session.accessToken,
-                gymOrgId: gym.id,
-            }),
-        ]);
-        leads = listResult.leads.items;
-        dueFollowUps = dueResult.leads.items;
-    } catch (error) {
-        listError =
-            error instanceof ApiClientError
-                ? leadErrorMessage(error.code, error.message)
-                : leadErrorMessage('NETWORK_OR_UNKNOWN');
-    }
 
     return (
-        <LeadsAdminPanel
-            gymName={gym.name}
-            leads={leads}
-            dueFollowUps={dueFollowUps}
-            statusFilter={statusFilter}
-            listError={listError}
-        />
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Leads</h1>
+                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
+                    Capture walk-ins and follow-ups. Example: name “Walk-in Prospect”, phone “9876543210”, source
+                    “walk-in”, interest “trial”. Edit any lead below via{' '}
+                    <code className="text-xs">PATCH …/leads/:leadId</code>.
+                </p>
+            </div>
+
+            <FilterTabs tabs={STATUS_TABS} activeValue={statusFilter} label="Filter leads by status" />
+
+            {/* Keyed so switching filters shows the skeleton rather than
+                silently holding the previous filter's rows on screen. */}
+            <Suspense key={statusFilter} fallback={<LeadsAdminPanelSkeleton />}>
+                <LeadsPipeline accessToken={session.accessToken} statusFilter={statusFilter} />
+            </Suspense>
+        </div>
     );
 }

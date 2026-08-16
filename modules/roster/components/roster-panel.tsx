@@ -1,49 +1,33 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { membershipPaymentStatusLabel } from '@/modules/membership-invites/membership-invites-labels';
-import { offboardMemberAction, setCheckInBlockAction } from '@/modules/roster/roster-actions';
-import type { RosterMember } from '@/modules/roster/roster-ports';
+import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
+import {
+    membershipPaymentStatusLabel,
+    membershipPaymentStatusTone,
+} from '@/modules/membership-invites/membership-invites-labels';
+import { useActiveRoster, useOffboardMember, useSetCheckInBlock } from '@/modules/roster/roster-hooks';
 
-type RosterPanelProps = {
-    members: RosterMember[];
-    listError: string | null;
-};
+export function RosterPanel() {
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data: members = [], error: listQueryError } = useActiveRoster();
+    const setCheckInBlock = useSetCheckInBlock();
+    const offboardMember = useOffboardMember();
 
-export function RosterPanel({ members, listError }: RosterPanelProps) {
-    const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+    const isPending = setCheckInBlock.isPending || offboardMember.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = setCheckInBlock.error?.message ?? offboardMember.error?.message ?? null;
 
     const active = members.filter((member) => member.status === 'ACTIVE');
 
     function handleOffboard(membershipId: string) {
-        setError(null);
-        startTransition(async () => {
-            const result = await offboardMemberAction({ membershipId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        offboardMember.mutate({ membershipId });
     }
 
     function handleCheckInBlock(membershipId: string, blocked: boolean) {
-        setError(null);
-        startTransition(async () => {
-            const result = await setCheckInBlockAction({ membershipId, blocked });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        setCheckInBlock.mutate({ membershipId, blocked });
     }
 
     return (
@@ -91,7 +75,15 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
                                         </p>
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
-                                        <Badge variant="outline">
+                                        <Badge
+                                            variant={
+                                                member.basePaymentStatus
+                                                    ? statusToneBadgeVariant(
+                                                          membershipPaymentStatusTone(member.basePaymentStatus),
+                                                      )
+                                                    : 'outline'
+                                            }
+                                        >
                                             {member.basePaymentStatus
                                                 ? membershipPaymentStatusLabel(member.basePaymentStatus)
                                                 : '—'}
@@ -99,7 +91,9 @@ export function RosterPanel({ members, listError }: RosterPanelProps) {
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
                                         <Badge
-                                            variant={member.checkInBlocked ? 'destructive' : 'secondary'}
+                                            variant={statusToneBadgeVariant(
+                                                member.checkInBlocked ? 'danger' : 'neutral',
+                                            )}
                                             data-testid={`check-in-status-${member.membershipId}`}
                                         >
                                             {member.checkInBlocked ? 'Blocked' : 'Allowed'}

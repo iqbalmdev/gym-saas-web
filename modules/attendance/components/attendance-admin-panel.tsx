@@ -1,21 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition, type FormEvent } from 'react';
+import { useMemo, useState, type SubmitEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { deskMarkAttendanceAction } from '@/modules/attendance/attendance-actions';
-import type { Attendance } from '@/modules/attendance/attendance-ports';
-import type { RosterMember } from '@/modules/roster/roster-ports';
+import { useAttendanceDay, useDeskMarkAttendance } from '@/modules/attendance/attendance-hooks';
 
 type AttendanceAdminPanelProps = {
-    gymName: string;
+    gymOrgId: string;
     day: string;
-    members: RosterMember[];
-    attendances: Attendance[];
-    listError: string | null;
 };
 
 function formatTime(iso: string): string {
@@ -29,12 +23,23 @@ function formatTime(iso: string): string {
     });
 }
 
-export function AttendanceAdminPanel({ gymName, day, members, attendances, listError }: AttendanceAdminPanelProps) {
-    const router = useRouter();
+export function AttendanceAdminPanel({ gymOrgId, day }: AttendanceAdminPanelProps) {
     const [query, setQuery] = useState('');
-    const [clientUserId, setClientUserId] = useState(members[0]?.clientUserId ?? '');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+    const [clientUserIdOverride, setClientUserIdOverride] = useState<string | null>(null);
+
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data, error: listQueryError } = useAttendanceDay(day);
+    const members = useMemo(() => data?.members ?? [], [data]);
+    const attendances = data?.attendances ?? [];
+
+    const deskMark = useDeskMarkAttendance(day, gymOrgId);
+    const isPending = deskMark.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = deskMark.error?.message ?? null;
+
+    // Defaults to the first member until one is picked — the roster now
+    // arrives asynchronously, so it can't seed useState at mount.
+    const clientUserId = clientUserIdOverride ?? members[0]?.clientUserId ?? '';
 
     const filteredMembers = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -57,29 +62,14 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
         return map;
     }, [members]);
 
-    function handleDeskMark(event: FormEvent<HTMLFormElement>) {
+    function handleDeskMark(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError(null);
-        startTransition(async () => {
-            const result = await deskMarkAttendanceAction({ clientUserId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        // Optimistic write + rollback live in useDeskMarkAttendance.
+        deskMark.mutate({ clientUserId });
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Attendance</h1>
-                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Desk-mark members for today ({day}). Entitlement follows subscription dates, not payment status.
-                </p>
-            </div>
-
             {(listError || error) && (
                 <p
                     className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
@@ -111,11 +101,21 @@ export function AttendanceAdminPanel({ gymName, day, members, attendances, listE
                             <span className="font-medium text-(--color-fg)">Member</span>
                             <Select
                                 value={clientUserId}
-                                onValueChange={(value) => setClientUserId(value ?? '')}
+                                onValueChange={(value) => setClientUserIdOverride(value ?? '')}
                                 disabled={isPending}
                             >
                                 <SelectTrigger className="mt-1 w-full" aria-label="Member">
-                                    <SelectValue placeholder="Select a member" />
+                                    {/* <SelectValue> has no default value→label lookup (Base UI) — without a
+                                        children render-prop it shows the raw clientUserId. */}
+                                    <SelectValue>
+                                        {(value: string) => {
+                                            if (!value) {
+                                                return 'Select a member';
+                                            }
+                                            const member = members.find((item) => item.clientUserId === value);
+                                            return member ? `${member.clientName} · ${member.clientEmail}` : value;
+                                        }}
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {filteredMembers.map((member) => (

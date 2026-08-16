@@ -8,9 +8,18 @@ alwaysApply: false
 
 ## Decision tree (pick one)
 
-1. **Gym Backend / session data** (invites, gyms, roster, renewals rows)  
-   → Server Component + ports/adapters. Mutate with **Server Actions** + `revalidatePath` / redirect.  
-   → **Never** copy API entities into Zustand/Redux/Context.
+1. **Gym Backend / session data** (invites, gyms, roster, renewals rows)
+   → **TanStack Query** owns the client cache (ADR-0011). RSC prefetches into
+   `<HydrationBoundary>`; `useQuery` reads it; `useMutation` wraps the existing
+   **Server Action** (gate + `revalidatePath` stay in `<m>-actions.ts`).
+   → **Never** copy API entities into Zustand/Redux/Context — the query cache is
+   the client-side store for server data.
+   → Optimistic row updates go in `onMutate` with a snapshot, `onError` rollback,
+   `onSettled` invalidate. A mutation that **removes** a row must live in the list
+   component: the row unmounts on the optimistic write and would take its hook
+   and error state with it.
+   → `useOptimistic` is superseded for these lists; don't reintroduce it alongside
+   a query cache.
 
 2. **Shareable list filters** (status, date range, search)  
    → URL `searchParams` so the server can re-render. Prefer over client stores.

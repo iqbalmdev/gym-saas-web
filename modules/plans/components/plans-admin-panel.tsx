@@ -1,116 +1,79 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatPlanDuration, formatPlanPrice, planCapabilityLabel, planKindLabel } from '@/modules/plans/plans-labels';
-import { createPlanAction, deletePlanAction, setPlanActiveAction } from '@/modules/plans/plans-actions';
+import { useCreatePlan, useDeletePlan, usePlans, useSetPlanActive } from '@/modules/plans/plans-hooks';
 import type { MembershipPlan, PlanKind } from '@/modules/plans/plans-ports';
 
 type PlansAdminPanelProps = {
     gymName: string;
-    plans: MembershipPlan[];
     kindFilter: PlanKind | 'ALL';
-    listError: string | null;
 };
 
-export function PlansAdminPanel({ gymName, plans, kindFilter, listError }: PlansAdminPanelProps) {
-    const router = useRouter();
+/**
+ * Matches the create-form's own SelectItem copy (fuller than planKindLabel's
+ * "Base"/"Add-on", which is meant for the catalog list, not this form).
+ */
+function planKindSelectLabel(kind: PlanKind): string {
+    switch (kind) {
+        case 'BASE':
+            return 'Base membership';
+        case 'ADDON':
+            return 'Add-on (Trainer coaching)';
+    }
+}
+
+export function PlansAdminPanel({ gymName, kindFilter }: PlansAdminPanelProps) {
     const [name, setName] = useState('');
     const [kind, setKind] = useState<PlanKind>('BASE');
     const [durationDays, setDurationDays] = useState('30');
     const [price, setPrice] = useState('999');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
 
-    function handleCreate(event: FormEvent<HTMLFormElement>) {
+    // Hydrated from the page's server prefetch — same query key, so this
+    // renders with data on first paint instead of fetching (ADR-0011).
+    const { data: plans = [], error: listQueryError } = usePlans(kindFilter);
+    const setPlanActive = useSetPlanActive(kindFilter);
+    const deletePlan = useDeletePlan(kindFilter);
+    const createPlan = useCreatePlan();
+
+    const isPending = setPlanActive.isPending || deletePlan.isPending || createPlan.isPending;
+
+    // Kept as two separate slots, matching the pre-migration props: a failed
+    // list load renders inside the catalog panel, a failed write next to the
+    // form. Mutation errors now live in TanStack, outside the component tree,
+    // so a rolled-back row remounting can no longer discard them — the trap
+    // that forced errors up to the parent under useOptimistic.
+    const listError = listQueryError?.message ?? null;
+    const error = createPlan.error?.message ?? setPlanActive.error?.message ?? deletePlan.error?.message ?? null;
+
+    function handleCreate(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError(null);
-        startTransition(async () => {
-            const result = await createPlanAction({
-                name,
-                kind,
-                durationDays: Number(durationDays),
-                price: Number(price),
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setName('');
-            setDurationDays('30');
-            setPrice(kind === 'ADDON' ? '1500' : '999');
-            router.refresh();
-        });
+        createPlan.mutate(
+            { name, kind, durationDays: Number(durationDays), price: Number(price) },
+            {
+                onSuccess: () => {
+                    setName('');
+                    setDurationDays('30');
+                    setPrice(kind === 'ADDON' ? '1500' : '999');
+                },
+            },
+        );
     }
 
     function handleToggle(plan: MembershipPlan) {
-        setError(null);
-        startTransition(async () => {
-            const result = await setPlanActiveAction({
-                planId: plan.id,
-                active: !plan.active,
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        setPlanActive.mutate({ planId: plan.id, active: !plan.active });
     }
 
     function handleDelete(planId: string) {
-        setError(null);
-        startTransition(async () => {
-            const result = await deletePlanAction({ planId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        deletePlan.mutate({ planId });
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Plans</h1>
-                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Base memberships and add-ons (Trainer coaching). Unpaid members stay entitled unless you manually
-                    block check-in later.
-                </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-                {(
-                    [
-                        ['ALL', 'All'],
-                        ['BASE', 'Base'],
-                        ['ADDON', 'Add-ons'],
-                    ] as const
-                ).map(([value, label]) => {
-                    const href = value === 'ALL' ? '/admin/plans' : `/admin/plans?kind=${value}`;
-                    const active = kindFilter === value;
-                    return (
-                        <a
-                            key={value}
-                            href={href}
-                            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                                active
-                                    ? 'bg-(--color-accent) text-(--color-accent-fg)'
-                                    : 'border border-(--color-border) text-(--color-fg-muted) hover:text-(--color-fg)'
-                            }`}
-                        >
-                            {label}
-                        </a>
-                    );
-                })}
-            </div>
-
             <form
                 onSubmit={handleCreate}
                 className="space-y-4 rounded-(--radius-panel) border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-panel)"
@@ -136,7 +99,7 @@ export function PlansAdminPanel({ gymName, plans, kindFilter, listError }: Plans
                         </label>
                         <Select value={kind} onValueChange={(value) => setKind(value as PlanKind)}>
                             <SelectTrigger id="plan-kind" className="mt-2 w-full">
-                                <SelectValue />
+                                <SelectValue>{(value: PlanKind) => planKindSelectLabel(value)}</SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="BASE">Base membership</SelectItem>

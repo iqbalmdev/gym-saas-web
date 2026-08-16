@@ -130,6 +130,7 @@ const eslintConfig = defineConfig([
         files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'lib/**/*.{ts,tsx}', 'modules/**/*.{ts,tsx}'],
         ignores: [
             'lib/api/**', // the HTTP kernel and the E2E fixture kernel themselves
+            'lib/query/api-fetch.ts', // sole same-origin BFF fetch (ADR-0011) — /api/* only, never the Gym Backend
             'modules/*/*-ports.ts', // set 1
             'modules/*/*-adapter.ts', // set 2
             'modules/*/*-services.ts', // the sanctioned port → adapter binding
@@ -162,7 +163,7 @@ const eslintConfig = defineConfig([
                 {
                     name: 'fetch',
                     message:
-                        'No domain fetch outside modules/*/*-adapter.ts (ADR-0004). Read via ports in a Server Component, mutate via a Server Action.',
+                        'No domain fetch outside modules/*/*-adapter.ts (ADR-0004). Read via ports in a Server Component or a route handler; from client hooks use getJson() from @/lib/query/api-fetch, which only calls this app’s own /api/* (ADR-0011).',
                 },
             ],
         },

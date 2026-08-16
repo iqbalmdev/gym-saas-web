@@ -1,56 +1,63 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
 import {
     formatInviteExpiry,
     membershipInviteStatusLabel,
+    membershipInviteStatusTone,
     membershipPaymentStatusLabel,
+    membershipPaymentStatusTone,
 } from '@/modules/membership-invites/membership-invites-labels';
 import {
-    createMembershipInviteAction,
-    revokeMembershipInviteAction,
-} from '@/modules/membership-invites/membership-invites-actions';
-import type { MembershipInvite, MembershipPaymentStatus } from '@/modules/membership-invites/membership-invites-ports';
-import type { MembershipPlan } from '@/modules/plans/plans-ports';
-
-type MembersAdminPanelProps = {
-    gymName: string;
-    invites: MembershipInvite[];
-    basePlans: MembershipPlan[];
-    addonPlans: MembershipPlan[];
-    listError: string | null;
-};
+    useCreateMembershipInvite,
+    useMembershipInvitesPage,
+    useRevokeMembershipInvite,
+} from '@/modules/membership-invites/membership-invites-hooks';
+import type { MembershipPaymentStatus } from '@/modules/membership-invites/membership-invites-ports';
 
 const PAYMENT_OPTIONS: MembershipPaymentStatus[] = ['unpaid', 'paid', 'partial'];
 
-export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, listError }: MembersAdminPanelProps) {
-    const router = useRouter();
+export function MembersAdminPanel() {
     const [inviteeName, setInviteeName] = useState('');
     const [invitedEmail, setInvitedEmail] = useState('');
     const [inviteePhone, setInviteePhone] = useState('');
-    const [basePlanId, setBasePlanId] = useState(basePlans[0]?.id ?? '');
+    const [basePlanIdOverride, setBasePlanIdOverride] = useState<string | null>(null);
     const [basePaymentStatus, setBasePaymentStatus] = useState<MembershipPaymentStatus>('unpaid');
     const [addonPlanId, setAddonPlanId] = useState('');
     const [addonPaymentStatus, setAddonPaymentStatus] = useState<MembershipPaymentStatus>('unpaid');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data, error: listQueryError } = useMembershipInvitesPage();
+    const invites = data?.invites ?? [];
+    const basePlans = data?.basePlans ?? [];
+    const addonPlans = data?.addonPlans ?? [];
+
+    const createInvite = useCreateMembershipInvite();
+    const revokeInvite = useRevokeMembershipInvite();
+    const isPending = createInvite.isPending || revokeInvite.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = createInvite.error?.message ?? revokeInvite.error?.message ?? null;
+
+    // Defaults to the first base plan, but only until the user picks one —
+    // the list arrives asynchronously now, so this cannot be seeded into
+    // useState at mount the way it was when plans came in as a prop.
+    const basePlanId = basePlanIdOverride ?? basePlans[0]?.id ?? '';
 
     function planName(planId: string): string {
         const plan = basePlans.find((item) => item.id === planId) ?? addonPlans.find((item) => item.id === planId);
         return plan?.name ?? planId.slice(0, 8);
     }
 
-    function handleCreate(event: FormEvent<HTMLFormElement>) {
+    function handleCreate(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError(null);
-        startTransition(async () => {
-            const result = await createMembershipInviteAction({
+        createInvite.mutate(
+            {
                 inviteeName,
                 invitedEmail,
                 inviteePhone: inviteePhone || undefined,
@@ -58,42 +65,24 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                 basePaymentStatus,
                 addonPlanId: addonPlanId || undefined,
                 addonPaymentStatus: addonPlanId ? addonPaymentStatus : undefined,
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setInviteeName('');
-            setInvitedEmail('');
-            setInviteePhone('');
-            setAddonPlanId('');
-            router.refresh();
-        });
+            },
+            {
+                onSuccess: () => {
+                    setInviteeName('');
+                    setInvitedEmail('');
+                    setInviteePhone('');
+                    setAddonPlanId('');
+                },
+            },
+        );
     }
 
     function handleRevoke(membershipInviteId: string) {
-        setError(null);
-        startTransition(async () => {
-            const result = await revokeMembershipInviteAction({ membershipInviteId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        revokeInvite.mutate({ membershipInviteId });
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Members</h1>
-                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational
-                    — entitlement follows subscription dates after accept.
-                </p>
-            </div>
-
             {(listError || error) && (
                 <p
                     className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
@@ -149,11 +138,13 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                 <span className="font-medium text-(--color-fg)">Base plan</span>
                                 <Select
                                     value={basePlanId}
-                                    onValueChange={(value) => setBasePlanId(value ?? '')}
+                                    onValueChange={(value) => setBasePlanIdOverride(value ?? '')}
                                     disabled={isPending}
                                 >
                                     <SelectTrigger className="mt-1 w-full" aria-label="Base plan">
-                                        <SelectValue placeholder="Select a base plan" />
+                                        <SelectValue>
+                                            {(value: string) => (value ? planName(value) : 'Select a base plan')}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {basePlans.map((plan) => (
@@ -172,7 +163,9 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                     disabled={isPending}
                                 >
                                     <SelectTrigger className="mt-1 w-full" aria-label="Base payment">
-                                        <SelectValue />
+                                        <SelectValue>
+                                            {(value: MembershipPaymentStatus) => membershipPaymentStatusLabel(value)}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {PAYMENT_OPTIONS.map((status) => (
@@ -191,7 +184,9 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                     disabled={isPending || addonPlans.length === 0}
                                 >
                                     <SelectTrigger className="mt-1 w-full" aria-label="Add-on plan">
-                                        <SelectValue />
+                                        <SelectValue>
+                                            {(value: string) => (value === 'none' ? 'None' : planName(value))}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="none">None</SelectItem>
@@ -214,7 +209,11 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                         disabled={isPending}
                                     >
                                         <SelectTrigger className="mt-1 w-full" aria-label="Add-on payment">
-                                            <SelectValue />
+                                            <SelectValue>
+                                                {(value: MembershipPaymentStatus) =>
+                                                    membershipPaymentStatusLabel(value)
+                                                }
+                                            </SelectValue>
                                         </SelectTrigger>
                                         <SelectContent>
                                             {PAYMENT_OPTIONS.map((status) => (
@@ -252,15 +251,21 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                         {invite.inviteePhone ? ` · ${invite.inviteePhone}` : ''}
                                     </p>
                                     <p className="text-xs text-(--color-fg-muted)">
-                                        {planName(invite.basePlanId)} ·{' '}
-                                        {membershipPaymentStatusLabel(invite.basePaymentStatus)}
+                                        {planName(invite.basePlanId)}
                                         {invite.addonPlanId ? ` · + ${planName(invite.addonPlanId)}` : ''}
                                         {' · expires '}
                                         {formatInviteExpiry(invite.expiresAt)}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Badge variant={invite.status === 'PENDING' ? 'secondary' : 'outline'}>
+                                    <Badge
+                                        variant={statusToneBadgeVariant(
+                                            membershipPaymentStatusTone(invite.basePaymentStatus),
+                                        )}
+                                    >
+                                        {membershipPaymentStatusLabel(invite.basePaymentStatus)}
+                                    </Badge>
+                                    <Badge variant={statusToneBadgeVariant(membershipInviteStatusTone(invite.status))}>
                                         {membershipInviteStatusLabel(invite.status)}
                                     </Badge>
                                     {invite.status === 'PENDING' ? (

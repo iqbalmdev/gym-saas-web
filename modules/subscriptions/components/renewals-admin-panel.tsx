@@ -1,61 +1,45 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-
 import { Button } from '@/components/ui/button';
 import { membershipPaymentStatusLabel } from '@/modules/membership-invites/membership-invites-labels';
-import { updateSubscriptionPaymentAction } from '@/modules/subscriptions/subscriptions-actions';
-import type { RenewalDueItem, SubscriptionPaymentStatus } from '@/modules/subscriptions/subscriptions-ports';
+import { useRenewalsDue, useUpdateSubscriptionPayment } from '@/modules/subscriptions/subscriptions-hooks';
+import type { SubscriptionPaymentStatus } from '@/modules/subscriptions/subscriptions-ports';
 
 type RenewalsAdminPanelProps = {
-    gymName: string;
-    renewals: RenewalDueItem[];
-    windowLabel: string;
-    listError: string | null;
+    onOrAfter: string;
+    onOrBefore: string;
 };
 
 const PAYMENT_OPTIONS: SubscriptionPaymentStatus[] = ['unpaid', 'paid', 'partial'];
 
-export function RenewalsAdminPanel({ gymName, renewals, windowLabel, listError }: RenewalsAdminPanelProps) {
-    const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+export function RenewalsAdminPanel({ onOrAfter, onOrBefore }: RenewalsAdminPanelProps) {
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data: renewals = [], error: listQueryError } = useRenewalsDue(onOrAfter, onOrBefore);
+    const updatePayment = useUpdateSubscriptionPayment(onOrAfter, onOrBefore);
+
+    const isPending = updatePayment.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = updatePayment.error?.message ?? null;
 
     function handlePaymentUpdate(
         subscriptionId: string,
         paymentStatus: SubscriptionPaymentStatus,
         priceAmount: number,
     ) {
-        setError(null);
-        startTransition(async () => {
-            const result = await updateSubscriptionPaymentAction({
-                subscriptionId,
-                paymentStatus,
-                ...(paymentStatus === 'partial'
-                    ? { amountPaid: Math.max(1, Math.floor(priceAmount / 2)) }
+        updatePayment.mutate({
+            subscriptionId,
+            paymentStatus,
+            amountPaid:
+                paymentStatus === 'partial'
+                    ? Math.max(1, Math.floor(priceAmount / 2))
                     : paymentStatus === 'paid'
-                      ? { amountPaid: priceAmount }
-                      : { amountPaid: 0 }),
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
+                      ? priceAmount
+                      : 0,
         });
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Renewals</h1>
-                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Subscriptions ending {windowLabel}. Payment badges nudge — they do not auto lock check-in.
-                </p>
-            </div>
-
             {(listError || error) && (
                 <p
                     className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
