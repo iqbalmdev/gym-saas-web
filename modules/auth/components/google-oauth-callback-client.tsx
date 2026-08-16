@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition, type FormEvent } from 'react';
+import { useEffect, useState, useTransition, type SubmitEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,7 +102,7 @@ export function GoogleOAuthCallbackClient() {
         });
     }
 
-    function handleLaneSubmit(event: FormEvent<HTMLFormElement>) {
+    function handleLaneSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!tokens || !lane) {
             setError('Choose whether you work at a gym or you are a member.');

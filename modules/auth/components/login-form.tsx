@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition, type SubmitEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ export function LoginForm() {
         setError(null);
     }
 
-    function handleRequestOtp(event: FormEvent<HTMLFormElement>) {
+    function handleRequestOtp(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
         startTransition(async () => {
@@ -56,7 +56,7 @@ export function LoginForm() {
         });
     }
 
-    function handleLaneContinue(event: FormEvent<HTMLFormElement>) {
+    function handleLaneContinue(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
         if (!lane) {
@@ -73,7 +73,7 @@ export function LoginForm() {
         setStep('google-lane');
     }
 
-    function handleGoogleLaneContinue(event: FormEvent<HTMLFormElement>) {
+    function handleGoogleLaneContinue(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
         if (!lane) {
@@ -87,7 +87,7 @@ export function LoginForm() {
         window.location.assign(buildGoogleOAuthStartUrl(window.location.origin));
     }
 
-    function handleVerifyOtp(event: FormEvent<HTMLFormElement>) {
+    function handleVerifyOtp(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         setError(null);
         startTransition(async () => {
