@@ -5,8 +5,10 @@ import { encodeStaffSessionCookie, encodeStaffSessionCookieNoGym } from './staff
 import { AdminShellPage } from '../pages/admin-shell.page';
 import { AttendancePage } from '../pages/attendance.page';
 import { ClientHomePage } from '../pages/client-home.page';
+import { CrmPage } from '../pages/crm.page';
 import { LoginPage } from '../pages/login.page';
 import { MembersPage } from '../pages/members.page';
+import { PlansPage } from '../pages/plans.page';
 import { RenewalsPage } from '../pages/renewals.page';
 import { SettingsPage } from '../pages/settings.page';
 
@@ -18,6 +20,8 @@ type Pages = {
     membersPage: MembersPage;
     attendancePage: AttendancePage;
     renewalsPage: RenewalsPage;
+    crmPage: CrmPage;
+    plansPage: PlansPage;
 };
 
 type AuthFixtures = {
@@ -56,6 +60,14 @@ export const test = base.extend<Pages & AuthFixtures>({
 
     renewalsPage: async ({ page }, use) => {
         await use(new RenewalsPage(page));
+    },
+
+    crmPage: async ({ page }, use) => {
+        await use(new CrmPage(page));
+    },
+
+    plansPage: async ({ page }, use) => {
+        await use(new PlansPage(page));
     },
 
     staffAdmin: async ({ context, page }, use) => {
