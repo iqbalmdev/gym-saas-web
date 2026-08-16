@@ -22,7 +22,8 @@ Keep this tree small. Prefer code + Current stage over essays.
 | `api/attendance.md` | Admin desk attendance |
 | `api/subscriptions.md` | Renewals due + payment update |
 | `postman-sync.md` | Sibling Postman workflow |
-| `ui-theme.md` | Theme tokens |
+| `ui-theme.md` | Theme direction + light/dark mechanics |
+| `ui-design-system.md` | **Rules**: which token for which job, status-badge scale, density, empty states |
 | `mcp-setup.md` | Cursor MCP once |
 | `GETTING-STARTED.md` | Day-one path |
 | `adr/` | Decisions |
