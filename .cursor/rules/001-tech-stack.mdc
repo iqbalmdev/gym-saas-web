@@ -42,17 +42,40 @@ Reflects `package.json`. Changing this table requires an ADR under `docs/adr/`.
 - Session: httpOnly cookie set after OTP/Google verify (ADR-0005). Never
   trust a lane, role, or `gym_org_id` sent from the client.
 
+## Client data layer (ADR-0011)
+
+**`@tanstack/react-query` v5 is installed and is the default** for Admin list
+surfaces. Shape, per module:
+
+| File | Role |
+|---|---|
+| `<m>-query-keys.ts` | pure key factory — imported by client *and* server |
+| `<m>-queries.ts` | server-only read via ports; used by both entry points below |
+| `app/api/<m>/route.ts` | gate → same query fn → JSON (client refetch only) |
+| `<m>-hooks.ts` | `'use client'` — `useQuery` / `useMutation` |
+
+- Pages stay RSC: `prefetchQuery` + `<HydrationBoundary>` so first paint ships
+  with data. Never make a page a Client Component to fetch.
+- **Mutations call the existing Server Actions** — the auth → lane → tenant gate
+  in `<m>-actions.ts` is not relocated. `revalidatePath` stays there too.
+- Browser `fetch` only via `getJson()` from `@/lib/query/api-fetch`, and only
+  against this app's `/api/*`. Domain HTTP remains in adapters.
+- A mutation that optimistically **removes a row** must be owned by the *list*
+  component, not the row — the row unmounts and takes its hook (and error
+  state) with it.
+- Mutations that change gym affiliation (create gym, accept staff invite) or
+  create the session keep `router.refresh()`: cache invalidation cannot
+  re-render a layout, and the Admin shell's mode depends on affiliation.
+
 ## Not installed — do not reach for these
 
-`react-hook-form` · `@tanstack/react-query` · `swr` · `zustand` ·
-`@supabase/supabase-js`
+`react-hook-form` · `swr` · `zustand` · `@supabase/supabase-js`
 
 (`clsx` / `tailwind-merge` **are** installed — use `cn()` from `@/lib/utils`.)
 
-Forms use `useState` + `useTransition` + Server Actions. Server data is
-fetched in RSCs, not client-side. Zustand is **documented but not installed**
-(`state-management.mdc`) — install it only when a real shared-chrome slice
-needs it, and say so first.
+Forms use `useState` + Server Actions. Zustand is **documented but not
+installed** (`state-management.mdc`) — install it only when a real
+shared-chrome slice needs it, and say so first.
 
 ## Banned outright
 

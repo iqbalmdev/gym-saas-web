@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server';
 import { createAppServices } from '@/lib/api/composition';
 import { ApiClientError } from '@/lib/api/errors';
 import {
+    SESSION_COOKIE_MAX_AGE_SECONDS,
     SESSION_COOKIE_NAME,
     decodeSession,
     encodeSession,
@@ -48,7 +49,7 @@ export default async function proxy(request: NextRequest) {
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
             path: '/',
-            maxAge: Math.max(60, Math.floor((rotated.expiresAt - Date.now()) / 1000)),
+            maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
         });
         return response;
     } catch (error) {

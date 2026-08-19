@@ -1,5 +1,9 @@
 # UI theme direction (swappable)
 
+> **Rules live in [`ui-design-system.md`](ui-design-system.md)** — which token for which
+> job, the status-badge scale, density, and empty-state copy. This file covers the
+> *direction* and the light/dark mechanics.
+
 **Status:** CRM token themes with light/dark (`data-theme`). Collapsible sidebar (icon rail ↔ labels). Feature modules still stub panels.
 
 ## Default direction (v0)

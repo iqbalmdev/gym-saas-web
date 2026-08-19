@@ -1,25 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
 import {
     formatInviteExpiry,
     membershipInviteStatusLabel,
+    membershipInviteStatusTone,
     membershipPaymentStatusLabel,
+    membershipPaymentStatusTone,
 } from '@/modules/membership-invites/membership-invites-labels';
-import { acceptMembershipInviteAction } from '@/modules/membership-invites/membership-invites-actions';
+import { useAcceptMembershipInvite, useClientHome } from '@/modules/membership-invites/membership-invites-hooks';
 import type {
-    MembershipInvite,
     OptionalClassGrant,
     OptionalProfileAttribute,
 } from '@/modules/membership-invites/membership-invites-ports';
-
-type MembershipInviteInboxProps = {
-    invites: MembershipInvite[];
-    listError: string | null;
-};
 
 const PROFILE_OPTIONS: { value: OptionalProfileAttribute; label: string }[] = [
     { value: 'GENDER', label: 'Gender' },
@@ -34,13 +32,19 @@ const GRANT_OPTIONS: { value: OptionalClassGrant; label: string }[] = [
     { value: 'WORKOUT_PLANS', label: 'Workout plans' },
 ];
 
-export function MembershipInviteInbox({ invites, listError }: MembershipInviteInboxProps) {
-    const router = useRouter();
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+export function MembershipInviteInbox() {
     const [profileAttrs, setProfileAttrs] = useState<OptionalProfileAttribute[]>([]);
     const [classGrants, setClassGrants] = useState<OptionalClassGrant[]>([]);
-    const [isPending, startTransition] = useTransition();
+
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data, error: listQueryError } = useClientHome();
+    const invites = data?.invites ?? [];
+    const acceptInvite = useAcceptMembershipInvite();
+
+    const isPending = acceptInvite.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = acceptInvite.error?.message ?? null;
+    const success = acceptInvite.isSuccess ? 'Membership accepted. You are now a member of this gym.' : null;
 
     const pending = invites.filter((invite) => invite.status === 'PENDING');
 
@@ -57,20 +61,10 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
     }
 
     function handleAccept(membershipInviteId: string) {
-        setError(null);
-        setSuccess(null);
-        startTransition(async () => {
-            const result = await acceptMembershipInviteAction({
-                membershipInviteId,
-                optionalProfileAttributes: profileAttrs,
-                optionalClassGrants: classGrants,
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setSuccess('Membership accepted. You are now a member of this gym.');
-            router.refresh();
+        acceptInvite.mutate({
+            membershipInviteId,
+            optionalProfileAttributes: profileAttrs,
+            optionalClassGrants: classGrants,
         });
     }
 
@@ -125,11 +119,18 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                                 <p className="text-sm font-medium text-(--color-fg)">
                                     {invite.gym?.name ?? 'Gym invite'}
                                 </p>
-                                <p className="text-sm text-(--color-fg-muted)">
-                                    {membershipInviteStatusLabel(invite.status)}
-                                    <span className="mx-2">·</span>
-                                    Base {membershipPaymentStatusLabel(invite.basePaymentStatus)}
-                                </p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Badge variant={statusToneBadgeVariant(membershipInviteStatusTone(invite.status))}>
+                                        {membershipInviteStatusLabel(invite.status)}
+                                    </Badge>
+                                    <Badge
+                                        variant={statusToneBadgeVariant(
+                                            membershipPaymentStatusTone(invite.basePaymentStatus),
+                                        )}
+                                    >
+                                        Base {membershipPaymentStatusLabel(invite.basePaymentStatus)}
+                                    </Badge>
+                                </div>
                                 <p className="text-xs text-(--color-fg-muted)">
                                     Invited as {invite.inviteeName} · expires {formatInviteExpiry(invite.expiresAt)}
                                 </p>
@@ -145,10 +146,9 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                                             key={option.value}
                                             className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
-                                            <input
-                                                type="checkbox"
+                                            <Checkbox
                                                 checked={profileAttrs.includes(option.value)}
-                                                onChange={() => toggleProfile(option.value)}
+                                                onCheckedChange={() => toggleProfile(option.value)}
                                                 disabled={isPending}
                                             />
                                             {option.label}
@@ -167,10 +167,9 @@ export function MembershipInviteInbox({ invites, listError }: MembershipInviteIn
                                             key={option.value}
                                             className="flex items-center gap-2 text-sm text-(--color-fg)"
                                         >
-                                            <input
-                                                type="checkbox"
+                                            <Checkbox
                                                 checked={classGrants.includes(option.value)}
-                                                onChange={() => toggleGrant(option.value)}
+                                                onCheckedChange={() => toggleGrant(option.value)}
                                                 disabled={isPending}
                                             />
                                             {option.label}

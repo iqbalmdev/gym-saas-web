@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    SESSION_COOKIE_MAX_AGE_SECONDS,
     buildSessionSnapshot,
     decodeSession,
     encodeSession,
@@ -100,6 +101,16 @@ describe('rotateSessionSnapshot', () => {
         expect(rotated.lane).toBe(previous.lane);
         expect(rotated.roleCode).toBe(previous.roleCode);
         expect(rotated.staffCode).toBe(previous.staffCode);
+    });
+});
+
+describe('SESSION_COOKIE_MAX_AGE_SECONDS', () => {
+    it('outlives a single access-token TTL — the cookie must not expire at the same instant the access token does', () => {
+        // Regression guard: this cookie Max-Age used to be derived from
+        // `snapshot.expiresAt` (~1h), so the browser deleted the cookie at
+        // the access-token boundary before `proxy.ts` ever got a chance to
+        // refresh it. It must stay independent and much longer.
+        expect(SESSION_COOKIE_MAX_AGE_SECONDS).toBeGreaterThan(session.expiresIn * 10);
     });
 });
 

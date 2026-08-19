@@ -1,5 +1,6 @@
 import type { HttpClient } from '@/lib/api/client';
-import { areE2eFixturesEnabled, createE2eAttendanceAdapter } from '@/lib/api/e2e-fixtures';
+import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
+import { createE2eAttendanceAdapter } from '@/modules/attendance/attendance-e2e-fixtures';
 import { createAttendanceAdapter } from '@/modules/attendance/attendance-adapter';
 import { createDeskMarkAttendance, createListDayAttendances } from '@/modules/attendance/attendance-use-cases';
 

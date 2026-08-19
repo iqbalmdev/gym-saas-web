@@ -6,7 +6,7 @@ export function encodeClientSessionCookie(overrides: Partial<SessionSnapshot> = 
     url: string;
 } {
     const snapshot: SessionSnapshot = {
-        accessToken: 'e2e-client-access', // E2E_CLIENT_TOKEN in lib/api/e2e-fixtures
+        accessToken: 'e2e-client-access', // E2E_CLIENT_TOKEN in lib/api/e2e/store
         refreshToken: 'e2e-client-refresh',
         expiresAt: Date.now() + 60 * 60 * 1000,
         userId: 'e2e-client-1',

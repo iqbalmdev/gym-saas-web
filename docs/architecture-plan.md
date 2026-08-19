@@ -48,7 +48,7 @@ This plan is the **build contract** for the Next.js web app. Agent skills (`orie
 | Concern | Choice | Notes |
 |---|---|---|
 | Framework | Next.js App Router + TypeScript | Strict TS; no `any` |
-| Rendering | Server Components default | `"use client"` only for interaction |
+| Rendering | Server Components default | `"use client"` only for interaction; page shells stream — domain reads sit behind `<Suspense>` with a `loading.tsx`, never awaited in the shell (ADR-0009) |
 | Auth UX | Email OTP canonical; Google + verified email | No Facebook / phone OTP |
 | API access | Typed HTTP client in `lib/api` | Bearer access token; refresh handled in auth layer |
 | Theme | CSS variables / token maps | See `docs/ui-theme.md` |

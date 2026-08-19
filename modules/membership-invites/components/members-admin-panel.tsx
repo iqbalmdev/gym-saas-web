@@ -1,53 +1,63 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
 import {
     formatInviteExpiry,
     membershipInviteStatusLabel,
+    membershipInviteStatusTone,
     membershipPaymentStatusLabel,
+    membershipPaymentStatusTone,
 } from '@/modules/membership-invites/membership-invites-labels';
 import {
-    createMembershipInviteAction,
-    revokeMembershipInviteAction,
-} from '@/modules/membership-invites/membership-invites-actions';
-import type { MembershipInvite, MembershipPaymentStatus } from '@/modules/membership-invites/membership-invites-ports';
-import type { MembershipPlan } from '@/modules/plans/plans-ports';
-
-type MembersAdminPanelProps = {
-    gymName: string;
-    invites: MembershipInvite[];
-    basePlans: MembershipPlan[];
-    addonPlans: MembershipPlan[];
-    listError: string | null;
-};
+    useCreateMembershipInvite,
+    useMembershipInvitesPage,
+    useRevokeMembershipInvite,
+} from '@/modules/membership-invites/membership-invites-hooks';
+import type { MembershipPaymentStatus } from '@/modules/membership-invites/membership-invites-ports';
 
 const PAYMENT_OPTIONS: MembershipPaymentStatus[] = ['unpaid', 'paid', 'partial'];
 
-export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, listError }: MembersAdminPanelProps) {
-    const router = useRouter();
+export function MembersAdminPanel() {
     const [inviteeName, setInviteeName] = useState('');
     const [invitedEmail, setInvitedEmail] = useState('');
     const [inviteePhone, setInviteePhone] = useState('');
-    const [basePlanId, setBasePlanId] = useState(basePlans[0]?.id ?? '');
+    const [basePlanIdOverride, setBasePlanIdOverride] = useState<string | null>(null);
     const [basePaymentStatus, setBasePaymentStatus] = useState<MembershipPaymentStatus>('unpaid');
     const [addonPlanId, setAddonPlanId] = useState('');
     const [addonPaymentStatus, setAddonPaymentStatus] = useState<MembershipPaymentStatus>('unpaid');
-    const [error, setError] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+
+    // Hydrated from the page's server prefetch — same query key (ADR-0011).
+    const { data, error: listQueryError } = useMembershipInvitesPage();
+    const invites = data?.invites ?? [];
+    const basePlans = data?.basePlans ?? [];
+    const addonPlans = data?.addonPlans ?? [];
+
+    const createInvite = useCreateMembershipInvite();
+    const revokeInvite = useRevokeMembershipInvite();
+    const isPending = createInvite.isPending || revokeInvite.isPending;
+    const listError = listQueryError?.message ?? null;
+    const error = createInvite.error?.message ?? revokeInvite.error?.message ?? null;
+
+    // Defaults to the first base plan, but only until the user picks one —
+    // the list arrives asynchronously now, so this cannot be seeded into
+    // useState at mount the way it was when plans came in as a prop.
+    const basePlanId = basePlanIdOverride ?? basePlans[0]?.id ?? '';
 
     function planName(planId: string): string {
         const plan = basePlans.find((item) => item.id === planId) ?? addonPlans.find((item) => item.id === planId);
         return plan?.name ?? planId.slice(0, 8);
     }
 
-    function handleCreate(event: FormEvent<HTMLFormElement>) {
+    function handleCreate(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError(null);
-        startTransition(async () => {
-            const result = await createMembershipInviteAction({
+        createInvite.mutate(
+            {
                 inviteeName,
                 invitedEmail,
                 inviteePhone: inviteePhone || undefined,
@@ -55,42 +65,24 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                 basePaymentStatus,
                 addonPlanId: addonPlanId || undefined,
                 addonPaymentStatus: addonPlanId ? addonPaymentStatus : undefined,
-            });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            setInviteeName('');
-            setInvitedEmail('');
-            setInviteePhone('');
-            setAddonPlanId('');
-            router.refresh();
-        });
+            },
+            {
+                onSuccess: () => {
+                    setInviteeName('');
+                    setInvitedEmail('');
+                    setInviteePhone('');
+                    setAddonPlanId('');
+                },
+            },
+        );
     }
 
     function handleRevoke(membershipInviteId: string) {
-        setError(null);
-        startTransition(async () => {
-            const result = await revokeMembershipInviteAction({ membershipInviteId });
-            if (!result.ok) {
-                setError(result.message);
-                return;
-            }
-            router.refresh();
-        });
+        revokeInvite.mutate({ membershipInviteId });
     }
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs font-medium tracking-wide text-(--color-fg-muted) uppercase">{gymName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Members</h1>
-                <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational
-                    — entitlement follows subscription dates after accept.
-                </p>
-            </div>
-
             {(listError || error) && (
                 <p
                     className="rounded-md border border-(--color-border) bg-(--color-surface) px-3 py-2 text-sm text-(--color-danger)"
@@ -111,8 +103,8 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                         <div className="grid gap-3 md:grid-cols-2">
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Name</span>
-                                <input
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Input
+                                    className="mt-1"
                                     value={inviteeName}
                                     onChange={(event) => setInviteeName(event.target.value)}
                                     placeholder="Alex Client"
@@ -122,9 +114,9 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Email</span>
-                                <input
+                                <Input
                                     type="email"
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                    className="mt-1"
                                     value={invitedEmail}
                                     onChange={(event) => setInvitedEmail(event.target.value)}
                                     placeholder="alex.client@example.com"
@@ -134,8 +126,8 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Phone (optional)</span>
-                                <input
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Input
+                                    className="mt-1"
                                     value={inviteePhone}
                                     onChange={(event) => setInviteePhone(event.target.value)}
                                     placeholder="+15551234567"
@@ -144,70 +136,93 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Base plan</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Select
                                     value={basePlanId}
-                                    onChange={(event) => setBasePlanId(event.target.value)}
-                                    required
+                                    onValueChange={(value) => setBasePlanIdOverride(value ?? '')}
                                     disabled={isPending}
                                 >
-                                    {basePlans.map((plan) => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Base plan">
+                                        <SelectValue>
+                                            {(value: string) => (value ? planName(value) : 'Select a base plan')}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {basePlans.map((plan) => (
+                                            <SelectItem key={plan.id} value={plan.id}>
+                                                {plan.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Base payment</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                <Select
                                     value={basePaymentStatus}
-                                    onChange={(event) =>
-                                        setBasePaymentStatus(event.target.value as MembershipPaymentStatus)
-                                    }
+                                    onValueChange={(value) => setBasePaymentStatus(value as MembershipPaymentStatus)}
                                     disabled={isPending}
                                 >
-                                    {PAYMENT_OPTIONS.map((status) => (
-                                        <option key={status} value={status}>
-                                            {membershipPaymentStatusLabel(status)}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Base payment">
+                                        <SelectValue>
+                                            {(value: MembershipPaymentStatus) => membershipPaymentStatusLabel(value)}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {PAYMENT_OPTIONS.map((status) => (
+                                            <SelectItem key={status} value={status}>
+                                                {membershipPaymentStatusLabel(status)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             <label className="block text-sm">
                                 <span className="font-medium text-(--color-fg)">Add-on (optional)</span>
-                                <select
-                                    className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
-                                    value={addonPlanId}
-                                    onChange={(event) => setAddonPlanId(event.target.value)}
+                                <Select
+                                    value={addonPlanId || 'none'}
+                                    onValueChange={(value) => setAddonPlanId(!value || value === 'none' ? '' : value)}
                                     disabled={isPending || addonPlans.length === 0}
                                 >
-                                    <option value="">None</option>
-                                    {addonPlans.map((plan) => (
-                                        <option key={plan.id} value={plan.id}>
-                                            {plan.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    <SelectTrigger className="mt-1 w-full" aria-label="Add-on plan">
+                                        <SelectValue>
+                                            {(value: string) => (value === 'none' ? 'None' : planName(value))}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">None</SelectItem>
+                                        {addonPlans.map((plan) => (
+                                            <SelectItem key={plan.id} value={plan.id}>
+                                                {plan.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </label>
                             {addonPlanId ? (
                                 <label className="block text-sm">
                                     <span className="font-medium text-(--color-fg)">Add-on payment</span>
-                                    <select
-                                        className="mt-1 w-full rounded-md border border-(--color-border) bg-(--color-canvas) px-3 py-2 text-sm"
+                                    <Select
                                         value={addonPaymentStatus}
-                                        onChange={(event) =>
-                                            setAddonPaymentStatus(event.target.value as MembershipPaymentStatus)
+                                        onValueChange={(value) =>
+                                            setAddonPaymentStatus(value as MembershipPaymentStatus)
                                         }
                                         disabled={isPending}
                                     >
-                                        {PAYMENT_OPTIONS.map((status) => (
-                                            <option key={status} value={status}>
-                                                {membershipPaymentStatusLabel(status)}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <SelectTrigger className="mt-1 w-full" aria-label="Add-on payment">
+                                            <SelectValue>
+                                                {(value: MembershipPaymentStatus) =>
+                                                    membershipPaymentStatusLabel(value)
+                                                }
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PAYMENT_OPTIONS.map((status) => (
+                                                <SelectItem key={status} value={status}>
+                                                    {membershipPaymentStatusLabel(status)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </label>
                             ) : null}
                         </div>
@@ -236,17 +251,23 @@ export function MembersAdminPanel({ gymName, invites, basePlans, addonPlans, lis
                                         {invite.inviteePhone ? ` · ${invite.inviteePhone}` : ''}
                                     </p>
                                     <p className="text-xs text-(--color-fg-muted)">
-                                        {planName(invite.basePlanId)} ·{' '}
-                                        {membershipPaymentStatusLabel(invite.basePaymentStatus)}
+                                        {planName(invite.basePlanId)}
                                         {invite.addonPlanId ? ` · + ${planName(invite.addonPlanId)}` : ''}
                                         {' · expires '}
                                         {formatInviteExpiry(invite.expiresAt)}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="rounded-md border border-(--color-border) px-2 py-1 text-xs font-medium text-(--color-fg)">
+                                    <Badge
+                                        variant={statusToneBadgeVariant(
+                                            membershipPaymentStatusTone(invite.basePaymentStatus),
+                                        )}
+                                    >
+                                        {membershipPaymentStatusLabel(invite.basePaymentStatus)}
+                                    </Badge>
+                                    <Badge variant={statusToneBadgeVariant(membershipInviteStatusTone(invite.status))}>
                                         {membershipInviteStatusLabel(invite.status)}
-                                    </span>
+                                    </Badge>
                                     {invite.status === 'PENDING' ? (
                                         <Button
                                             type="button"

@@ -1,4 +1,4 @@
-import { E2E_STAFF_TOKEN_NO_GYM, E2E_STAFF_TOKEN_WITH_GYM } from '../../lib/api/e2e-fixtures';
+import { E2E_STAFF_TOKEN_NO_GYM, E2E_STAFF_TOKEN_WITH_GYM } from '../../lib/api/e2e/store';
 import { SESSION_COOKIE_NAME, encodeSession, type SessionSnapshot } from '../../lib/auth/session-model';
 
 export function encodeStaffSessionCookie(overrides: Partial<SessionSnapshot> = {}): {

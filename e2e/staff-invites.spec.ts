@@ -16,7 +16,7 @@ test.describe('Staff invites', () => {
         await settingsPage.goto();
         await expect(staffAdmin.sidebar).toBeVisible();
         await settingsPage.staffCodeInput.fill('STF-NEW01');
-        await page.getByLabel('Role').selectOption('TRAINER');
+        await settingsPage.selectRole('Trainer');
         await settingsPage.sendInviteButton.click();
         await expect(page.getByText('Trainer').first()).toBeVisible();
     });

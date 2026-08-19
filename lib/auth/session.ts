@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 
 import {
+    SESSION_COOKIE_MAX_AGE_SECONDS,
     SESSION_COOKIE_NAME,
     buildSessionSnapshot,
     decodeSession,
@@ -13,6 +14,7 @@ import {
 } from '@/lib/auth/session-model';
 
 export {
+    SESSION_COOKIE_MAX_AGE_SECONDS,
     SESSION_COOKIE_NAME,
     buildSessionSnapshot,
     isClientSession,
@@ -44,13 +46,12 @@ export async function getSession(): Promise<SessionSnapshot | null> {
 
 export async function setSession(snapshot: SessionSnapshot): Promise<void> {
     const jar = await cookies();
-    const maxAge = Math.max(60, Math.floor((snapshot.expiresAt - Date.now()) / 1000));
     jar.set(SESSION_COOKIE_NAME, encodeSession(snapshot), {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-        maxAge,
+        maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
     });
 }
 
