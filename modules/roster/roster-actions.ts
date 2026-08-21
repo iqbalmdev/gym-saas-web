@@ -120,3 +120,35 @@ export async function setCheckInBlockAction(input: {
         return fail(error);
     }
 }
+
+export async function assignTrainerAction(input: {
+    membershipId: string;
+    trainerProfileId: string;
+}): Promise<RosterActionResult> {
+    const gate = await requireStaffAdminGym();
+    if (!gate.ok) {
+        return gate.result;
+    }
+    const membershipId = input.membershipId.trim();
+    const trainerProfileId = input.trainerProfileId.trim();
+    if (!membershipId || !trainerProfileId) {
+        return {
+            ok: false,
+            code: 'VALIDATION_ERROR',
+            message: rosterErrorMessage('VALIDATION_ERROR'),
+        };
+    }
+    try {
+        const { assignTrainer } = createAppServices();
+        await assignTrainer({
+            accessToken: gate.accessToken,
+            gymOrgId: gate.gymOrgId,
+            membershipId,
+            trainerProfileId,
+        });
+        revalidatePath('/admin/members');
+        return { ok: true };
+    } catch (error) {
+        return fail(error);
+    }
+}

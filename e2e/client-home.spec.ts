@@ -4,6 +4,8 @@ test.describe('Client home', () => {
     test('CLIENT session shows member home without Admin nav', async ({ clientHome }) => {
         await expect(clientHome.heading).toBeVisible();
         await expect(clientHome.inviteHeading).toBeVisible();
+        await expect(clientHome.profileNav).toBeVisible();
+        await expect(clientHome.page.getByLabel('Height (cm)')).toHaveCount(0);
         await expect(clientHome.adminSidebar).toHaveCount(0);
     });
 

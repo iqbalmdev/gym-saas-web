@@ -8,6 +8,7 @@ import {
     E2E_GYM_ID,
     E2E_STAFF_TOKEN_WITH_GYM,
     e2eAffiliatedTokens,
+    e2eGymTrainers,
     e2eOwnerTokens,
 } from '@/lib/api/e2e/store';
 
@@ -30,6 +31,21 @@ export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
                 };
             }
             return { gymOrgs: [] };
+        },
+
+        async listTrainers({ gymOrgId, limit = 20, offset = 0 }) {
+            if (gymOrgId !== E2E_GYM_ID) {
+                return { trainers: { items: [], total: 0, limit, offset } };
+            }
+            const items = e2eGymTrainers.slice(offset, offset + limit);
+            return {
+                trainers: {
+                    items,
+                    total: e2eGymTrainers.length,
+                    limit,
+                    offset,
+                },
+            };
         },
 
         async create({ accessToken, body }) {

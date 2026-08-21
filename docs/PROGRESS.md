@@ -12,19 +12,19 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | UI foundation | Done — shadcn/ui on `data-theme`, tokens aliased to the CRM palette (ADR-0006) |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
-| Postman API collection | Done — **sibling clone + Postman cloud** (`gym-saas.code-workspace`; no vendored `postman/` in web) |
+| Postman API collection | Sibling at **`9b0b561`** (Convert Lead + trainer list + Nutrition/Coaching/Health Sync). Cloud inject still blocked — Postman MCP 401; Desktop Import the sibling JSON |
 | Client/Admin auth guide | Done — `docs/api/client-auth.md` |
 | Silent session refresh | Done — `proxy.ts` rotates the access/refresh pair via `POST /auth/refresh` before it expires; cookie `Max-Age` decoupled from the access-token TTL (`2026-08-16` fix, see progress log) so it survives to be refreshed instead of the browser dropping it at the 1h mark. Verified live against prod (`2026-08-16`): rotation + 401-on-stale-token both confirmed; Google-lane compatibility inferred high-confidence (shared Supabase issuer), not directly browser-tested |
 | Auth research notes | Archived — `docs/archive/research/` |
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **M11 leads** |
+| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **profile & progress**; **M11 leads** |
 | Admin CRM-light chrome | Done — Base UI `Sidebar` primitive (icon rail + `Sheet` mobile drawer + cookie-persisted state), light/dark tokens, Settings-only first-run; Client persona shares the same header atoms |
 | Admin navigation latency | Done — page shells do no network work; `loading.tsx` per ops route; filter tabs are `<Link>` in the shell (was a raw `<a>` full-page reload) (ADR-0009) |
 | Client data layer | Done — **TanStack Query v5** across all six Admin modules (ADR-0011): RSC `prefetchQuery` + `<HydrationBoundary>` for first paint, `/api/*` route handlers for refetch, mutations wrapping the existing Server Actions so the auth→lane→tenant gate never moved. Retired all `*-data.tsx`, every `useOptimistic` block, and 18 of 22 `router.refresh()` sites. Navigation between ops screens now serves from cache instead of re-paying ~400ms per hop. CLIENT persona migrated too; the 4 remaining `router.refresh()` calls are session creation and Admin-shell-mode changes, which cache invalidation cannot re-render |
 
-**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `91d4aba`. Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav. Admin navigation reworked to stream the page shell and stop reloading the document on filter clicks (ADR-0009).
+**Summary:** Roster, attendance desk, renewals inbox, and client my-data-grants wired against Postman tip `9b0b561` (sibling pulled 2026-08-19; cloud collection still waiting on Postman MCP re-auth). Plans + Leads + membership invites remain live. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav. Admin navigation reworked to stream the page shell and stop reloading the document on filter clicks (ADR-0009).
 
 ## Next up
 
@@ -37,10 +37,11 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 
 **Product:**
 
-6. Assign trainer / trainer list when Postman exposes a list endpoint.
-7. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
-8. Optional: deeper renewals UX (filters, member name join).
-9. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).
+6. ~~Assign trainer in Admin~~ — **Done.** Members roster picker uses Gym Orgs `GET /gym-orgs/:id/trainers`; assign posts `trainerProfileId` on the roster writer. See `docs/progress/2026-08-19-assign-trainer-roster.md`.
+7. ~~Profile & Progress~~ — **Done.** Client `/client` editor + Admin grant-aware member detail. See `docs/progress/2026-08-19-profile-progress.md`.
+8. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
+9. Optional: deeper renewals UX (filters, member name join).
+10. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).
 
 ## Log
 

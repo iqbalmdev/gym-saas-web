@@ -27,3 +27,14 @@ export function createSetCheckInBlock(deps: { roster: RosterWriter }) {
         return deps.roster.setCheckInBlock(input);
     };
 }
+
+export function createAssignTrainer(deps: { roster: RosterWriter }) {
+    return async function assignTrainer(input: {
+        accessToken: string;
+        gymOrgId: string;
+        membershipId: string;
+        trainerProfileId: string;
+    }) {
+        return deps.roster.assignTrainer(input);
+    };
+}

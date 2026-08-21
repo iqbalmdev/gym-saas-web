@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { ClientSectionNav } from '@/components/client/client-section-nav';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -8,10 +9,8 @@ import { getSession, isClientSession } from '@/lib/auth/session';
 import { signOutAction } from '@/modules/auth/auth-actions';
 
 /**
- * Client persona is a single page today, so it stays a plain top bar rather
- * than a collapsible Sidebar — same shared atoms (Separator, Button,
- * ThemeToggle) and header rhythm as the Admin shell for visual consistency.
- * Revisit if Client grows more than one route.
+ * Client chrome: top bar + Home / Profile links. Same header atoms as Admin.
+ * Profile and progress live on `/client/profile`, not the home inbox.
  */
 export default async function ClientSectionLayout({ children }: { children: ReactNode }) {
     const session = await getSession();
@@ -31,6 +30,7 @@ export default async function ClientSectionLayout({ children }: { children: Reac
                     <p className="truncate text-sm font-semibold tracking-tight">Gym SaaS</p>
                     <Separator orientation="vertical" className="mx-1 hidden h-6 sm:block data-vertical:self-center" />
                     <p className="hidden truncate text-xs text-(--color-fg-muted) sm:block">{displayName}</p>
+                    <ClientSectionNav />
 
                     <div className="ml-auto flex shrink-0 items-center gap-2">
                         <ThemeToggle />

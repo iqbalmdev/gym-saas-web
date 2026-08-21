@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { endpoints } from '@/modules/gym-orgs/gym-orgs-endpoints';
 import type { HttpClient } from '@/lib/api/client';
-import type { GymOrgsReader, GymOrgsWriter } from '@/modules/gym-orgs/gym-orgs-ports';
+import type { GymOrgsReader, GymOrgsWriter, GymTrainer } from '@/modules/gym-orgs/gym-orgs-ports';
 
 /** GET /gym-orgs list item — includes isOwner. */
 const gymOrgSummarySchema = z.object({
@@ -38,6 +38,53 @@ const createSchema = z.object({
     gymOrg: createGymOrgDetailSchema,
 });
 
+const gymTrainerSchema = z.object({
+    trainerProfileId: z.string().min(1),
+    userId: z.string().min(1),
+    gymOrgId: z.string().min(1).optional(),
+    name: z.string().min(1),
+    email: z.string().min(1),
+    staffCode: z.string().nullable().optional(),
+    bio: z.string().nullable().optional(),
+    isAdmin: z.boolean(),
+    createdAt: z.string().min(1).optional(),
+});
+
+const trainersEnvelopeSchema = z.object({
+    trainers: z.object({
+        items: z.array(gymTrainerSchema),
+        total: z.number(),
+        limit: z.number(),
+        offset: z.number(),
+    }),
+});
+
+function trainersQuery(input: { limit?: number; offset?: number }): string {
+    const params = new URLSearchParams();
+    if (input.limit !== undefined) {
+        params.set('limit', String(input.limit));
+    }
+    if (input.offset !== undefined) {
+        params.set('offset', String(input.offset));
+    }
+    const qs = params.toString();
+    return qs ? `?${qs}` : '';
+}
+
+function normalizeTrainer(raw: z.infer<typeof gymTrainerSchema>, gymOrgId: string): GymTrainer {
+    return {
+        trainerProfileId: raw.trainerProfileId,
+        userId: raw.userId,
+        gymOrgId: raw.gymOrgId ?? gymOrgId,
+        name: raw.name,
+        email: raw.email,
+        staffCode: raw.staffCode ?? null,
+        bio: raw.bio ?? null,
+        isAdmin: raw.isAdmin,
+        createdAt: raw.createdAt ?? null,
+    };
+}
+
 export function createGymOrgsAdapter(http: HttpClient): GymOrgsReader & GymOrgsWriter {
     return {
         async list({ accessToken }) {
@@ -47,6 +94,23 @@ export function createGymOrgsAdapter(http: HttpClient): GymOrgsReader & GymOrgsW
                 accessToken,
             });
             return listSchema.parse(raw);
+        },
+
+        async listTrainers({ accessToken, gymOrgId, limit, offset }) {
+            const raw = await http.request<unknown>({
+                path: `${endpoints.gymOrgTrainers(gymOrgId)}${trainersQuery({ limit, offset })}`,
+                method: 'GET',
+                accessToken,
+            });
+            const parsed = trainersEnvelopeSchema.parse(raw);
+            return {
+                trainers: {
+                    items: parsed.trainers.items.map((item) => normalizeTrainer(item, gymOrgId)),
+                    total: parsed.trainers.total,
+                    limit: parsed.trainers.limit,
+                    offset: parsed.trainers.offset,
+                },
+            };
         },
 
         async create({ accessToken, body }) {

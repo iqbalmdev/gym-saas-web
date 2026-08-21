@@ -5,6 +5,8 @@ const ROSTER_ERROR_COPY: Record<string, string> = {
     PLAN_FORBIDDEN: 'You need Admin access at this gym to manage the roster.',
     NOT_FOUND: 'That membership was not found.',
     CLIENT_MEMBERSHIP_INVALID_TRANSITION: 'That membership cannot be updated in its current state.',
+    COACHING_ADDON_REQUIRED: 'This member needs an in-date Trainer coaching add-on before you can assign a trainer.',
+    GYM_ORG_ADMIN_FORBIDDEN: 'You need Admin access at this gym to manage the roster.',
     VALIDATION_ERROR: 'Check the member details and try again.',
     NETWORK_OR_UNKNOWN: 'Could not reach the server. Check your connection.',
 };

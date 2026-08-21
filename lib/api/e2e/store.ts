@@ -9,9 +9,11 @@
  * ADR-0011 forced the `globalThis` backing, see below).
  */
 import type { Attendance } from '@/modules/attendance/attendance-ports';
+import type { GymTrainer } from '@/modules/gym-orgs/gym-orgs-ports';
 import type { Lead } from '@/modules/leads/leads-ports';
 import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
 import type { MembershipPlan } from '@/modules/plans/plans-ports';
+import type { ClientProfile, ProgressLog } from '@/modules/profile/profile-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
 import type { StaffInvite } from '@/modules/staff-invites/staff-invites-ports';
 import type { RenewalDueItem } from '@/modules/subscriptions/subscriptions-ports';
@@ -24,6 +26,7 @@ export const E2E_CLIENT_TOKEN = 'e2e-client-access';
 
 export const E2E_GYM_ID = 'gym-e2e-1';
 export const E2E_PENDING_INBOX_ID = 'invite-e2e-inbox-1';
+export const E2E_TRAINER_PROFILE_ID = 'trainer-profile-e2e-1';
 
 /**
  * Process-wide store for the mutable fixture state below.
@@ -147,6 +150,20 @@ export const e2eMembershipInvites = e2eShared('membershipInvites', (): Membershi
     },
 ]);
 
+export const e2eGymTrainers = e2eShared('gymTrainers', (): GymTrainer[] => [
+    {
+        trainerProfileId: E2E_TRAINER_PROFILE_ID,
+        userId: 'e2e-user-1',
+        gymOrgId: E2E_GYM_ID,
+        name: 'Owner Admin',
+        email: 'owner@example.com',
+        staffCode: 'STAFF-AB12',
+        bio: null,
+        isAdmin: true,
+        createdAt: '2026-08-08T12:00:00.000Z',
+    },
+]);
+
 export const e2eRosterMembers = e2eShared('rosterMembers', (): RosterMember[] => [
     {
         membershipId: 'membership-e2e-active',
@@ -165,6 +182,54 @@ export const e2eRosterMembers = e2eShared('rosterMembers', (): RosterMember[] =>
         basePriceAmount: 999,
     },
 ]);
+
+export const e2eClientProfiles = e2eShared('clientProfiles', () => {
+    const profiles = new Map<string, ClientProfile>();
+    profiles.set('e2e-client-1', {
+        userId: 'e2e-client-1',
+        heightCm: 170,
+        weightKg: 68,
+        dob: '1990-01-15',
+        gender: 'MALE',
+        medicalNotes: null,
+        bmi: 23.5,
+        createdAt: '2026-08-02T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:05:00.000Z',
+    });
+    profiles.set('e2e-client-roster-1', {
+        userId: 'e2e-client-roster-1',
+        heightCm: 165,
+        weightKg: 60,
+        dob: '1992-04-20',
+        gender: 'FEMALE',
+        medicalNotes: 'Old ankle sprain',
+        bmi: 22,
+        createdAt: '2026-08-08T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:05:00.000Z',
+    });
+    return profiles;
+});
+
+export const e2eProgressLogs = e2eShared('progressLogs', (): ProgressLog[] => [
+    {
+        id: 'progress-e2e-ada-1',
+        clientUserId: 'e2e-client-roster-1',
+        logDate: '2026-08-11',
+        weightKg: 60,
+        bmi: 22,
+        notes: null,
+        createdAt: '2026-08-11T10:05:00.000Z',
+    },
+]);
+
+/** Staff-visible grants per gym+client. Ada shares required vitals only — not PROGRESS. */
+export const e2eStaffClientGrants = e2eShared(
+    'staffClientGrants',
+    () =>
+        new Map<string, { profileAttributes: string[]; classGrants: string[] }>([
+            [`${E2E_GYM_ID}:e2e-client-roster-1`, { profileAttributes: ['DOB', 'HEIGHT', 'WEIGHT'], classGrants: [] }],
+        ]),
+);
 
 export const e2eAttendances = e2eShared('attendances', (): Attendance[] => []);
 export const e2eDataGrantsByGym = e2eShared('dataGrantsByGym', () => new Map<string, MyDataGrants>());
@@ -207,6 +272,10 @@ export function seedMembershipSideEffects(input: {
     e2eDataGrantsByGym.set(input.gymOrgId, {
         gymOrgId: input.gymOrgId,
         clientUserId: 'e2e-client-1',
+        profileAttributes: input.profileAttributes,
+        classGrants: input.classGrants,
+    });
+    e2eStaffClientGrants.set(`${input.gymOrgId}:e2e-client-1`, {
         profileAttributes: input.profileAttributes,
         classGrants: input.classGrants,
     });

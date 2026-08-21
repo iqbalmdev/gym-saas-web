@@ -1,24 +1,34 @@
 'use client';
 
+import Link from 'next/link';
+
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { statusToneBadgeVariant } from '@/lib/ui/status-tone';
 import {
     membershipPaymentStatusLabel,
     membershipPaymentStatusTone,
 } from '@/modules/membership-invites/membership-invites-labels';
-import { useActiveRoster, useOffboardMember, useSetCheckInBlock } from '@/modules/roster/roster-hooks';
+import { RosterTrainerSelect } from '@/modules/roster/components/roster-trainer-select';
+import {
+    useActiveRoster,
+    useAssignTrainer,
+    useOffboardMember,
+    useSetCheckInBlock,
+} from '@/modules/roster/roster-hooks';
 
 export function RosterPanel() {
     // Hydrated from the page's server prefetch — same query key (ADR-0011).
     const { data: members = [], error: listQueryError } = useActiveRoster();
     const setCheckInBlock = useSetCheckInBlock();
     const offboardMember = useOffboardMember();
+    const assignTrainer = useAssignTrainer();
 
-    const isPending = setCheckInBlock.isPending || offboardMember.isPending;
+    const isPending = setCheckInBlock.isPending || offboardMember.isPending || assignTrainer.isPending;
     const listError = listQueryError?.message ?? null;
-    const error = setCheckInBlock.error?.message ?? offboardMember.error?.message ?? null;
+    const error =
+        setCheckInBlock.error?.message ?? offboardMember.error?.message ?? assignTrainer.error?.message ?? null;
 
     const active = members.filter((member) => member.status === 'ACTIVE');
 
@@ -30,6 +40,10 @@ export function RosterPanel() {
         setCheckInBlock.mutate({ membershipId, blocked });
     }
 
+    function handleAssignTrainer(membershipId: string, trainerProfileId: string) {
+        assignTrainer.mutate({ membershipId, trainerProfileId });
+    }
+
     return (
         <section className="space-y-3" aria-labelledby="roster-heading">
             <div>
@@ -38,7 +52,8 @@ export function RosterPanel() {
                 </h2>
                 <p className="mt-1 text-sm text-(--color-fg-muted)">
                     Payment badges are informational. Check-in block is a manual safety valve — entitlement still
-                    follows subscription dates.
+                    follows subscription dates. Assigning a trainer requires an in-date coaching add-on (the API
+                    enforces that; unpaid does not lock this picker).
                 </p>
             </div>
 
@@ -60,6 +75,7 @@ export function RosterPanel() {
                             <TableRow className="border-(--color-border) text-xs tracking-wide text-(--color-fg-muted) uppercase hover:bg-transparent">
                                 <TableHead className="px-4 py-3 text-(--color-fg-muted)">Member</TableHead>
                                 <TableHead className="px-4 py-3 text-(--color-fg-muted)">Payment</TableHead>
+                                <TableHead className="px-4 py-3 text-(--color-fg-muted)">Trainer</TableHead>
                                 <TableHead className="px-4 py-3 text-(--color-fg-muted)">Check-in</TableHead>
                                 <TableHead className="px-4 py-3 text-(--color-fg-muted)">Actions</TableHead>
                             </TableRow>
@@ -90,6 +106,16 @@ export function RosterPanel() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
+                                        <RosterTrainerSelect
+                                            memberName={member.clientName}
+                                            assignedTrainerId={member.assignedTrainerId}
+                                            disabled={isPending}
+                                            onAssign={(trainerProfileId) =>
+                                                handleAssignTrainer(member.membershipId, trainerProfileId)
+                                            }
+                                        />
+                                    </TableCell>
+                                    <TableCell className="px-4 py-3">
                                         <Badge
                                             variant={statusToneBadgeVariant(
                                                 member.checkInBlocked ? 'danger' : 'neutral',
@@ -101,6 +127,12 @@ export function RosterPanel() {
                                     </TableCell>
                                     <TableCell className="px-4 py-3 whitespace-normal">
                                         <div className="flex flex-wrap gap-2">
+                                            <Link
+                                                href={`/admin/members/${member.clientUserId}`}
+                                                className={buttonVariants({ variant: 'secondary' })}
+                                            >
+                                                Profile
+                                            </Link>
                                             <Button
                                                 type="button"
                                                 variant="secondary"

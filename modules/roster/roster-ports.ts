@@ -58,4 +58,11 @@ export type RosterWriter = {
         membershipId: string;
         blocked: boolean;
     }) => Promise<{ membership: MembershipMutation }>;
+
+    assignTrainer: (input: {
+        accessToken: string;
+        gymOrgId: string;
+        membershipId: string;
+        trainerProfileId: string;
+    }) => Promise<{ membership: MembershipMutation }>;
 };
