@@ -34,10 +34,10 @@ test.describe('Admin collapsible sidebar', () => {
         await page.setViewportSize({ width: 390, height: 844 });
         await expect(page.getByRole('button', { name: 'Profile options' })).toBeVisible();
         await expect(staffAdmin.sidebarTrigger).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Gym SaaS' })).toHaveCount(0);
+        await expect(page.getByRole('link', { name: 'Yeah Buddy' })).toHaveCount(0);
 
         await staffAdmin.sidebarTrigger.click();
-        await expect(page.getByRole('link', { name: 'Gym SaaS' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Yeah Buddy' })).toBeVisible();
         // The mobile drawer is a modal Sheet, not a `complementary` landmark, so query it
         // directly rather than through `staffAdmin.sidebar` (desktop-only aria-label/role).
         const renewals = page.getByRole('link', { name: 'Renewals', exact: true });

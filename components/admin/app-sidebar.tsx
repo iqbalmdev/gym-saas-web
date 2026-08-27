@@ -23,6 +23,7 @@ import {
     SidebarRail,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { BRAND_EMOJI, BRAND_INITIALS, BRAND_NAME } from '@/lib/brand';
 
 function AdminNavLink({ item }: { item: AdminNavItem }) {
     const pathname = usePathname();
@@ -72,7 +73,7 @@ export function AppSidebar({ mode, gymName }: AppSidebarProps) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             size="lg"
-                            tooltip="Gym SaaS"
+                            tooltip={BRAND_NAME}
                             render={
                                 <Link
                                     href={homeHref}
@@ -84,12 +85,18 @@ export function AppSidebar({ mode, gymName }: AppSidebarProps) {
                                 />
                             }
                         >
-                            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground">
-                                G
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-[0.625rem] font-bold text-sidebar-primary-foreground">
+                                {BRAND_INITIALS}
                             </span>
                             <span className="min-w-0">
-                                <span className="block truncate text-[0.9375rem] font-semibold tracking-tight">
-                                    Gym SaaS
+                                {/* Emoji sits outside the truncating span — `overflow:hidden` clips its taller glyph. */}
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                    <span className="truncate text-[0.9375rem] font-semibold tracking-tight">
+                                        {BRAND_NAME}
+                                    </span>
+                                    <span aria-hidden className="shrink-0 text-xs">
+                                        {BRAND_EMOJI}
+                                    </span>
                                 </span>
                                 {gymName ? (
                                     <span className="block truncate text-xs text-sidebar-foreground/70">{gymName}</span>
