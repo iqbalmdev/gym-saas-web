@@ -11,6 +11,17 @@ export function createListRosterMembers(deps: { roster: RosterReader }) {
     };
 }
 
+export function createListMyAssignedMembers(deps: { roster: RosterReader }) {
+    return async function listMyAssignedMembers(input: {
+        accessToken: string;
+        gymOrgId: string;
+        status?: 'ACTIVE' | 'INACTIVE';
+        q?: string;
+    }) {
+        return deps.roster.listMyAssignedMembers(input);
+    };
+}
+
 export function createOffboardMember(deps: { roster: RosterWriter }) {
     return async function offboardMember(input: { accessToken: string; gymOrgId: string; membershipId: string }) {
         return deps.roster.offboard(input);
@@ -25,5 +36,16 @@ export function createSetCheckInBlock(deps: { roster: RosterWriter }) {
         blocked: boolean;
     }) {
         return deps.roster.setCheckInBlock(input);
+    };
+}
+
+export function createAssignTrainer(deps: { roster: RosterWriter }) {
+    return async function assignTrainer(input: {
+        accessToken: string;
+        gymOrgId: string;
+        membershipId: string;
+        trainerProfileId: string;
+    }) {
+        return deps.roster.assignTrainer(input);
     };
 }

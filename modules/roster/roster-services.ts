@@ -3,6 +3,8 @@ import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
 import { createE2eRosterAdapter } from '@/modules/roster/roster-e2e-fixtures';
 import { createRosterAdapter } from '@/modules/roster/roster-adapter';
 import {
+    createAssignTrainer,
+    createListMyAssignedMembers,
     createListRosterMembers,
     createOffboardMember,
     createSetCheckInBlock,
@@ -14,7 +16,9 @@ export function rosterServices(http: HttpClient) {
     return {
         roster,
         listRosterMembers: createListRosterMembers({ roster }),
+        listMyAssignedMembers: createListMyAssignedMembers({ roster }),
         offboardMember: createOffboardMember({ roster }),
         setCheckInBlock: createSetCheckInBlock({ roster }),
+        assignTrainer: createAssignTrainer({ roster }),
     };
 }

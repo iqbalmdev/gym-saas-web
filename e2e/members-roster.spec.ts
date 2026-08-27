@@ -17,4 +17,11 @@ test.describe('Members roster', () => {
         await page.getByRole('button', { name: 'Unblock check-in' }).first().click();
         await expect(page.getByText('Allowed').first()).toBeVisible();
     });
+
+    test('Admin can assign a gym trainer from the roster picker', async ({ staffAdmin, membersPage, page }) => {
+        await staffAdmin.moduleLink('Members').click();
+        await expect(page.getByText('Ada Client')).toBeVisible();
+        await membersPage.assignTrainer('Ada Client', 'Owner Admin');
+        await expect(membersPage.memberRow('Ada Client').getByRole('combobox')).toContainText('Owner Admin');
+    });
 });

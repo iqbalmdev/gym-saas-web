@@ -4,6 +4,7 @@ import { createE2eGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-e2e-fixture
 import { createCreateGymOrg } from '@/modules/gym-orgs/create-gym-org';
 import { createGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-adapter';
 import { createListGymOrgs } from '@/modules/gym-orgs/list-gym-orgs';
+import { createListGymTrainers } from '@/modules/gym-orgs/list-gym-trainers';
 
 /** Binds the gym-orgs port to its adapter and use-cases (ADR-0007). */
 export function gymOrgsServices(http: HttpClient) {
@@ -11,6 +12,7 @@ export function gymOrgsServices(http: HttpClient) {
     return {
         gymOrgs,
         listGymOrgs: createListGymOrgs({ gymOrgs }),
+        listGymTrainers: createListGymTrainers({ gymOrgs }),
         createGymOrg: createCreateGymOrg({ gymOrgs }),
     };
 }

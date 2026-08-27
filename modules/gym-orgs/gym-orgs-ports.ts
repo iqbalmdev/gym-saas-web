@@ -21,8 +21,34 @@ export type GymOrgDetail = GymOrgSummary & {
     updatedAt?: string;
 };
 
+/** Live trainer_profiles at a gym — GET /gym-orgs/:gymOrgId/trainers. */
+export type GymTrainer = {
+    trainerProfileId: string;
+    userId: string;
+    gymOrgId: string;
+    name: string;
+    email: string;
+    staffCode: string | null;
+    bio: string | null;
+    isAdmin: boolean;
+    createdAt: string | null;
+};
+
+export type GymTrainersPage = {
+    items: GymTrainer[];
+    total: number;
+    limit: number;
+    offset: number;
+};
+
 export type GymOrgsReader = {
     list: (input: { accessToken: string }) => Promise<{ gymOrgs: GymOrgSummary[] }>;
+    listTrainers: (input: {
+        accessToken: string;
+        gymOrgId: string;
+        limit?: number;
+        offset?: number;
+    }) => Promise<{ trainers: GymTrainersPage }>;
 };
 
 export type GymOrgsWriter = {

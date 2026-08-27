@@ -5,6 +5,7 @@ import { encodeStaffSessionCookie, encodeStaffSessionCookieNoGym } from './staff
 import { AdminShellPage } from '../pages/admin-shell.page';
 import { AttendancePage } from '../pages/attendance.page';
 import { ClientHomePage } from '../pages/client-home.page';
+import { ClientProfilePage } from '../pages/client-profile.page';
 import { CrmPage } from '../pages/crm.page';
 import { LoginPage } from '../pages/login.page';
 import { MembersPage } from '../pages/members.page';
@@ -16,6 +17,7 @@ type Pages = {
     loginPage: LoginPage;
     adminShellPage: AdminShellPage;
     clientHomePage: ClientHomePage;
+    clientProfilePage: ClientProfilePage;
     settingsPage: SettingsPage;
     membersPage: MembersPage;
     attendancePage: AttendancePage;
@@ -31,6 +33,8 @@ type AuthFixtures = {
     staffNoGym: SettingsPage;
     /** Client cookie; Member home. */
     clientHome: ClientHomePage;
+    /** Client cookie; Profile & progress. */
+    clientProfile: ClientProfilePage;
 };
 
 export const test = base.extend<Pages & AuthFixtures>({
@@ -44,6 +48,10 @@ export const test = base.extend<Pages & AuthFixtures>({
 
     clientHomePage: async ({ page }, use) => {
         await use(new ClientHomePage(page));
+    },
+
+    clientProfilePage: async ({ page }, use) => {
+        await use(new ClientProfilePage(page));
     },
 
     settingsPage: async ({ page }, use) => {
@@ -91,6 +99,13 @@ export const test = base.extend<Pages & AuthFixtures>({
         const home = new ClientHomePage(page);
         await home.goto();
         await use(home);
+    },
+
+    clientProfile: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const profile = new ClientProfilePage(page);
+        await profile.goto();
+        await use(profile);
     },
 });
 
