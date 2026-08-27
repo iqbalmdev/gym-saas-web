@@ -5,38 +5,75 @@ import { Suspense } from 'react';
 import { PageHeaderSkeleton } from '@/components/admin/page-header-skeleton';
 import { getSession, isStaffSession } from '@/lib/auth/session';
 import { getQueryClient } from '@/lib/query/query-client';
+import { listGymTrainersForGym } from '@/modules/gym-orgs/gym-orgs-queries';
 import { listStaffGymOrgs } from '@/modules/gym-orgs/list-staff-gym-orgs';
 import { StaffClientProfilePanel } from '@/modules/profile/components/staff-client-profile-panel';
 import { StaffClientProgressPanel } from '@/modules/profile/components/staff-client-progress-panel';
 import { profileKeys } from '@/modules/profile/profile-query-keys';
 import { getStaffClientProfileForGym, listStaffClientProgressLogsForGym } from '@/modules/profile/profile-queries';
-import { listActiveRosterForGym } from '@/modules/roster/roster-queries';
+import { MemberAssignmentSummary } from '@/modules/roster/components/member-assignment-summary';
+import { listActiveRosterForGym, listMyAssignedMembersForGym } from '@/modules/roster/roster-queries';
 
 type MemberDetailPageProps = {
     params: Promise<{ clientUserId: string }>;
 };
 
-async function MemberDetailWorkspace({ accessToken, clientUserId }: { accessToken: string; clientUserId: string }) {
+async function resolveAssignedTrainerLabel(input: {
+    accessToken: string;
+    gymOrgId: string;
+    isAdmin: boolean;
+    assignedTrainerId: string | null;
+}): Promise<string> {
+    if (!input.assignedTrainerId) {
+        return 'Unassigned';
+    }
+    if (!input.isAdmin) {
+        return 'You (assigned coach)';
+    }
+    const trainers = await listGymTrainersForGym({
+        accessToken: input.accessToken,
+        gymOrgId: input.gymOrgId,
+    });
+    return trainers.find((item) => item.trainerProfileId === input.assignedTrainerId)?.name ?? 'Assigned';
+}
+
+async function MemberDetailWorkspace({
+    accessToken,
+    clientUserId,
+    roleCode,
+}: {
+    accessToken: string;
+    clientUserId: string;
+    roleCode: string;
+}) {
     const gymOrgs = await listStaffGymOrgs(accessToken);
     const gym = gymOrgs[0];
     if (!gym) {
         return null;
     }
 
+    const isAdmin = roleCode === 'ADMIN';
     const queryClient = getQueryClient();
-    const members = await listActiveRosterForGym({ accessToken, gymOrgId: gym.id });
+
+    const members = isAdmin
+        ? await listActiveRosterForGym({ accessToken, gymOrgId: gym.id })
+        : await listMyAssignedMembersForGym({ accessToken, gymOrgId: gym.id });
     const member = members.find((item) => item.clientUserId === clientUserId);
 
-    await Promise.all([
-        queryClient.prefetchQuery({
-            queryKey: profileKeys.staffClient(clientUserId),
-            queryFn: () => getStaffClientProfileForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
-        }),
-        queryClient.prefetchQuery({
-            queryKey: profileKeys.staffClientLogs(clientUserId),
-            queryFn: () => listStaffClientProgressLogsForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
-        }),
+    const assignedTrainerLabel = await resolveAssignedTrainerLabel({
+        accessToken,
+        gymOrgId: gym.id,
+        isAdmin,
+        assignedTrainerId: member?.assignedTrainerId ?? null,
+    });
+
+    const [profileResult, progressResult] = await Promise.all([
+        getStaffClientProfileForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+        listStaffClientProgressLogsForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
     ]);
+
+    queryClient.setQueryData(profileKeys.staffClient(clientUserId), profileResult);
+    queryClient.setQueryData(profileKeys.staffClientLogs(clientUserId), progressResult);
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
@@ -52,10 +89,15 @@ async function MemberDetailWorkspace({ accessToken, clientUserId }: { accessToke
                     </h1>
                     <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
                         Client-owned profile and progress. Missing grants show as not shared — never as invented values.
+                        Progress requires the member to enable Progress under Data sharing.
                     </p>
                 </div>
+                <MemberAssignmentSummary
+                    memberEmail={member?.clientEmail ?? null}
+                    assignedTrainerLabel={assignedTrainerLabel}
+                />
                 <StaffClientProfilePanel clientUserId={clientUserId} />
-                <StaffClientProgressPanel clientUserId={clientUserId} />
+                <StaffClientProgressPanel clientUserId={clientUserId} initial={progressResult} />
             </div>
         </HydrationBoundary>
     );
@@ -71,7 +113,11 @@ export default async function MemberDetailPage({ params }: MemberDetailPageProps
 
     return (
         <Suspense fallback={<MemberDetailSkeleton />}>
-            <MemberDetailWorkspace accessToken={session.accessToken} clientUserId={clientUserId} />
+            <MemberDetailWorkspace
+                accessToken={session.accessToken}
+                clientUserId={clientUserId}
+                roleCode={session.roleCode}
+            />
         </Suspense>
     );
 }

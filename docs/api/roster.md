@@ -2,11 +2,12 @@
 
 Contract from Postman **Roster** + **Gym Orgs → List Gym Trainers** @ sibling `gym-backend-postman` tip `9b0b561`.
 
-**Authz:** Bearer **ADMIN** at the gym. Web: Auth + STAFF session + gym tenant. **No DataGrant** (membership / check-in block / trainer assignment are gym-owned).
+**Authz:** Bearer **ADMIN** at the gym for full roster + mutations. Bearer with live `trainer_profiles` for **List my assigned members**. Web: Auth + STAFF session + gym tenant. **No DataGrant** (membership / check-in block / trainer assignment are gym-owned).
 
 | Action | Method | Path |
 |---|---|---|
 | List members | `GET` | `/gym-orgs/:gymOrgId/members?status&q` |
+| List my assigned members | `GET` | `/gym-orgs/:gymOrgId/my-assigned-members?status&q` |
 | Offboard | `POST` | `/gym-orgs/:gymOrgId/members/:membershipId/offboard` |
 | Check-in block | `PATCH` | `/gym-orgs/:gymOrgId/members/:membershipId/check-in-block` |
 | List gym trainers | `GET` | `/gym-orgs/:gymOrgId/trainers?limit&offset` |
@@ -24,4 +25,4 @@ Contract from Postman **Roster** + **Gym Orgs → List Gym Trainers** @ sibling 
 
 **Assign trainer body:** `{ trainerProfileId }` — requires in-date `TRAINER_COACHING` addon (payment ignored). Web maps `COACHING_ADDON_REQUIRED` to calm copy; unpaid never hides the picker.
 
-**Web Admin:** `/admin/members` lists ACTIVE members, offboards, toggles check-in block, and assigns a trainer from `GET /gym-orgs/:id/trainers` (gym-orgs port + BFF `/api/gym-orgs/trainers`). Tenant id is taken from the session, never the client.
+**Web Admin:** `/admin/members` — ADMIN sees invites + full ACTIVE roster (assign trainer, offboard, check-in block). TRAINER sees **Your assigned clients** from `GET /my-assigned-members` (Profile link only). Member detail `/admin/members/:clientUserId` shows assignment + grant-aware profile/progress. Tenant id is taken from the session, never the client.

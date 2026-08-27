@@ -6,7 +6,8 @@ test.describe('Client home', () => {
         await expect(clientHome.inviteHeading).toBeVisible();
         await expect(clientHome.profileNav).toBeVisible();
         await expect(clientHome.page.getByLabel('Height (cm)')).toHaveCount(0);
-        await expect(clientHome.adminSidebar).toHaveCount(0);
+        await expect(clientHome.memberSidebar).toBeVisible();
+        await expect(clientHome.page.getByRole('complementary', { name: 'Admin modules' })).toHaveCount(0);
     });
 
     test('CLIENT can accept a pending membership invite and manage data grants', async ({ clientHome }) => {

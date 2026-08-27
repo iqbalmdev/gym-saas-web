@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type SubmitEvent } from 'react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,15 +10,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { useMyProgressLogs, useUpsertMyProgressLog } from '@/modules/profile/profile-hooks';
 import { formatProfileMeasure } from '@/modules/profile/profile-labels';
 
-function todayUtc(): string {
-    return new Date().toISOString().slice(0, 10);
+/** Client calendar date (local), matching Postman “calendar date” for PUT /me/progress-logs. */
+function todayLocal(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 export function ClientProgressPanel() {
-    const { data: logs = [], error: listQueryError } = useMyProgressLogs();
+    const { data: logs, error: listQueryError, isPending: isListPending } = useMyProgressLogs();
     const upsertLog = useUpsertMyProgressLog();
 
-    const [logDate, setLogDate] = useState(todayUtc);
+    const [logDate, setLogDate] = useState(todayLocal);
     const [weightKg, setWeightKg] = useState('');
     const [notes, setNotes] = useState('');
 
@@ -48,7 +54,12 @@ export function ClientProgressPanel() {
                     Progress
                 </h2>
                 <p className="mt-1 text-sm text-(--color-fg-muted)">
-                    Log weight for a calendar day. This updates your current profile weight when a weight is set.
+                    Log weight for a calendar day. This updates your current profile weight when a weight is set. Admins
+                    and trainers only see these logs if Progress is enabled under{' '}
+                    <Link href="/client" className="underline-offset-4 hover:underline">
+                        Data sharing
+                    </Link>{' '}
+                    on Home.
                 </p>
             </div>
 
@@ -102,7 +113,9 @@ export function ClientProgressPanel() {
                 </div>
             </form>
 
-            {logs.length === 0 ? (
+            {isListPending && !logs ? (
+                <p className="text-sm text-(--color-fg-muted)">Loading progress…</p>
+            ) : !(logs && logs.length > 0) ? (
                 <p className="text-sm text-(--color-fg-muted)">No progress logs yet.</p>
             ) : (
                 <div className="overflow-hidden rounded-(--radius-panel) border border-(--color-border)">

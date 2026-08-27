@@ -1,51 +1,38 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactElement, type ReactNode } from 'react';
 
-import { AppSidebar } from '@/components/admin/app-sidebar';
-import { getActiveAdminNavItem, type AdminShellMode } from '@/components/admin/admin-nav';
+import { getActiveClientNavItem } from '@/components/client/client-nav';
+import { ClientSidebar } from '@/components/client/client-sidebar';
 import { ProfileMenu } from '@/components/profile/profile-menu';
 import { Separator } from '@/components/ui/separator';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-export type AdminShellUser = {
+/** Mirrors `AdminShellUser` — identity for the Profile options menu. */
+export type ClientShellUser = {
     displayName: string;
     email: string;
-    roleCode: string;
-    staffCode: string | null;
     initials: string;
 };
 
-type AdminShellProps = {
+type ClientShellProps = {
     children: ReactNode;
-    user: AdminShellUser;
-    mode?: AdminShellMode;
-    /** Active GymOrg name when Staff is affiliated. */
-    gymName?: string | null;
-    setupBanner?: ReactNode;
+    user: ClientShellUser;
     /** SSR-known sidebar open state, read from the `sidebar_state` cookie. */
     defaultSidebarOpen?: boolean;
 };
 
-export function AdminShell({
-    children,
-    user,
-    mode = 'full',
-    gymName = null,
-    setupBanner,
-    defaultSidebarOpen = true,
-}: AdminShellProps) {
+export function ClientShell({ children, user, defaultSidebarOpen = true }: ClientShellProps): ReactElement {
     const pathname = usePathname();
-    const pageLabel = useMemo(() => getActiveAdminNavItem(pathname, mode)?.label, [pathname, mode]);
+    const pageLabel = useMemo(() => getActiveClientNavItem(pathname)?.label, [pathname]);
 
     return (
-        // Without a Provider, collapsed-rail tooltips fall back to base-ui's 600ms open
-        // delay — feels like they don't work at all. Group them with a snappy delay instead.
+        // Same shell chrome as Admin — shared Sidebar primitive + Profile options.
         <TooltipProvider delay={150}>
             <SidebarProvider defaultOpen={defaultSidebarOpen} className="admin-shell">
-                <AppSidebar mode={mode} gymName={gymName} />
+                <ClientSidebar />
                 <SidebarInset className="flex min-h-svh min-w-0 flex-col bg-transparent">
                     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-(--color-border)/80 bg-(--color-surface)/90 px-4 backdrop-blur-md sm:px-6">
                         <SidebarTrigger />
@@ -61,7 +48,7 @@ export function AdminShell({
                                 user={{
                                     displayName: user.displayName,
                                     email: user.email,
-                                    roleLabel: user.roleCode,
+                                    roleLabel: 'CLIENT',
                                     initials: user.initials,
                                 }}
                             />
@@ -69,7 +56,6 @@ export function AdminShell({
                     </header>
 
                     <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-6 md:px-8 md:py-8">
-                        {setupBanner}
                         <div className="mx-auto max-w-6xl">{children}</div>
                     </main>
                 </SidebarInset>

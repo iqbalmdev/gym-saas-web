@@ -10,45 +10,64 @@ import { MembersAdminPanel } from '@/modules/membership-invites/components/membe
 import { MembersPageSkeleton } from '@/modules/membership-invites/components/members-page-skeleton';
 import { membershipInvitesKeys } from '@/modules/membership-invites/membership-invites-query-keys';
 import { listMembershipInvitesPageForGym } from '@/modules/membership-invites/membership-invites-queries';
+import { AssignedMembersPanel } from '@/modules/roster/components/assigned-members-panel';
 import { RosterPanel } from '@/modules/roster/components/roster-panel';
 import { rosterKeys } from '@/modules/roster/roster-query-keys';
-import { listActiveRosterForGym } from '@/modules/roster/roster-queries';
+import { listActiveRosterForGym, listMyAssignedMembersForGym } from '@/modules/roster/roster-queries';
+
+type MembersWorkspaceProps = {
+    accessToken: string;
+    roleCode: string;
+};
 
 /**
- * Invites, roster, and gym trainers are prefetched in parallel but kept as
- * **separate query keys**: a check-in block should not refetch invites or the
- * trainer picker (and vice versa).
+ * ADMIN: invites + full roster + trainer picker.
+ * TRAINER: assigned clients only (Postman List My Assigned Members).
  */
-async function MembersWorkspace({ accessToken }: { accessToken: string }) {
+async function MembersWorkspace({ accessToken, roleCode }: MembersWorkspaceProps) {
     const gymOrgs = await listStaffGymOrgs(accessToken);
     const gym = gymOrgs[0];
     if (!gym) {
-        // Unreachable in practice: (ops)/layout.tsx redirects 0-gym Staff to Settings.
         return null;
     }
 
+    const isAdmin = roleCode === 'ADMIN';
     const queryClient = getQueryClient();
-    await Promise.all([
-        queryClient.prefetchQuery({
-            queryKey: membershipInvitesKeys.list(),
-            queryFn: () => listMembershipInvitesPageForGym({ accessToken, gymOrgId: gym.id }),
-        }),
-        queryClient.prefetchQuery({
-            queryKey: rosterKeys.active(),
-            queryFn: () => listActiveRosterForGym({ accessToken, gymOrgId: gym.id }),
-        }),
-        queryClient.prefetchQuery({
-            queryKey: gymOrgsKeys.trainers(),
-            queryFn: () => listGymTrainersForGym({ accessToken, gymOrgId: gym.id }),
-        }),
-    ]);
+
+    if (isAdmin) {
+        await Promise.all([
+            queryClient.prefetchQuery({
+                queryKey: membershipInvitesKeys.list(),
+                queryFn: () => listMembershipInvitesPageForGym({ accessToken, gymOrgId: gym.id }),
+            }),
+            queryClient.prefetchQuery({
+                queryKey: rosterKeys.active(),
+                queryFn: () => listActiveRosterForGym({ accessToken, gymOrgId: gym.id }),
+            }),
+            queryClient.prefetchQuery({
+                queryKey: gymOrgsKeys.trainers(),
+                queryFn: () => listGymTrainersForGym({ accessToken, gymOrgId: gym.id }),
+            }),
+        ]);
+
+        return (
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <div className="space-y-8">
+                    <MembersAdminPanel />
+                    <RosterPanel />
+                </div>
+            </HydrationBoundary>
+        );
+    }
+
+    await queryClient.prefetchQuery({
+        queryKey: rosterKeys.assigned(),
+        queryFn: () => listMyAssignedMembersForGym({ accessToken, gymOrgId: gym.id }),
+    });
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <div className="space-y-8">
-                <MembersAdminPanel />
-                <RosterPanel />
-            </div>
+            <AssignedMembersPanel />
         </HydrationBoundary>
     );
 }
@@ -59,18 +78,21 @@ export default async function MembersPage() {
         return null;
     }
 
+    const isAdmin = session.roleCode === 'ADMIN';
+
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Members</h1>
                 <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational
-                    — entitlement follows subscription dates after accept.
+                    {isAdmin
+                        ? 'Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational — entitlement follows subscription dates after accept.'
+                        : 'Clients assigned to you for coaching. Open Profile to view shared vitals and progress.'}
                 </p>
             </div>
 
             <Suspense fallback={<MembersPageSkeleton />}>
-                <MembersWorkspace accessToken={session.accessToken} />
+                <MembersWorkspace accessToken={session.accessToken} roleCode={session.roleCode} />
             </Suspense>
         </div>
     );

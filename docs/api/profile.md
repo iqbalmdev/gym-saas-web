@@ -32,4 +32,4 @@ Client-owned. Staff reads are grant-filtered by the API. Missing grant → calm 
 
 Ungranted profile attributes come back as `null`. BMI only when HEIGHT **and** WEIGHT are granted. `403 USERS_FORBIDDEN` when there is no active membership / grants (profile) or no `PROGRESS` class grant (logs).
 
-**Web:** `/client/profile` — own profile editor + progress log. `/admin/members/:clientUserId` — grant-aware read from the roster **Profile** link.
+**Web:** `/client/profile` — own profile editor + progress log (nudge to enable Progress under Data sharing). `/admin/members/:clientUserId` — Assignment + grant-aware profile/progress for ADMIN and TRAINER (trainers reach members via assigned roster).

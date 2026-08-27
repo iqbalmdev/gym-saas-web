@@ -32,7 +32,7 @@ test.describe('Admin collapsible sidebar', () => {
 
     test('mobile header opens the sidebar drawer, brand lives inside it', async ({ staffAdmin, page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
-        await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Profile options' })).toBeVisible();
         await expect(staffAdmin.sidebarTrigger).toBeVisible();
         await expect(page.getByRole('link', { name: 'Gym SaaS' })).toHaveCount(0);
 
@@ -43,6 +43,12 @@ test.describe('Admin collapsible sidebar', () => {
         const renewals = page.getByRole('link', { name: 'Renewals', exact: true });
         await expect(renewals).toBeVisible();
         await expect(renewals).toHaveText('Renewals');
+    });
+
+    test('signs out via Profile options → Sign out', async ({ staffAdmin: _staffAdmin, page }) => {
+        await page.getByRole('button', { name: 'Profile options' }).click();
+        await page.getByRole('menuitem', { name: 'Sign out' }).click();
+        await expect(page).toHaveURL(/\/login/);
     });
 });
 

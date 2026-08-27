@@ -25,7 +25,7 @@ export async function listMyProgressLogsForSession(input: { accessToken: string 
     const { listMyProgressLogs } = createAppServices();
     const { progressLogs } = await listMyProgressLogs({
         accessToken: input.accessToken,
-        limit: 50,
+        limit: 20,
         offset: 0,
     });
     return progressLogs.items;
@@ -52,7 +52,8 @@ export async function listStaffClientProgressLogsForGym(input: {
     return asGrantAware(async () => {
         const { progressLogs } = await listStaffClientProgressLogs({
             ...input,
-            limit: 50,
+            // Match Postman default page size for List Staff Client Progress Logs.
+            limit: 20,
             offset: 0,
         });
         return progressLogs.items;

@@ -44,6 +44,12 @@ export async function GET(_request: Request, context: RouteContext) {
                 { status: error.status === 0 ? 502 : error.status },
             );
         }
+        if (error instanceof Error && error.name === 'ZodError') {
+            return NextResponse.json(
+                { error: { code: 'VALIDATION_ERROR', message: profileErrorMessage('VALIDATION_ERROR') } },
+                { status: 502 },
+            );
+        }
         return NextResponse.json(
             { error: { code: 'NETWORK_OR_UNKNOWN', message: profileErrorMessage('NETWORK_OR_UNKNOWN') } },
             { status: 500 },

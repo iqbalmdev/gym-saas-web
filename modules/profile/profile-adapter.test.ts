@@ -80,4 +80,30 @@ describe('Profile & Progress schemas (Postman 200 examples)', () => {
         });
         expect(parsed.progressLogs.items[0]?.logDate).toBe('2026-08-11');
     });
+
+    it('parses progress logs when weight arrives as a string (PG numeric)', () => {
+        const itemSchema = z.object({
+            weightKg: z.preprocess((value) => {
+                if (value === null || value === undefined || value === '') {
+                    return null;
+                }
+                if (typeof value === 'string' && value.trim() !== '') {
+                    const parsed = Number(value);
+                    return Number.isFinite(parsed) ? parsed : value;
+                }
+                return value;
+            }, z.number().nullable()),
+        });
+        expect(itemSchema.parse({ weightKg: '68.50' }).weightKg).toBe(68.5);
+    });
+
+    it('parses progress logs page when notes key is omitted', () => {
+        const logSchema = z.object({
+            notes: z
+                .string()
+                .nullish()
+                .transform((value) => value ?? null),
+        });
+        expect(logSchema.parse({}).notes).toBeNull();
+    });
 });

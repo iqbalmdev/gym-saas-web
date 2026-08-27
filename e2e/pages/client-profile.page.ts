@@ -18,7 +18,7 @@ export class ClientProfilePage {
         this.saveProfileButton = page.getByRole('button', { name: 'Save profile' });
         this.saveProgressButton = page.getByRole('button', { name: 'Save progress' });
         this.heightInput = page.getByLabel('Height (cm)');
-        this.homeNav = page.getByRole('navigation', { name: 'Member sections' }).getByRole('link', {
+        this.homeNav = page.getByRole('complementary', { name: 'Member modules' }).getByRole('link', {
             name: 'Home',
             exact: true,
         });

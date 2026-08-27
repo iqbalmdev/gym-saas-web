@@ -38,7 +38,9 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 **Product:**
 
 6. ~~Assign trainer in Admin~~ — **Done.** Members roster picker uses Gym Orgs `GET /gym-orgs/:id/trainers`; assign posts `trainerProfileId` on the roster writer. See `docs/progress/2026-08-19-assign-trainer-roster.md`.
-7. ~~Profile & Progress~~ — **Done.** Client `/client` editor + Admin grant-aware member detail. See `docs/progress/2026-08-19-profile-progress.md`.
+7. ~~Profile & Progress~~ — **Done.** Client `/client/profile` + Admin/Trainer grant-aware member detail; Trainer assigned roster via `GET /my-assigned-members`. Profile menu owns dark mode for Admin/Trainer/Client. See `docs/progress/2026-08-26-trainer-profile-menu.md`.
+7b. ~~Client sidebar~~ — **Done.** Member shell mirrors Admin sidebar: Home, Profile, Nutrition, Diet, Workouts, Health Sync (placeholders until those Postman modules are wired). See `docs/progress/2026-08-27-client-sidebar.md`.
+7c. ~~Client pattern alignment~~ — **Done.** `ClientStubPage` = `AdminStubPage`; shell/user/initials match Admin; debug adapter log removed. See `docs/progress/2026-08-27-client-pattern-alignment.md`.
 8. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
 9. Optional: deeper renewals UX (filters, member name join).
 10. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).

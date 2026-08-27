@@ -2,13 +2,14 @@ import type { ReactElement } from 'react';
 
 import { EmptyState } from '@/components/ui/empty-state';
 
-type AdminStubPageProps = {
+type ClientStubPageProps = {
     title: string;
     panelTitle: string;
     description: string;
 };
 
-export function AdminStubPage({ title, panelTitle, description }: AdminStubPageProps): ReactElement {
+/** Calm module stub — same shape as `AdminStubPage` until the Postman slice is wired. */
+export function ClientStubPage({ title, panelTitle, description }: ClientStubPageProps): ReactElement {
     return (
         <div className="space-y-6">
             <div>

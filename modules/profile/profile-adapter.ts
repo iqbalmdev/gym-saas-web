@@ -10,16 +10,34 @@ import type {
     ProgressLogsPage,
 } from '@/modules/profile/profile-ports';
 
+/** API may send numeric fields as strings (PG numeric) — coerce at the boundary. */
+const nullableNumber = z.preprocess((value) => {
+    if (value === null || value === undefined || value === '') {
+        return null;
+    }
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : null;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : value;
+    }
+    return value;
+}, z.number().nullable());
+
 const genderSchema = z.enum(['MALE', 'FEMALE', 'OTHER']).nullable();
 
 const profileSchema = z.object({
     userId: z.string().min(1),
-    heightCm: z.number().nullable(),
-    weightKg: z.number().nullable(),
+    heightCm: nullableNumber,
+    weightKg: nullableNumber,
     dob: z.string().nullable(),
     gender: genderSchema,
-    medicalNotes: z.string().nullable(),
-    bmi: z.number().nullable(),
+    medicalNotes: z
+        .string()
+        .nullish()
+        .transform((value) => value ?? null),
+    bmi: nullableNumber,
     createdAt: z.string().min(1),
     updatedAt: z.string().min(1),
 });
@@ -28,28 +46,55 @@ const progressLogSchema = z.object({
     id: z.string().min(1),
     clientUserId: z.string().min(1),
     logDate: z.string().min(1),
-    weightKg: z.number().nullable(),
-    bmi: z.number().nullable(),
-    notes: z.string().nullable(),
-    createdAt: z.string().min(1),
+    weightKg: nullableNumber,
+    bmi: nullableNumber,
+    // Omitted keys (vs explicit null) are common from the API.
+    notes: z
+        .string()
+        .nullish()
+        .transform((value) => value ?? null),
+    createdAt: z
+        .string()
+        .nullish()
+        .transform((value) => value ?? ''),
 });
 
 const profileEnvelopeSchema = z.object({
     profile: profileSchema,
 });
 
-const progressLogEnvelopeSchema = z.object({
-    progressLog: progressLogSchema,
+/**
+ * Postman: `{ progressLogs: { items, total, limit, offset } }`.
+ * Also accept a bare array if the backend ever returns that shape.
+ */
+const progressLogsEnvelopeSchema = z.object({
+    progressLogs: z.union([
+        z.object({
+            items: z.array(z.unknown()),
+            total: z.coerce.number(),
+            limit: z.coerce.number(),
+            offset: z.coerce.number(),
+        }),
+        z.array(z.unknown()),
+    ]),
 });
 
-const progressLogsEnvelopeSchema = z.object({
-    progressLogs: z.object({
-        items: z.array(progressLogSchema),
-        total: z.number(),
-        limit: z.number(),
-        offset: z.number(),
-    }),
-});
+/** Map snake_case / alternate keys onto the Postman camelCase contract. */
+function normalizeProgressLogRecord(raw: unknown): unknown {
+    if (!raw || typeof raw !== 'object') {
+        return raw;
+    }
+    const row = raw as Record<string, unknown>;
+    return {
+        id: row.id,
+        clientUserId: row.clientUserId ?? row.client_user_id,
+        logDate: row.logDate ?? row.log_date,
+        weightKg: row.weightKg ?? row.weight_kg,
+        bmi: row.bmi,
+        notes: row.notes,
+        createdAt: row.createdAt ?? row.created_at,
+    };
+}
 
 function pageQuery(input: { limit?: number; offset?: number }): string {
     const params = new URLSearchParams();
@@ -64,19 +109,48 @@ function pageQuery(input: { limit?: number; offset?: number }): string {
 }
 
 function toProfile(raw: z.infer<typeof profileSchema>): ClientProfile {
-    return raw;
+    return {
+        userId: raw.userId,
+        heightCm: raw.heightCm,
+        weightKg: raw.weightKg,
+        dob: raw.dob,
+        gender: raw.gender,
+        medicalNotes: raw.medicalNotes,
+        bmi: raw.bmi,
+        createdAt: raw.createdAt,
+        updatedAt: raw.updatedAt,
+    };
 }
 
 function toLog(raw: z.infer<typeof progressLogSchema>): ProgressLog {
-    return raw;
+    return {
+        id: raw.id,
+        clientUserId: raw.clientUserId,
+        logDate: raw.logDate,
+        weightKg: raw.weightKg,
+        bmi: raw.bmi,
+        notes: raw.notes,
+        createdAt: raw.createdAt,
+    };
 }
 
-function toPage(raw: z.infer<typeof progressLogsEnvelopeSchema>['progressLogs']): ProgressLogsPage {
+function parseProgressLogsPage(raw: unknown): ProgressLogsPage {
+    const envelope = progressLogsEnvelopeSchema.parse(raw).progressLogs;
+    const itemsRaw = Array.isArray(envelope) ? envelope : envelope.items;
+    const items = itemsRaw.map((item) => toLog(progressLogSchema.parse(normalizeProgressLogRecord(item))));
+    if (Array.isArray(envelope)) {
+        return {
+            items,
+            total: items.length,
+            limit: items.length,
+            offset: 0,
+        };
+    }
     return {
-        items: raw.items.map(toLog),
-        total: raw.total,
-        limit: raw.limit,
-        offset: raw.offset,
+        items,
+        total: envelope.total,
+        limit: envelope.limit,
+        offset: envelope.offset,
     };
 }
 
@@ -107,7 +181,7 @@ export function createProfileAdapter(http: HttpClient): ProfileReader & ProfileW
                 method: 'GET',
                 accessToken,
             });
-            return { progressLogs: toPage(progressLogsEnvelopeSchema.parse(raw).progressLogs) };
+            return { progressLogs: parseProgressLogsPage(raw) };
         },
 
         async upsertMyProgressLog({ accessToken, body }) {
@@ -117,7 +191,10 @@ export function createProfileAdapter(http: HttpClient): ProfileReader & ProfileW
                 accessToken,
                 body,
             });
-            return { progressLog: toLog(progressLogEnvelopeSchema.parse(raw).progressLog) };
+            const envelope = z.object({ progressLog: z.unknown() }).parse(raw);
+            return {
+                progressLog: toLog(progressLogSchema.parse(normalizeProgressLogRecord(envelope.progressLog))),
+            };
         },
 
         async getStaffClientProfile({ accessToken, gymOrgId, clientUserId }) {
@@ -135,7 +212,8 @@ export function createProfileAdapter(http: HttpClient): ProfileReader & ProfileW
                 method: 'GET',
                 accessToken,
             });
-            return { progressLogs: toPage(progressLogsEnvelopeSchema.parse(raw).progressLogs) };
+            const page = parseProgressLogsPage(raw);
+            return { progressLogs: page };
         },
     };
 }

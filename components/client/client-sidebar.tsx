@@ -2,15 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { ReactElement } from 'react';
 
 import {
-    ADMIN_NAV_ICONS,
-    adminNavItems,
-    isAdminNavItemActive,
-    resolveAdminHomeHref,
-    type AdminNavItem,
-    type AdminShellMode,
-} from '@/components/admin/admin-nav';
+    CLIENT_NAV_ICONS,
+    clientNavItems,
+    isClientNavItemActive,
+    type ClientNavItem,
+} from '@/components/client/client-nav';
 import {
     Sidebar,
     SidebarContent,
@@ -24,19 +23,18 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 
-function AdminNavLink({ item }: { item: AdminNavItem }) {
+function ClientNavLink({ item }: { item: ClientNavItem }): ReactElement {
     const pathname = usePathname();
     const { isMobile, setOpenMobile } = useSidebar();
-    const Icon = ADMIN_NAV_ICONS[item.icon];
-    const active = isAdminNavItemActive(pathname, item);
+    const Icon = CLIENT_NAV_ICONS[item.icon];
+    const active = isClientNavItemActive(pathname, item);
 
     return (
         <SidebarMenuItem>
             <SidebarMenuButton
                 isActive={active}
                 tooltip={item.label}
-                // Bigger than the shadcn default (h-8/text-sm) — the default reads cramped
-                // for a staff-facing nav that's on screen all day.
+                // Bigger than the shadcn default (h-8/text-sm) — matches Admin sidebar.
                 className="h-10 gap-3 text-[0.9375rem]"
                 render={
                     <Link
@@ -56,17 +54,11 @@ function AdminNavLink({ item }: { item: AdminNavItem }) {
     );
 }
 
-type AppSidebarProps = {
-    mode: AdminShellMode;
-    gymName: string | null;
-};
-
-export function AppSidebar({ mode, gymName }: AppSidebarProps) {
+export function ClientSidebar(): ReactElement {
     const { isMobile, setOpenMobile } = useSidebar();
-    const homeHref = resolveAdminHomeHref(mode);
 
     return (
-        <Sidebar collapsible="icon" aria-label="Admin modules" role="complementary">
+        <Sidebar collapsible="icon" aria-label="Member modules" role="complementary">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -75,7 +67,7 @@ export function AppSidebar({ mode, gymName }: AppSidebarProps) {
                             tooltip="Gym SaaS"
                             render={
                                 <Link
-                                    href={homeHref}
+                                    href="/client"
                                     onClick={() => {
                                         if (isMobile) {
                                             setOpenMobile(false);
@@ -91,9 +83,7 @@ export function AppSidebar({ mode, gymName }: AppSidebarProps) {
                                 <span className="block truncate text-[0.9375rem] font-semibold tracking-tight">
                                     Gym SaaS
                                 </span>
-                                {gymName ? (
-                                    <span className="block truncate text-xs text-sidebar-foreground/70">{gymName}</span>
-                                ) : null}
+                                <span className="block truncate text-xs text-sidebar-foreground/70">Member</span>
                             </span>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -104,8 +94,8 @@ export function AppSidebar({ mode, gymName }: AppSidebarProps) {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu className="gap-1">
-                            {adminNavItems(mode).map((item) => (
-                                <AdminNavLink key={item.href} item={item} />
+                            {clientNavItems().map((item) => (
+                                <ClientNavLink key={item.href} item={item} />
                             ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
