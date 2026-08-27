@@ -246,7 +246,6 @@ export async function createGymOrgAction(input: {
 }
 
 export async function signOutAction(): Promise<void> {
-    // Prefer navigating to `/logout` from the UI; this action remains for forms/tests.
     await clearSession();
     redirect('/login');
 }

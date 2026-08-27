@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState, type ReactElement } from 'react';
+import { useEffect, useState, useTransition, type ReactElement } from 'react';
 
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { signOutAction } from '@/modules/auth/auth-actions';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,10 +29,11 @@ type ProfileMenuProps = {
 
 /**
  * Shared chrome for Admin / Trainer / Client: profile options menu.
- * Dark mode + Sign out live here (Sign out navigates to `/logout`).
+ * Dark mode + Sign out live here.
  */
 export function ProfileMenu({ user, className }: ProfileMenuProps): ReactElement {
     const [mounted, setMounted] = useState(false);
+    const [isSigningOut, startSignOut] = useTransition();
 
     useEffect(() => {
         // Avoid hydration mismatch for the theme control inside the menu.
@@ -75,8 +76,14 @@ export function ProfileMenu({ user, className }: ProfileMenuProps): ReactElement
                     {mounted ? <ThemeToggle /> : <span className="h-9 w-9" aria-hidden />}
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" render={<Link href="/logout" />} className="cursor-pointer">
-                    Sign out
+                {/* Clearing the session cookie is a mutation — it has to run in a Server Action. */}
+                <DropdownMenuItem
+                    variant="destructive"
+                    className="cursor-pointer"
+                    disabled={isSigningOut}
+                    onClick={() => startSignOut(async () => signOutAction())}
+                >
+                    {isSigningOut ? 'Signing out…' : 'Sign out'}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

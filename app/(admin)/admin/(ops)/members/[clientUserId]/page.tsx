@@ -21,13 +21,13 @@ type MemberDetailPageProps = {
 async function resolveAssignedTrainerLabel(input: {
     accessToken: string;
     gymOrgId: string;
-    isAdmin: boolean;
+    isTrainerScoped: boolean;
     assignedTrainerId: string | null;
 }): Promise<string> {
     if (!input.assignedTrainerId) {
         return 'Unassigned';
     }
-    if (!input.isAdmin) {
+    if (input.isTrainerScoped) {
         return 'You (assigned coach)';
     }
     const trainers = await listGymTrainersForGym({
@@ -52,18 +52,19 @@ async function MemberDetailWorkspace({
         return null;
     }
 
-    const isAdmin = roleCode === 'ADMIN';
+    // Only TRAINER is scoped to their own assignments; other staff roles read the full roster.
+    const isTrainerScoped = roleCode === 'TRAINER';
     const queryClient = getQueryClient();
 
-    const members = isAdmin
-        ? await listActiveRosterForGym({ accessToken, gymOrgId: gym.id })
-        : await listMyAssignedMembersForGym({ accessToken, gymOrgId: gym.id });
+    const members = isTrainerScoped
+        ? await listMyAssignedMembersForGym({ accessToken, gymOrgId: gym.id })
+        : await listActiveRosterForGym({ accessToken, gymOrgId: gym.id });
     const member = members.find((item) => item.clientUserId === clientUserId);
 
     const assignedTrainerLabel = await resolveAssignedTrainerLabel({
         accessToken,
         gymOrgId: gym.id,
-        isAdmin,
+        isTrainerScoped,
         assignedTrainerId: member?.assignedTrainerId ?? null,
     });
 

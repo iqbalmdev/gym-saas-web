@@ -31,10 +31,11 @@ async function MembersWorkspace({ accessToken, roleCode }: MembersWorkspaceProps
         return null;
     }
 
-    const isAdmin = roleCode === 'ADMIN';
+    // Only TRAINER gets the assigned-only list; every other staff role sees the full roster.
+    const isTrainerScoped = roleCode === 'TRAINER';
     const queryClient = getQueryClient();
 
-    if (isAdmin) {
+    if (!isTrainerScoped) {
         await Promise.all([
             queryClient.prefetchQuery({
                 queryKey: membershipInvitesKeys.list(),
@@ -78,16 +79,16 @@ export default async function MembersPage() {
         return null;
     }
 
-    const isAdmin = session.roleCode === 'ADMIN';
+    const isTrainerScoped = session.roleCode === 'TRAINER';
 
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-(--color-fg) md:text-3xl">Members</h1>
                 <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                    {isAdmin
-                        ? 'Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational — entitlement follows subscription dates after accept.'
-                        : 'Clients assigned to you for coaching. Open Profile to view shared vitals and progress.'}
+                    {isTrainerScoped
+                        ? 'Clients assigned to you for coaching. Open Profile to view shared vitals and progress.'
+                        : 'Invite clients by email with a Base plan (optional Trainer add-on). Payment badges are informational — entitlement follows subscription dates after accept.'}
                 </p>
             </div>
 
