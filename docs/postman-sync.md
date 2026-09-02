@@ -113,8 +113,8 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 | Upstream tip | `9b0b561` (2026-08-19 — Convert Lead; Create/Update Lead email refresh; plus Nutrition, Coaching, Health Sync, List Gym Trainers) |
 | Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — tip `9b0b561` |
 | Cursor workspace | `gym-saas.code-workspace` (web + postman roots) |
-| GitHub / sibling pull | **OK** — `8d54a09..9b0b561` ff-only on 2026-08-19 |
-| Postman inject | **Blocked** — Postman MCP still `401 Invalid API Key` (2026-08-19). Local JSON is current; cloud needs Desktop Import or a working Postman MCP login. |
+| GitHub / sibling pull | **OK** — `8d54a09..9b0b561` ff-only on 2026-08-19. Re-pulled 2026-08-29: *Already up to date*, and GitHub `list_commits` confirms `9b0b561` is still the upstream tip. |
+| Postman inject | **Blocked** — Postman MCP still `401 Invalid API Key` (re-tested 2026-08-29). `mcp_auth` reports success, but every call — `getAuthenticatedUser`, `getWorkspaces` — still 401s, so the server holds a stale/invalid API key rather than a missing login. The project MCP entry (`.cursor/mcp.json` → `postman`) is a bare `https://mcp.postman.com/mcp` URL with no key. Fix by re-adding a valid Postman API key to that server, or Desktop Import. |
 | Local `postman/` in web repo | **Forbidden** — cloud + sibling only |
 | Auth guide | `docs/api/client-auth.md` — OTP / Google contracts unchanged this tip |
 | Staff invites guide | `docs/api/staff-invites.md` — unchanged this tip |
