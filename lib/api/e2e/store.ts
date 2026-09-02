@@ -10,8 +10,10 @@
  */
 import type { Attendance } from '@/modules/attendance/attendance-ports';
 import type { GymTrainer } from '@/modules/gym-orgs/gym-orgs-ports';
+import type { WearableConnection, WearableMetric } from '@/modules/health-sync/health-sync-ports';
 import type { Lead } from '@/modules/leads/leads-ports';
 import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
+import type { CalorieLogItem, FoodSearchResult } from '@/modules/nutrition/nutrition-ports';
 import type { MembershipPlan } from '@/modules/plans/plans-ports';
 import type { ClientProfile, ProgressLog } from '@/modules/profile/profile-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -181,6 +183,22 @@ export const e2eRosterMembers = e2eShared('rosterMembers', (): RosterMember[] =>
         baseAmountPaid: 0,
         basePriceAmount: 999,
     },
+    {
+        membershipId: 'membership-e2e-calories',
+        clientUserId: 'e2e-client-roster-2',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Eve Client',
+        clientEmail: 'eve@example.com',
+        clientPhone: null,
+        joinedAt: '2026-08-09T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'paid',
+        baseAmountPaid: 999,
+        basePriceAmount: 999,
+    },
 ]);
 
 export const e2eClientProfiles = e2eShared('clientProfiles', () => {
@@ -222,12 +240,61 @@ export const e2eProgressLogs = e2eShared('progressLogs', (): ProgressLog[] => [
     },
 ]);
 
+/** Wearable connections per client. The member persona arrives with Health Connect already linked. */
+export const e2eWearableConnections = e2eShared('wearableConnections', () => {
+    const byClient = new Map<string, WearableConnection[]>();
+    byClient.set('e2e-client-1', [
+        {
+            id: 'wearable-conn-e2e-1',
+            provider: 'HEALTH_CONNECT',
+            lastSyncedAt: '2026-08-18T04:00:00.000Z',
+            active: true,
+            createdAt: '2026-08-12T04:00:00.000Z',
+        },
+    ]);
+    return byClient;
+});
+
+/** Daily metrics per client. Ada has history so a WEARABLES grant has something to reveal. */
+export const e2eWearableMetrics = e2eShared('wearableMetrics', () => {
+    const byClient = new Map<string, WearableMetric[]>();
+    byClient.set('e2e-client-1', [
+        {
+            id: 'wearable-metric-e2e-1',
+            provider: 'HEALTH_CONNECT',
+            metricOn: '2026-08-18',
+            steps: 8420,
+            activeKcal: 410.5,
+            workoutMinutes: 45,
+            weightKg: 72.3,
+            ingestedAt: '2026-08-18T04:00:00.000Z',
+        },
+    ]);
+    byClient.set('e2e-client-roster-1', [
+        {
+            id: 'wearable-metric-e2e-ada-1',
+            provider: 'HEALTH_CONNECT',
+            metricOn: '2026-08-17',
+            steps: 6120,
+            activeKcal: 320,
+            workoutMinutes: 30,
+            weightKg: 60,
+            ingestedAt: '2026-08-17T04:00:00.000Z',
+        },
+    ]);
+    return byClient;
+});
+
 /** Staff-visible grants per gym+client. Ada shares required vitals only — not PROGRESS. */
 export const e2eStaffClientGrants = e2eShared(
     'staffClientGrants',
     () =>
         new Map<string, { profileAttributes: string[]; classGrants: string[] }>([
             [`${E2E_GYM_ID}:e2e-client-roster-1`, { profileAttributes: ['DOB', 'HEIGHT', 'WEIGHT'], classGrants: [] }],
+            [
+                `${E2E_GYM_ID}:e2e-client-roster-2`,
+                { profileAttributes: ['DOB', 'HEIGHT', 'WEIGHT'], classGrants: ['CALORIES'] },
+            ],
         ]),
 );
 
@@ -239,6 +306,151 @@ export function isoDateOffset(days: number): string {
     date.setUTCDate(date.getUTCDate() + days);
     return date.toISOString().slice(0, 10);
 }
+
+/**
+ * Local calendar day, not UTC. The real API resolves an omitted diary `date` in
+ * Asia/Kolkata, so the fixture has to pick a civil day too — using UTC here
+ * would desync the seeded diary from "today" for half of every day.
+ */
+export function isoDateLocal(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
+}
+
+const E2E_IDLI_ID = 'f00d0000-0000-4000-8000-000000000001';
+const E2E_IDLI_SERVING_ID = 'f00d5e04-0000-4000-8000-000000010003';
+
+/** Seed slice of the owned Indian food catalog. Same shape as `GET /foods/search`. */
+export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] => [
+    {
+        id: E2E_IDLI_ID,
+        name: 'Idli',
+        aliases: ['idly'],
+        caloriesPer100g: 135,
+        proteinGPer100g: 4,
+        carbsGPer100g: 27,
+        fatGPer100g: 0.5,
+        defaultUnit: 'PIECE',
+        units: [
+            {
+                unit: 'G',
+                label: 'g',
+                grams: 1,
+                calories: 1.35,
+                proteinG: 0.04,
+                carbsG: 0.27,
+                fatG: 0.01,
+                isDefault: false,
+            },
+            {
+                unit: 'PIECE',
+                label: 'piece',
+                grams: 30,
+                calories: 40.5,
+                proteinG: 1.2,
+                carbsG: 8.1,
+                fatG: 0.15,
+                isDefault: true,
+            },
+            {
+                unit: 'KATORI',
+                label: 'katori',
+                grams: 150,
+                calories: 202.5,
+                proteinG: 6,
+                carbsG: 40.5,
+                fatG: 0.75,
+                isDefault: false,
+            },
+        ],
+    },
+    {
+        id: 'f00d0000-0000-4000-8000-000000000002',
+        name: 'Chapati',
+        aliases: ['roti'],
+        caloriesPer100g: 297,
+        proteinGPer100g: 11,
+        carbsGPer100g: 46,
+        fatGPer100g: 7,
+        defaultUnit: 'PIECE',
+        units: [
+            {
+                unit: 'G',
+                label: 'g',
+                grams: 1,
+                calories: 2.97,
+                proteinG: 0.11,
+                carbsG: 0.46,
+                fatG: 0.07,
+                isDefault: false,
+            },
+            {
+                unit: 'PIECE',
+                label: 'piece',
+                grams: 40,
+                calories: 118.8,
+                proteinG: 4.4,
+                carbsG: 18.4,
+                fatG: 2.8,
+                isDefault: true,
+            },
+        ],
+    },
+]);
+
+/** Diary lines keyed `clientUserId:logDate`. Ada has a day so a CALORIES grant has something to reveal. */
+export const e2eCalorieLogItems = e2eShared('calorieLogItems', () => {
+    const byClientDay = new Map<string, CalorieLogItem[]>();
+    const today = isoDateLocal();
+    byClientDay.set(`e2e-client-1:${today}`, [
+        {
+            id: 'c1111111-1111-4111-8111-111111111111',
+            foodItemId: E2E_IDLI_ID,
+            servingId: E2E_IDLI_SERVING_ID,
+            quantity: 2,
+            mealSlot: 'BREAKFAST',
+            dietPlanMealItemId: null,
+            calories: 81,
+            proteinG: 2.4,
+            carbsG: 16.2,
+            fatG: 0.3,
+            isExtra: true,
+        },
+    ]);
+    byClientDay.set(`e2e-client-roster-1:${today}`, [
+        {
+            id: 'c2222222-2222-4222-8222-222222222222',
+            foodItemId: E2E_IDLI_ID,
+            servingId: E2E_IDLI_SERVING_ID,
+            quantity: 1,
+            mealSlot: 'LUNCH',
+            dietPlanMealItemId: null,
+            calories: 40.5,
+            proteinG: 1.2,
+            carbsG: 8.1,
+            fatG: 0.15,
+            isExtra: true,
+        },
+    ]);
+    byClientDay.set(`e2e-client-roster-2:${today}`, [
+        {
+            id: 'c3333333-3333-4333-8333-333333333333',
+            foodItemId: 'f00d0000-0000-4000-8000-000000000002',
+            servingId: 'f00d5e04-0000-4000-8000-000000020003',
+            quantity: 2,
+            mealSlot: 'DINNER',
+            dietPlanMealItemId: null,
+            calories: 237.6,
+            proteinG: 8.8,
+            carbsG: 36.8,
+            fatG: 5.6,
+            isExtra: true,
+        },
+    ]);
+    return byClientDay;
+});
 
 export const e2eRenewals = e2eShared('renewals', (): RenewalDueItem[] => [
     {

@@ -4,7 +4,9 @@ import { encodeClientSessionCookie } from './client-session';
 import { encodeStaffSessionCookie, encodeStaffSessionCookieNoGym } from './staff-session';
 import { AdminShellPage } from '../pages/admin-shell.page';
 import { AttendancePage } from '../pages/attendance.page';
+import { ClientHealthPage } from '../pages/client-health.page';
 import { ClientHomePage } from '../pages/client-home.page';
+import { ClientNutritionPage } from '../pages/client-nutrition.page';
 import { ClientProfilePage } from '../pages/client-profile.page';
 import { CrmPage } from '../pages/crm.page';
 import { LoginPage } from '../pages/login.page';
@@ -18,6 +20,8 @@ type Pages = {
     adminShellPage: AdminShellPage;
     clientHomePage: ClientHomePage;
     clientProfilePage: ClientProfilePage;
+    clientHealthPage: ClientHealthPage;
+    clientNutritionPage: ClientNutritionPage;
     settingsPage: SettingsPage;
     membersPage: MembersPage;
     attendancePage: AttendancePage;
@@ -35,6 +39,10 @@ type AuthFixtures = {
     clientHome: ClientHomePage;
     /** Client cookie; Profile & progress. */
     clientProfile: ClientProfilePage;
+    /** Client cookie; Health Sync connections + metrics. */
+    clientHealth: ClientHealthPage;
+    /** Client cookie; food diary + catalog. */
+    clientNutrition: ClientNutritionPage;
 };
 
 export const test = base.extend<Pages & AuthFixtures>({
@@ -52,6 +60,14 @@ export const test = base.extend<Pages & AuthFixtures>({
 
     clientProfilePage: async ({ page }, use) => {
         await use(new ClientProfilePage(page));
+    },
+
+    clientHealthPage: async ({ page }, use) => {
+        await use(new ClientHealthPage(page));
+    },
+
+    clientNutritionPage: async ({ page }, use) => {
+        await use(new ClientNutritionPage(page));
     },
 
     settingsPage: async ({ page }, use) => {
@@ -106,6 +122,20 @@ export const test = base.extend<Pages & AuthFixtures>({
         const profile = new ClientProfilePage(page);
         await profile.goto();
         await use(profile);
+    },
+
+    clientHealth: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const health = new ClientHealthPage(page);
+        await health.goto();
+        await use(health);
+    },
+
+    clientNutrition: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const nutrition = new ClientNutritionPage(page);
+        await nutrition.goto();
+        await use(nutrition);
     },
 });
 
