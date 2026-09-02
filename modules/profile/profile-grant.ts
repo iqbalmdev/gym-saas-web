@@ -1,1 +1,1 @@
-export type GrantAware<T> = { status: 'ok'; data: T } | { status: 'not_shared' };
+export type { GrantAware } from '@/lib/domain/grant-aware';
