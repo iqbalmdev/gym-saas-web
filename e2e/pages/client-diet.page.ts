@@ -8,7 +8,7 @@ export class ClientDietPage {
     constructor(page: Page) {
         this.page = page;
         this.heading = page.getByRole('heading', { name: 'Diet', exact: true });
-        this.planPanel = page.getByRole('heading', { name: 'Diet plan', exact: true }).locator('..');
+        this.planPanel = page.locator('section[aria-labelledby="client-diet-plan-heading"]');
     }
 
     async goto() {

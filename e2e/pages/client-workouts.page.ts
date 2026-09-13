@@ -9,8 +9,8 @@ export class ClientWorkoutsPage {
     constructor(page: Page) {
         this.page = page;
         this.heading = page.getByRole('heading', { name: 'Workouts', exact: true });
-        this.streakPanel = page.getByRole('heading', { name: 'Streak', exact: true }).locator('..');
-        this.schedulePanel = page.getByRole('heading', { name: 'This week', exact: true }).locator('..');
+        this.streakPanel = page.locator('section[aria-labelledby="workout-streak-heading"]');
+        this.schedulePanel = page.locator('section[aria-labelledby="workout-schedule-heading"]');
     }
 
     async goto() {
