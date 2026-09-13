@@ -10,6 +10,7 @@ import { ClientHomePage } from '../pages/client-home.page';
 import { ClientNutritionPage } from '../pages/client-nutrition.page';
 import { ClientProfilePage } from '../pages/client-profile.page';
 import { ClientWorkoutsPage } from '../pages/client-workouts.page';
+import { ConfirmDialog } from '../pages/confirm-dialog.page';
 import { CrmPage } from '../pages/crm.page';
 import { LoginPage } from '../pages/login.page';
 import { MembersPage } from '../pages/members.page';
@@ -32,6 +33,7 @@ type Pages = {
     renewalsPage: RenewalsPage;
     crmPage: CrmPage;
     plansPage: PlansPage;
+    confirmDialog: ConfirmDialog;
 };
 
 type AuthFixtures = {
@@ -64,6 +66,10 @@ export const test = base.extend<Pages & AuthFixtures>({
 
     clientHomePage: async ({ page }, use) => {
         await use(new ClientHomePage(page));
+    },
+
+    confirmDialog: async ({ page }, use) => {
+        await use(new ConfirmDialog(page));
     },
 
     clientProfilePage: async ({ page }, use) => {

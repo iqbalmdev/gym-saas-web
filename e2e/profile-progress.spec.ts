@@ -18,8 +18,9 @@ test.describe('Profile and progress', () => {
         page,
     }) => {
         await staffAdmin.moduleLink('Members').click();
-        await expect(page.getByText('Ada Client')).toBeVisible();
-        await membersPage.profileLink('Ada Client').click();
+        await expect(membersPage.memberRow('Ada Client')).toBeVisible();
+        await membersPage.select('Ada Client');
+        await membersPage.profileLink().click();
         await expect(page).toHaveURL(/\/admin\/members\/e2e-client-roster-1/);
         await expect(page.getByRole('heading', { name: 'Ada Client' })).toBeVisible();
         await expect(page.getByText('165 cm')).toBeVisible();

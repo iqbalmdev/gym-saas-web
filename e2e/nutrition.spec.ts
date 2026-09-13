@@ -45,8 +45,9 @@ test.describe('Nutrition', () => {
         page,
     }) => {
         await staffAdmin.moduleLink('Members').click();
-        await expect(page.getByText('Ada Client')).toBeVisible();
-        await membersPage.profileLink('Ada Client').click();
+        await expect(membersPage.memberRow('Ada Client')).toBeVisible();
+        await membersPage.select('Ada Client');
+        await membersPage.profileLink().click();
         await expect(page).toHaveURL(/\/admin\/members\/e2e-client-roster-1/);
         // Ada has a seeded diary, so this proves the grant gate rather than an empty day.
         await expect(page.getByText('Member has not shared their food diary with this gym.')).toBeVisible();
@@ -54,8 +55,9 @@ test.describe('Nutrition', () => {
 
     test('Admin sees shared diary for a member with the CALORIES grant', async ({ staffAdmin, membersPage, page }) => {
         await staffAdmin.moduleLink('Members').click();
-        await expect(page.getByText('Eve Client')).toBeVisible();
-        await membersPage.profileLink('Eve Client').click();
+        await expect(membersPage.memberRow('Rahul Menon')).toBeVisible();
+        await membersPage.select('Rahul Menon');
+        await membersPage.profileLink().click();
         await expect(page).toHaveURL(/\/admin\/members\/e2e-client-roster-2/);
         await expect(page.getByRole('heading', { name: 'Food diary', exact: true })).toBeVisible();
         await expect(page.getByText('Chapati × 2')).toBeVisible();

@@ -54,6 +54,7 @@ const gymTrainerSchema = z.object({
     createdAt: z.string().min(1).optional(),
 });
 
+/** Paged envelope, unlike the flat `gymOrgs` list above. */
 const trainersEnvelopeSchema = z.object({
     trainers: z.object({
         items: z.array(gymTrainerSchema),

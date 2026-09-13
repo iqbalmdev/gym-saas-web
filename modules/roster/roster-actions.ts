@@ -90,6 +90,44 @@ export async function offboardMemberAction(input: { membershipId: string }): Pro
     }
 }
 
+export async function assignTrainerAction(input: {
+    membershipId: string;
+    trainerProfileId: string;
+}): Promise<RosterActionResult> {
+    const gate = await requireStaffAdminGym();
+    if (!gate.ok) {
+        return gate.result;
+    }
+    const membershipId = input.membershipId.trim();
+    const trainerProfileId = input.trainerProfileId.trim();
+    if (!membershipId) {
+        return {
+            ok: false,
+            code: 'VALIDATION_ERROR',
+            message: rosterErrorMessage('VALIDATION_ERROR'),
+        };
+    }
+    if (!trainerProfileId) {
+        return { ok: false, code: 'VALIDATION_ERROR', message: 'Pick a trainer to assign.' };
+    }
+
+    try {
+        const { assignTrainer } = createAppServices();
+        await assignTrainer({
+            accessToken: gate.accessToken,
+            gymOrgId: gate.gymOrgId,
+            membershipId,
+            trainerProfileId,
+        });
+        revalidatePath('/admin/members');
+        return { ok: true };
+    } catch (error) {
+        // Notably COACHING_ADDON_REQUIRED (422) — mapped to plain copy in
+        // `roster-errors.ts` rather than surfaced raw.
+        return fail(error);
+    }
+}
+
 export async function setCheckInBlockAction(input: {
     membershipId: string;
     blocked: boolean;
@@ -113,38 +151,6 @@ export async function setCheckInBlockAction(input: {
             gymOrgId: gate.gymOrgId,
             membershipId,
             blocked: input.blocked,
-        });
-        revalidatePath('/admin/members');
-        return { ok: true };
-    } catch (error) {
-        return fail(error);
-    }
-}
-
-export async function assignTrainerAction(input: {
-    membershipId: string;
-    trainerProfileId: string;
-}): Promise<RosterActionResult> {
-    const gate = await requireStaffAdminGym();
-    if (!gate.ok) {
-        return gate.result;
-    }
-    const membershipId = input.membershipId.trim();
-    const trainerProfileId = input.trainerProfileId.trim();
-    if (!membershipId || !trainerProfileId) {
-        return {
-            ok: false,
-            code: 'VALIDATION_ERROR',
-            message: rosterErrorMessage('VALIDATION_ERROR'),
-        };
-    }
-    try {
-        const { assignTrainer } = createAppServices();
-        await assignTrainer({
-            accessToken: gate.accessToken,
-            gymOrgId: gate.gymOrgId,
-            membershipId,
-            trainerProfileId,
         });
         revalidatePath('/admin/members');
         return { ok: true };

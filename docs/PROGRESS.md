@@ -10,34 +10,41 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 | Tooling + CI | Done — Prettier/ESLint architecture rules/Husky/lint-staged + GitHub Actions (ADR-0006); `typecheck` runs `next typegen` first so `LayoutProps` exists on a clean CI checkout |
 | Folder architecture | Done — top-level `modules/<module>/`; `lib/` is shared infrastructure (ADR-0007, ADR-0008). E2E fixtures split into `lib/api/e2e/store.ts` (shared state) + nine per-module fakes, closing ADR-0007's last deferred consequence — no shared-file hotspots remain |
 | UI foundation | Done — shadcn/ui on `data-theme`, tokens aliased to the CRM palette (ADR-0006) |
+| Admin desk layout (queue + rail) | Done — `components/admin/` chrome (`work-queue-layout`, `metric-strip`, `segmented-filter`, `work-queue-skeleton`, `contact-actions`, `error-notice`, `confirm-action-dialog`), domain-free, landing the `stash@{3}` hybrid prototype as real code. Adopted by **every Admin ops screen**: renewals, CRM, attendance, members (roster + invites) and the plan catalog. Settings keeps its forms. Fully token-indirected, so dark mode needed no per-component work. Colour palette still deferred by design |
 | Architecture plan + SOLID/DI | Done (ADR-0003, ADR-0004) |
 | Matt Pocock skills | Done (`.agents/skills`) |
-| Postman API collection | Sibling at **`5c3ee88`** (Nutrition search `units[].id`; Attendance check-out/present; `GET /me/gym`). Pulled 2026-09-11. Cloud inject still blocked — Postman MCP 401; Desktop Import the sibling JSON |
+| Postman API collection | Sibling at **`5c3ee88`** (Nutrition search `units[].id`; Attendance check-out/present; `GET /me/gym`; Convert Lead wired on main). Pulled 2026-09-11. Cloud inject still blocked — Postman MCP 401; Desktop Import the sibling JSON |
 | Client/Admin auth guide | Done — `docs/api/client-auth.md` |
 | Silent session refresh | Done — `proxy.ts` rotates the access/refresh pair via `POST /auth/refresh` before it expires; cookie `Max-Age` decoupled from the access-token TTL (`2026-08-16` fix, see progress log) so it survives to be refreshed instead of the browser dropping it at the 1h mark. Verified live against prod (`2026-08-16`): rotation + 401-on-stale-token both confirmed; Google-lane compatibility inferred high-confidence (shared Supabase issuer), not directly browser-tested |
 | Auth research notes | Archived — `docs/archive/research/` |
 | MCP (Context7, Postman, GitHub, Supabase, Vercel, Playwright) | Configured + connected in Cursor |
 | Playwright E2E skill | Done — `.cursor/skills/playwright-e2e-testing` (from fugazi/test-automation-skills-agents) |
 | Next.js app scaffold | Done — App Router + Clean Arch ports/adapters (build green) |
-| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals**; **profile & progress**; **M6/M7 coaching (client diet + workout schedule)**; **M9 nutrition**; **M10 health sync**; **M11 leads** |
+| Feature modules | M1 auth; M2 Settings-first + invites; **M3 membership invites + my-data-grants**; **M4 plans/addons**; **roster / attendance / renewals** incl. **trainer assignment**; **profile & progress**; **M6/M7 coaching (client diet + workout schedule)**; **M9 nutrition**; **M10 health sync**; **M11 leads** incl. **convert**. Destructive actions across every module are behind one confirm step |
 | Admin CRM-light chrome | Done — Base UI `Sidebar` primitive (icon rail + `Sheet` mobile drawer + cookie-persisted state), light/dark tokens, Settings-only first-run; Client persona shares the same header atoms |
 | Admin navigation latency | Done — page shells do no network work; `loading.tsx` per ops route; filter tabs are `<Link>` in the shell (was a raw `<a>` full-page reload) (ADR-0009) |
 | Client data layer | Done — **TanStack Query v5** across all six Admin modules (ADR-0011): RSC `prefetchQuery` + `<HydrationBoundary>` for first paint, `/api/*` route handlers for refetch, mutations wrapping the existing Server Actions so the auth→lane→tenant gate never moved. Retired all `*-data.tsx`, every `useOptimistic` block, and 18 of 22 `router.refresh()` sites. Navigation between ops screens now serves from cache instead of re-paying ~400ms per hop. CLIENT persona migrated too; the 4 remaining `router.refresh()` calls are session creation and Admin-shell-mode changes, which cache invalidation cannot re-render |
 
-**Summary:** Roster, attendance desk, renewals inbox, client coaching (diet + workouts), nutrition diary + catalog logging, and client my-data-grants wired against Postman tip `5c3ee88` (sibling pulled 2026-09-11; cloud collection still waiting on Postman MCP re-auth). Plans + Leads + membership invites remain live. Admin coaching templates and several attendance/subscription endpoints are still unwired — see analysis below. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive, replacing the hand-rolled collapsible nav. Admin navigation reworked to stream the page shell and stop reloading the document on filter clicks (ADR-0009).
+**Summary:** Roster, attendance desk, renewals inbox, CRM convert-lead, client coaching (diet + workouts), nutrition diary + catalog logging, and client my-data-grants wired against Postman tip `5c3ee88` (sibling pulled 2026-09-11; cloud collection still waiting on Postman MCP re-auth). Admin coaching templates and several attendance/subscription endpoints are still unwired. Agent OS repaired after the `e537810` rule drift; tooling + CI landed (ADR-0006). Domain slices live at top-level `modules/` (ADR-0008 amending ADR-0007). Admin shell rebuilt on Base UI's `Sidebar` primitive. Renewals, CRM and the attendance desk share a reusable queue + rail layout; the app displays as **Yeah Buddy**.
 
 ## Next up
 
 **Team setup:**
 
 1. ~~Apply the status-badge scale~~ — **Done.** `lib/ui/status-tone.ts` (`StatusTone` + `statusToneBadgeVariant()`), `badge.tsx` got `success`/`warning` variants, and every domain status (`roster-panel`, `members-admin-panel`, `membership-invite-inbox`, `staff-invites-admin-panel`) is now a `<Badge>` with the correct tone — no more bare-text statuses, no more `roster-panel` payment badges all rendering `outline`.
-2. **Adopt shadcn components per surface** — Done: `table`/`select`/`badge`/`checkbox`/`radio-group`/`textarea` landed across every Admin panel and the auth flows (roster, attendance, leads, members, plans, staff-invites, login, Google callback, create-gym, data-grants, membership-invite inbox); `dialog`/`dropdown-menu` installed but not yet consumed by a screen.
+2. **Adopt shadcn components per surface** — Done: `table`/`select`/`badge`/`checkbox`/`radio-group`/`textarea` landed across every Admin panel and the auth flows (roster, attendance, leads, members, plans, staff-invites, login, Google callback, create-gym, data-grants, membership-invite inbox); `dialog` now has two consumers (the renewals part-payment prompt and CRM lead capture); `dropdown-menu` is still installed without a screen using it.
 3. **Module ownership split** with Iqbal, then feature branches + PRs — now unblocked on the tooling side: the last shared hotspot (`e2e-fixtures.ts`) is split per module.
 4. ~~Embed `gymOrgId` / `gymName` in the session~~ — **no longer needed for latency**: the gym lookup is cached client-side by TanStack, so navigation no longer re-pays it. Still an option if the *first* load's sequential hop matters (would need HMAC signing first — ADR-0010 work is stashed, not landed).
 
 **Product:**
 
-6. ~~Assign trainer in Admin~~ — **Done.** Members roster picker uses Gym Orgs `GET /gym-orgs/:id/trainers`; assign posts `trainerProfileId` on the roster writer. See `docs/progress/2026-08-19-assign-trainer-roster.md`.
+6. ~~Assign trainer / trainer list~~ — **Done.** `List Gym Trainers` + `Assign Trainer`
+   wired end to end: `listTrainers` on the gym-orgs port (paginated envelope, `GymTrainersPage`),
+   `assignTrainer` on the roster writer, and a coach picker in the members rail. `assignedTrainerId`
+   had been parsed into `RosterMember` since the module landed and rendered nowhere. The API's
+   `COACHING_ADDON_REQUIRED` (422) is stated up front in the control and surfaced as plain
+   copy, not re-derived client-side. No unassign — the contract has no such request. See
+   `docs/progress/2026-08-19-assign-trainer-roster.md`.
 7. ~~Profile & Progress~~ — **Done.** Client `/client/profile` + Admin/Trainer grant-aware member detail; Trainer assigned roster via `GET /my-assigned-members`. Profile menu owns dark mode for Admin/Trainer/Client. See `docs/progress/2026-08-26-trainer-profile-menu.md`.
 7b. ~~Client sidebar~~ — **Done.** Member shell mirrors Admin sidebar: Home, Profile, Nutrition, Diet, Workouts, Health Sync (placeholders until those Postman modules are wired). See `docs/progress/2026-08-27-client-sidebar.md`.
 7c. ~~Client pattern alignment~~ — **Done.** `ClientStubPage` = `AdminStubPage`; shell/user/initials match Admin; debug adapter log removed. See `docs/progress/2026-08-27-client-pattern-alignment.md`.
@@ -47,8 +54,53 @@ Living project stage for agents and humans. Log entries live one-per-file in `do
 7g. ~~Nutrition~~ — **Done.** `/client/nutrition` diary (read + log/unlog extras) and searchable catalog with serving ids from Postman `5c3ee88`; CALORIES-gated staff diary on member detail. See `docs/progress/2026-08-29-nutrition.md` + `docs/progress/2026-09-11-nutrition-log-extra.md`.
 7h. ~~Client coaching~~ — **Done (member slice).** `/client/diet` and `/client/workouts` wired to my diet plan, workout schedule, and streak via `GET /me/gym`. Admin template CRUD + staff client views still deferred. See coaching module + `e2e/coaching.spec.ts`.
 8. Deploy gym-backend with `GOOGLE_OAUTH_REDIRECT_ORIGINS` + Supabase redirect URL for web Google callback.
-9. Optional: deeper renewals UX (filters, member name join).
-10. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).
+9. ~~Optional: deeper renewals UX (filters, member name join)~~ — **Done.** Rebuilt as a
+   queue + rail desk: roster join for names/phone/email (no new endpoint — the roster
+   rides along in the screen payload like the attendance desk), window/payment/search
+   filters, a money summary strip, `tel:`/WhatsApp/`mailto:` contact actions, and a real
+   amount input replacing the `price / 2` guess for partial payments. See
+   `docs/progress/2026-08-20-renewals-desk-work-queue-layout.md`.
+10. ~~Audit the other modules against the desk layout~~ — **Done.** Only two modules wanted
+    it *at the time*: CRM and the attendance desk. That call was later reversed for roster
+    and plans — see `2026-08-20-desk-layout-everywhere.md` and §6 — and the layout now
+    covers every ops screen. Plus a consistency pass: one `ErrorNotice`, one money formatter (`formatPlanPrice` was a
+    byte-identical duplicate), and radii folded back onto the three-value scale. See
+    `docs/progress/2026-08-20-desk-layout-module-audit.md`.
+11. ~~Guard the destructive actions~~ — **Done.** One `ConfirmActionDialog` across all six
+    (offboard, delete plan, delete lead, revoke membership invite, revoke staff invite,
+    block check-in); unblocking asks nothing. Copy says what happens to the gym's data
+    rather than "cannot be undone". Also fixed a false-passing spec: Base UI hides the
+    page behind an open dialog from the a11y tree, so `toHaveCount(0)` on a row was
+    measuring the dialog, not the delete.
+12. ~~Watch for E2E flakiness on a loaded machine~~ — **Done, and it was not the machine.**
+    Two real isolation bugs, both of which *report as timeouts* because a strict-mode
+    violation re-resolves the locator until the budget expires. (a) `captureTrigger` was a
+    non-`exact` `'Capture lead'`, which substring-matches the row overlay `Open E2E Capture
+    Lead` while the CRM spec's own lead exists — two elements, failed click. (b) Every
+    fixture minted ids from array length (`plan-e2e-${e2ePlans.length + 1}`); since workers
+    share one store, a create following another worker's delete reissued a **live** id, so
+    `findIndex` deleted the wrong row. Fixed with `exact` locators and `e2eNextId()`.
+    12 consecutive green runs at six workers. `playwright.config.ts` is unchanged — raising
+    the timeout would have fixed nothing and a lower worker count would have hidden it. See
+    `docs/progress/2026-08-21-e2e-flakiness-root-cause.md`.
+13. ~~The plan catalog read as "a small weird" layout~~ — **Done.** It was the one ops
+    screen the queue+rail template did not fit: a catalog has no urgency and no day to
+    summarise, so the metric strip restated its own two rows and the wide column held the
+    sparse content while the 21rem rail held the form. Metric strip → one muted line, rail
+    → `railWidth="wide"`, queue rows → real aligned term/price columns (`WorkQueueRow`
+    gained a `columns` slot), delete → quiet and fenced by a hairline. Shared chrome takes
+    both new options with today's behaviour as the default, so the other four desks are
+    untouched. See `docs/progress/2026-08-21-plans-catalog-proportions.md`.
+14. ~~Convert Lead~~ — **Done.** `POST …/leads/:leadId/convert` wired: creates a PENDING
+    membership invite from a lead in one call and flips it to `CONVERTED`. The rail's stage
+    picker no longer offers `CONVERTED` directly — it is reachable only through Convert now,
+    so a converted lead always has a real invite behind it, not just a status label. Picked
+    up a real gap on the way: the web `Lead` type had no `email` field despite the API
+    carrying one since before this module landed, which Convert's fallback rule depends on.
+    Shared the members desk's plan/payment picker (`InvitePlanFields`) rather than
+    duplicating it — its first E2E coverage landed with this, since nothing had exercised
+    that form before. See `docs/progress/2026-09-12-convert-lead.md`.
+15. Optional: confirm Google-lane `/auth/refresh` compatibility with an actual browser OAuth round-trip (curl-verified for OTP-lane on `2026-08-16`; Google-lane inferred, not directly hit).
 
 ## Log
 

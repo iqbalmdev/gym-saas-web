@@ -5,7 +5,11 @@ import { requireStaffGym } from '@/lib/auth/staff-gym-gate';
 import { gymOrgErrorMessage } from '@/modules/gym-orgs/gym-orgs-errors';
 import { listGymTrainersForGym } from '@/modules/gym-orgs/gym-orgs-queries';
 
-/** Client refetch for gym trainers (ADR-0011). Gate → shared query → JSON. */
+/**
+ * Client refetch endpoint for the trainer picker (ADR-0011).
+ * Gate → shared query → JSON. The tenant comes from the session, never the
+ * request, so this cannot be pointed at another gym's staff.
+ */
 export async function GET() {
     const gate = await requireStaffGym();
     if (!gate.ok) {
