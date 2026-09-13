@@ -77,6 +77,26 @@ export function useSetCheckInBlock() {
     });
 }
 
+/**
+ * Not optimistic. The API can refuse with `COACHING_ADDON_REQUIRED`, and
+ * showing the coach as assigned before the server agrees would tell the Admin
+ * a member is coached when they are not — the one thing this control exists to
+ * get right.
+ */
+export function useAssignTrainer() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (input: { membershipId: string; trainerProfileId: string }) => {
+            const result = await assignTrainerAction(input);
+            if (!result.ok) {
+                throw new Error(result.message);
+            }
+            return result;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: rosterKeys.all }),
+    });
+}
+
 export function useOffboardMember() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -91,29 +111,6 @@ export function useOffboardMember() {
         onMutate: (input) =>
             applyOptimistic(queryClient, (members) =>
                 members.filter((member) => member.membershipId !== input.membershipId),
-            ),
-        onError: (_error, _input, context) => rollback(queryClient, context),
-        onSettled: () => queryClient.invalidateQueries({ queryKey: rosterKeys.all }),
-    });
-}
-
-export function useAssignTrainer() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (input: { membershipId: string; trainerProfileId: string }) => {
-            const result = await assignTrainerAction(input);
-            if (!result.ok) {
-                throw new Error(result.message);
-            }
-            return result;
-        },
-        onMutate: (input) =>
-            applyOptimistic(queryClient, (members) =>
-                members.map((member) =>
-                    member.membershipId === input.membershipId
-                        ? { ...member, assignedTrainerId: input.trainerProfileId }
-                        : member,
-                ),
             ),
         onError: (_error, _input, context) => rollback(queryClient, context),
         onSettled: () => queryClient.invalidateQueries({ queryKey: rosterKeys.all }),

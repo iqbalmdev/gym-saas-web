@@ -321,10 +321,18 @@ function LaneChooser(props: { lane: AuthLane | null; onChange: (lane: AuthLane) 
     return (
         <fieldset>
             <legend className="sr-only">Account type</legend>
+            {/*
+             * Base UI latches controlled-vs-uncontrolled on the first render off
+             * `value !== undefined`, so `lane ?? undefined` starts the group
+             * uncontrolled and picking a lane flips it to controlled — the React
+             * warning, plus a group that then ignores the `value` prop, leaving
+             * `setLane(null)` resets unable to clear the selection. `null` is Base
+             * UI's own "nothing selected" value, so pass it straight through.
+             */}
             <RadioGroup
                 name="lane"
                 className="gap-2.5"
-                value={lane ?? undefined}
+                value={lane}
                 onValueChange={(value) => onChange(value as AuthLane)}
             >
                 <LaneOption

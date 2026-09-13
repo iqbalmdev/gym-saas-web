@@ -53,6 +53,28 @@ export function e2eShared<T>(key: string, create: () => T): T {
     return store.get(key) as T;
 }
 
+/**
+ * Monotonic id source for fixture `create` calls.
+ *
+ * Ids used to be derived from the array length (`plan-e2e-${e2ePlans.length + 1}`).
+ * Playwright's workers share these arrays, so a create that followed another
+ * worker's delete handed out an id that was already live. Every later
+ * `findIndex((item) => item.id === id)` — update, softDelete — then resolved to
+ * whichever duplicate came first: one spec's delete removed another spec's row,
+ * and the row the spec was actually asserting on never went away. Serial runs
+ * hid it, because an id is only reused there once its holder is gone.
+ *
+ * A counter that only ever goes up cannot collide, however the arrays are
+ * mutated. Prefixes end in `-new` so a generated id can never equal a seeded
+ * one (`plan-e2e-base`, `lead-e2e-1`, ...).
+ */
+export function e2eNextId(prefix: string): string {
+    const counters = e2eShared('idCounters', () => new Map<string, number>());
+    const next = (counters.get(prefix) ?? 0) + 1;
+    counters.set(prefix, next);
+    return `${prefix}-${next}`;
+}
+
 /** Tokens that gained a gym via Accept Staff Invite in this process. */
 export const e2eAffiliatedTokens = e2eShared('affiliatedTokens', () => new Set<string>());
 /** Tokens that became gym owners via Create GymOrg in this process. */
@@ -78,7 +100,16 @@ export function sampleInvite(overrides: Partial<StaffInvite> = {}): StaffInvite 
     };
 }
 
-/** In-memory invites for E2E — reset per process (Playwright workers are isolated enough). */
+/**
+ * In-memory fixtures, created once per server process.
+ *
+ * Playwright's workers are **not** isolated from each other here: they are
+ * browser contexts sharing one `next start`, so every worker reads and writes
+ * these same arrays. A spec that mutates a row therefore has to own that row —
+ * two tests racing for one record is a flake, not a bug in the app. Give each
+ * mutating test its own fixture, and keep shared assertions on fields no
+ * mutation touches (a price, a row count, a name).
+ */
 export const e2eGymInvites = e2eShared('gymInvites', (): StaffInvite[] => [
     sampleInvite({ id: 'invite-e2e-gym-pending' }),
 ]);
@@ -116,6 +147,9 @@ export const e2eLeads = e2eShared('leads', (): Lead[] => [
         gymOrgId: E2E_GYM_ID,
         name: 'Walk-in Prospect',
         phone: '9876543210',
+        // No email on purpose: the convert flow has to handle a lead that never
+        // gave one, which is the common walk-in case.
+        email: null,
         source: 'walk-in',
         interest: 'trial',
         notes: null,
@@ -150,20 +184,6 @@ export const e2eMembershipInvites = e2eShared('membershipInvites', (): Membershi
     },
 ]);
 
-export const e2eGymTrainers = e2eShared('gymTrainers', (): GymTrainer[] => [
-    {
-        trainerProfileId: E2E_TRAINER_PROFILE_ID,
-        userId: 'e2e-user-1',
-        gymOrgId: E2E_GYM_ID,
-        name: 'Owner Admin',
-        email: 'owner@example.com',
-        staffCode: 'STAFF-AB12',
-        bio: null,
-        isAdmin: true,
-        createdAt: '2026-08-08T12:00:00.000Z',
-    },
-]);
-
 export const e2eRosterMembers = e2eShared('rosterMembers', (): RosterMember[] => [
     {
         membershipId: 'membership-e2e-active',
@@ -174,12 +194,141 @@ export const e2eRosterMembers = e2eShared('rosterMembers', (): RosterMember[] =>
         assignedTrainerId: null,
         clientName: 'Ada Client',
         clientEmail: 'ada@example.com',
-        clientPhone: null,
+        clientPhone: '+919876500001',
         joinedAt: '2026-08-08T12:00:00.000Z',
         leftAt: null,
         basePaymentStatus: 'unpaid',
         baseAmountPaid: 0,
         basePriceAmount: 999,
+    },
+    {
+        membershipId: 'membership-e2e-active-2',
+        clientUserId: 'e2e-client-roster-2',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Rahul Menon',
+        clientEmail: 'rahul@example.com',
+        clientPhone: '+919876500002',
+        joinedAt: '2026-08-06T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'partial',
+        baseAmountPaid: 500,
+        basePriceAmount: 1499,
+    },
+    {
+        // No phone: the desk must degrade to email-only contact, not render a dead tel: link.
+        membershipId: 'membership-e2e-active-3',
+        clientUserId: 'e2e-client-roster-3',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Priya Sharma',
+        clientEmail: 'priya@example.com',
+        clientPhone: null,
+        joinedAt: '2026-08-04T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'paid',
+        baseAmountPaid: 799,
+        basePriceAmount: 799,
+    },
+    // Owned by the "mark paid" spec — nothing else may mutate this member.
+    {
+        membershipId: 'membership-e2e-active-4',
+        clientUserId: 'e2e-client-roster-4',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Vikram Rao',
+        clientEmail: 'vikram@example.com',
+        clientPhone: '+919876500004',
+        joinedAt: '2026-08-05T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'unpaid',
+        baseAmountPaid: 0,
+        basePriceAmount: 1200,
+    },
+    // Owned by the offboard spec. Has no renewal line, so removing them from
+    // the roster cannot move the renewals desk's money totals.
+    {
+        membershipId: 'membership-e2e-active-6',
+        clientUserId: 'e2e-client-roster-6',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Deepa Rao',
+        clientEmail: 'deepa@example.com',
+        clientPhone: '+919876500006',
+        joinedAt: '2026-08-03T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'paid',
+        baseAmountPaid: 999,
+        basePriceAmount: 999,
+    },
+    // Owned by the "part payment" spec — nothing else may mutate this member.
+    {
+        membershipId: 'membership-e2e-active-5',
+        clientUserId: 'e2e-client-roster-5',
+        gymOrgId: E2E_GYM_ID,
+        status: 'ACTIVE',
+        checkInBlocked: false,
+        assignedTrainerId: null,
+        clientName: 'Neha Iyer',
+        clientEmail: 'neha@example.com',
+        clientPhone: '+919876500005',
+        joinedAt: '2026-08-05T12:00:00.000Z',
+        leftAt: null,
+        basePaymentStatus: 'unpaid',
+        baseAmountPaid: 0,
+        basePriceAmount: 2000,
+    },
+]);
+
+/**
+ * Gym staff who can coach. `trainerProfileId` is what a membership's
+ * `assignedTrainerId` holds — deliberately different from `userId`, as in the
+ * real contract, so a spec that confuses the two fails here rather than in prod.
+ *
+ * `[0]` doubles as the E2E TRAINER-role actor's own profile (`listMyAssignedMembers`
+ * scopes to whichever trainer is "self"), so keep an entry at that index.
+ */
+export const e2eGymTrainers = e2eShared('gymTrainers', (): GymTrainer[] => [
+    {
+        trainerProfileId: E2E_TRAINER_PROFILE_ID,
+        userId: 'e2e-user-trainer-1',
+        gymOrgId: E2E_GYM_ID,
+        name: 'Karan Coach',
+        email: 'karan@example.com',
+        staffCode: 'STAFF-K1',
+        bio: 'Strength',
+        isAdmin: false,
+        createdAt: '2026-08-08T12:00:00.000Z',
+    },
+    {
+        trainerProfileId: 'trainer-profile-e2e-2',
+        userId: 'e2e-user-trainer-2',
+        gymOrgId: E2E_GYM_ID,
+        name: 'Meera Coach',
+        email: 'meera@example.com',
+        staffCode: 'STAFF-M2',
+        bio: null,
+        isAdmin: false,
+        createdAt: '2026-08-09T12:00:00.000Z',
+    },
+    {
+        trainerProfileId: 'trainer-profile-e2e-3',
+        userId: 'e2e-user-1',
+        gymOrgId: E2E_GYM_ID,
+        name: 'Owner Admin',
+        email: 'owner@example.com',
+        staffCode: 'STAFF-AB12',
+        bio: null,
+        isAdmin: true,
+        createdAt: '2026-08-08T12:00:00.000Z',
     },
 ]);
 
@@ -258,6 +407,83 @@ export const e2eRenewals = e2eShared('renewals', (): RenewalDueItem[] => [
         createdAt: '2026-08-08T12:00:00.000Z',
         updatedAt: '2026-08-11T10:00:00.000Z',
         clientUserId: 'e2e-client-roster-1',
+    },
+    // One line per payment status, all inside the default "next 7 days" window,
+    // so the desk's payment filters and money strip have something to separate.
+    {
+        id: 'sub-e2e-renewal-2',
+        clientMembershipId: 'membership-e2e-active-2',
+        gymOrgId: E2E_GYM_ID,
+        planId: 'plan-e2e-base',
+        kind: 'BASE',
+        capability: null,
+        priceAmount: 1499,
+        durationDays: 30,
+        startDate: isoDateOffset(-25),
+        endDate: isoDateOffset(5),
+        startSource: 'FIRST_ATTENDANCE',
+        paymentStatus: 'partial',
+        amountPaid: 500,
+        createdAt: '2026-08-06T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:00:00.000Z',
+        clientUserId: 'e2e-client-roster-2',
+    },
+    {
+        id: 'sub-e2e-renewal-3',
+        clientMembershipId: 'membership-e2e-active-3',
+        gymOrgId: E2E_GYM_ID,
+        planId: 'plan-e2e-addon',
+        kind: 'ADDON',
+        capability: 'TRAINER_COACHING',
+        priceAmount: 799,
+        durationDays: 30,
+        startDate: isoDateOffset(-24),
+        endDate: isoDateOffset(6),
+        startSource: 'FIRST_ATTENDANCE',
+        paymentStatus: 'paid',
+        amountPaid: 799,
+        createdAt: '2026-08-04T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:00:00.000Z',
+        clientUserId: 'e2e-client-roster-3',
+    },
+    // The two rows below are each owned by one mutating spec. Prices stay fixed
+    // whatever those specs do to `paymentStatus`, which is why the money strip
+    // asserts on "Billed" and not on "Collected".
+    {
+        id: 'sub-e2e-renewal-4',
+        clientMembershipId: 'membership-e2e-active-4',
+        gymOrgId: E2E_GYM_ID,
+        planId: 'plan-e2e-base',
+        kind: 'BASE',
+        capability: null,
+        priceAmount: 1200,
+        durationDays: 30,
+        startDate: isoDateOffset(-27),
+        endDate: isoDateOffset(3),
+        startSource: 'FIRST_ATTENDANCE',
+        paymentStatus: 'unpaid',
+        amountPaid: 0,
+        createdAt: '2026-08-05T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:00:00.000Z',
+        clientUserId: 'e2e-client-roster-4',
+    },
+    {
+        id: 'sub-e2e-renewal-5',
+        clientMembershipId: 'membership-e2e-active-5',
+        gymOrgId: E2E_GYM_ID,
+        planId: 'plan-e2e-base',
+        kind: 'BASE',
+        capability: null,
+        priceAmount: 2000,
+        durationDays: 30,
+        startDate: isoDateOffset(-26),
+        endDate: isoDateOffset(4),
+        startSource: 'FIRST_ATTENDANCE',
+        paymentStatus: 'unpaid',
+        amountPaid: 0,
+        createdAt: '2026-08-05T12:00:00.000Z',
+        updatedAt: '2026-08-11T10:00:00.000Z',
+        clientUserId: 'e2e-client-roster-5',
     },
 ]);
 

@@ -101,8 +101,10 @@ across `roster-panel`, `members-admin-panel`, `membership-invite-inbox`, and
 four, styled from `--color-success` / `--color-warning` the same way `destructive` is
 styled from `--color-danger`.
 
-Lead pipeline stages (§ above) are edited through a `<Select>`, not displayed as a status
-badge anywhere today, so they're intentionally untouched by this pass.
+Lead pipeline stages render through `leadStatusTone()` in `leads-labels.ts` — neutral for
+every stage except `CONVERTED`, plus `isLeadStageMuted()` for the reduced-emphasis `LOST`
+treatment. The CRM queue shows the stage as a `<Badge>`; the rail's `<Select>` is where it
+is changed.
 
 ## 4. Empty states
 
@@ -133,3 +135,137 @@ CLIENT-owned; the member choosing not to share is the system working correctly.
 - Admin chrome in `components/admin/`; module UI in `modules/<m>/components/`.
 - Loading: route-level `loading.tsx` + panel skeletons (ADR-0009). Skeletons mirror the
   real layout so nothing shifts; header placeholders are grey bars, never duplicated copy.
+
+## 6. Desk layout — queue + rail
+
+The shape for any screen whose job is *work through a list of people*. First consumer:
+the renewals desk. `components/admin/work-queue-layout.tsx` owns it and holds **no domain
+logic**, so a second module adopts it by passing different children, never by copying it.
+
+| Piece | Job |
+|---|---|
+| `WorkQueueLayout` | The grid: summary, toolbar, queue, sticky rail |
+| `WorkQueue` / `WorkQueueRow` | The skimmable list; row = urgency dot + title + meta + actions |
+| `WorkQueueRailPanel` / `WorkQueueRailSection` | The detail rail's surface and its blocks |
+| `MetricStrip` | The money/volume summary above the queue |
+| `SegmentedFilter` | Client-side narrowing (see §7) |
+| `WorkQueueSkeleton` | The one Suspense fallback for all of them |
+| `ContactActions` | `tel:` / WhatsApp / `mailto:` for whoever the rail is about |
+| `ErrorNotice` | Panel-level failure banner |
+| `ConfirmActionDialog` | The confirm step for anything destructive (§10) |
+
+Rules:
+
+- **Two columns at `lg`, stacked below it.** The rail scrolls into view on selection when
+  stacked, but a row must still be actionable on its own — the rail is context, never the
+  only place an action lives.
+- **The row is the record; the rail is the context.** Do not move a row's primary action
+  into the rail.
+- **Glass on the summary strip only.** `MetricStrip` may be translucent because it
+  summarises; the queue and rail stay solid. This is the concrete reading of
+  `ui-theme.mdc`'s "no loud glass" — decoration must not cost legibility on dense rows.
+- **The urgency dot uses `StatusTone`**, via `statusToneDotClass()` — never a bespoke
+  colour, so a tone means the same thing on a dot as on a badge (§3).
+- **`onSelect` is optional.** A row with nothing to open must not render a focusable
+  full-row overlay — keyboard users would tab into it and get silence. Omitting it also
+  drops the hover cue, so an inert row does not promise a click.
+
+### Which screens get it
+
+**Every Admin ops screen now does**: renewals, CRM, the attendance desk, the members desk
+(roster + invites) and the plan catalog. Settings is not an ops screen and keeps its
+forms.
+
+An earlier version of this section said the opposite — that plans and the roster were
+"correct as tables" and a rail would have nothing to put in it. That was wrong twice, and
+the reason is worth keeping:
+
+- A **member** has contact details, a join date and real subscription lines. The
+  four-column table hid all of it, so the page could not answer "what is this member
+  paying for?".
+- A **plan** has three editable fields — name, term, price — that `updatePlan` supported
+  from the start and no screen ever exposed. The rail did not restyle the catalog; it
+  unlocked writes that were unreachable.
+
+So the test is **not** "is the queue made of people". It is: *does an item have more to it
+than the row shows, or actions the row cannot hold?* If yes, it earns a rail. An **invite**
+genuinely does not have much — a name, a plan, a deadline — and its rail says so plainly
+rather than padding itself out. That is the honest version of "a rail with nothing in it
+is worse than no rail".
+
+Where there is no per-row detail at all, the row itself can be the action — the attendance
+desk marks a member in on row click rather than opening anything.
+
+### Two queues on one desk
+
+The members desk shows members *or* invites behind a `SegmentedFilter`. They stay separate
+query keys, because they are mutated independently and a check-in block must not refetch
+invites; they share a queue because an Admin looking for a person should not have to know
+which list that person is currently in. Reach for this only when the two populations
+answer the same question — not to save a route.
+
+## 7. Filters — which ones navigate
+
+Two kinds, and the difference is not cosmetic:
+
+| Filter changes… | Mechanism | Why |
+|---|---|---|
+| What the **server fetches** (a date window) | `FilterTabs` — real `<Link>` | It is a query parameter; it must re-run the fetch and belongs in the query key |
+| Only **which rows show** (status, search) | `SegmentedFilter` + `useShallowSearchParam` | Already in the query cache; a `<Link>` would re-run the page and its `prefetchQuery` per keystroke |
+
+Both end up in the URL, satisfying `state-management.mdc` §2 — the second uses
+`window.history.replaceState`, the documented Next.js shallow-routing escape hatch, so the
+link stays shareable without a round-trip. Filter controls live **above** the `<Suspense>`
+boundary so they stay clickable while new data streams in (ADR-0009).
+
+## 8. Numbers and money
+
+- Money renders through `formatMoney()` (`lib/ui/format-money.ts`) — `en-IN`, whole
+  rupees. The API returns price **snapshots**; format them, never recompute them
+  (`000-project-context.mdc`).
+- Columns of figures get `tabular-nums`, **not** `font-mono`. Alignment was always the
+  goal, and Geist Mono gives a comma its own character cell — `₹6,497` renders as
+  `₹6 , 497`. Tabular figures align the digits and leave the separator alone.
+- Never apply tabular figures to prose. "Ends in 5 days" is a sentence, not a column.
+
+## 9. Errors
+
+- **Panel-level** failure — an action or a list did not work: `ErrorNotice`. One banner,
+  one radius, and it renders nothing for a null message so callers need no guard.
+- **Field-level** failure — this input is invalid: an inline `<p role="alert">` beside the
+  control. Do not promote it to the panel banner; that separates the message from the
+  thing that caused it.
+- Copy stays calm and says what to do next (`error-handling.mdc`). An expected-empty list
+  is never an error (§4).
+
+## 10. Destructive actions
+
+Anything that cannot be undone from the UI goes through `ConfirmActionDialog`:
+offboarding a member, deleting a plan or a lead, revoking an invite, blocking a check-in.
+These write to the API immediately — there is nothing held back to reverse — and several
+sit inches from a button the Admin presses all day (Delete beside Deactivate in the plan
+catalog; Offboard beside Block check-in on the roster).
+
+**The copy is the feature.** `description` is required and must say what happens to the
+gym's data, in the Admin's terms:
+
+- **Do:** *"They stop appearing on the roster and can no longer be marked in at the desk.
+  Their attendance and billing history is kept."*
+- **Don't:** *"This action cannot be undone."* A generic warning teaches people to click
+  through it, which is worse than no dialog because it costs a click and buys nothing.
+
+`confirmLabel` repeats the verb — "Offboard", "Delete plan", never "OK". Cancel is listed
+first so the safe path is the one a hurried Enter takes.
+
+`destructive={false}` for reversible-but-serious actions. Blocking a check-in denies
+access today but is undone with one click tomorrow, so it asks without the red button.
+**Unblocking asks nothing** — restoring access needs no ceremony.
+
+### Testing them
+
+While this dialog is open, Base UI marks the rest of the page `aria-hidden`, so **every
+`getByRole` query against the page behind it returns nothing**. A spec that clicks Delete
+and then asserts `toHaveCount(0)` on the row passes whether or not the delete ever ran —
+it is measuring the open dialog. Go through `ConfirmDialog` (`e2e/pages/confirm-dialog.page.ts`),
+whose `confirm()` waits for the dialog to close before returning. Assert the cancel path
+too: an untested Cancel is an untested feature.

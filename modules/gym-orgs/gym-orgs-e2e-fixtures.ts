@@ -34,14 +34,12 @@ export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
         },
 
         async listTrainers({ gymOrgId, limit = 20, offset = 0 }) {
-            if (gymOrgId !== E2E_GYM_ID) {
-                return { trainers: { items: [], total: 0, limit, offset } };
-            }
-            const items = e2eGymTrainers.slice(offset, offset + limit);
+            const forGym = e2eGymTrainers.filter((trainer) => trainer.gymOrgId === gymOrgId);
+            const items = forGym.slice(offset, offset + limit);
             return {
                 trainers: {
                     items,
-                    total: e2eGymTrainers.length,
+                    total: forGym.length,
                     limit,
                     offset,
                 },
