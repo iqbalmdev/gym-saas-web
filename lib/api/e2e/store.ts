@@ -14,6 +14,7 @@ import type { WearableConnection, WearableMetric } from '@/modules/health-sync/h
 import type { Lead } from '@/modules/leads/leads-ports';
 import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
 import type { CalorieLogItem, FoodSearchResult } from '@/modules/nutrition/nutrition-ports';
+import type { DietPlan, WorkoutSchedule, WorkoutStreak } from '@/modules/coaching/coaching-ports';
 import type { MembershipPlan } from '@/modules/plans/plans-ports';
 import type { ClientProfile, ProgressLog } from '@/modules/profile/profile-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -29,6 +30,9 @@ export const E2E_CLIENT_TOKEN = 'e2e-client-access';
 export const E2E_GYM_ID = 'gym-e2e-1';
 export const E2E_PENDING_INBOX_ID = 'invite-e2e-inbox-1';
 export const E2E_TRAINER_PROFILE_ID = 'trainer-profile-e2e-1';
+
+export const E2E_DIET_PLAN_ITEM_ID = 'd1111111-1111-4111-8111-111111111111';
+export const E2E_SCHEDULE_EXERCISE_ID = 'c1111111-1111-4111-8111-111111111111';
 
 /**
  * Process-wide store for the mutable fixture state below.
@@ -335,6 +339,7 @@ export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] =>
         defaultUnit: 'PIECE',
         units: [
             {
+                id: 'f00d5e04-0000-4000-8000-000000010001',
                 unit: 'G',
                 label: 'g',
                 grams: 1,
@@ -345,6 +350,7 @@ export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] =>
                 isDefault: false,
             },
             {
+                id: E2E_IDLI_SERVING_ID,
                 unit: 'PIECE',
                 label: 'piece',
                 grams: 30,
@@ -355,6 +361,7 @@ export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] =>
                 isDefault: true,
             },
             {
+                id: 'f00d5e04-0000-4000-8000-000000010005',
                 unit: 'KATORI',
                 label: 'katori',
                 grams: 150,
@@ -377,6 +384,7 @@ export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] =>
         defaultUnit: 'PIECE',
         units: [
             {
+                id: 'f00d5e04-0000-4000-8000-000000020001',
                 unit: 'G',
                 label: 'g',
                 grams: 1,
@@ -387,6 +395,7 @@ export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] =>
                 isDefault: false,
             },
             {
+                id: 'f00d5e04-0000-4000-8000-000000020003',
                 unit: 'PIECE',
                 label: 'piece',
                 grams: 40,
@@ -450,6 +459,82 @@ export const e2eCalorieLogItems = e2eShared('calorieLogItems', () => {
         },
     ]);
     return byClientDay;
+});
+
+/** Assigned diet plan for the E2E client member. */
+export const e2eDietPlan = e2eShared('dietPlan', (): DietPlan => ({
+    id: 'e1111111-1111-4111-8111-111111111111',
+    title: 'Cut week',
+    notes: null,
+    status: 'ACTIVE',
+    writable: true,
+    logDate: isoDateLocal(),
+    meals: [
+        {
+            id: 'e2222222-2222-4222-8222-222222222222',
+            mealSlot: 'BREAKFAST',
+            items: [
+                {
+                    id: E2E_DIET_PLAN_ITEM_ID,
+                    foodItemId: 'f00d0000-0000-4000-8000-000000000001',
+                    servingId: 'f00d5e04-0000-4000-8000-000000010003',
+                    quantity: 2,
+                    mealSlot: 'BREAKFAST',
+                    logged: false,
+                },
+            ],
+        },
+    ],
+}));
+
+function buildE2eWorkoutSchedule(): WorkoutSchedule {
+    const today = isoDateLocal();
+    return {
+        today,
+        writable: true,
+        days: [
+            {
+                scheduleDate: today,
+                kind: 'TRAINING',
+                dayDone: false,
+                adherencePercent: 0,
+                sessions: [
+                    {
+                        id: 's1111111-1111-4111-8111-111111111111',
+                        slot: 'MORNING',
+                        title: 'Push A',
+                        exercises: [
+                            {
+                                id: E2E_SCHEDULE_EXERCISE_ID,
+                                name: 'Bench Press (Barbell)',
+                                sets: 3,
+                                reps: '8-10',
+                                completed: false,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+/** Mutable workout schedule keyed by gym for the E2E client. */
+export const e2eWorkoutScheduleByGym = e2eShared('workoutScheduleByGym', () => {
+    const byGym = new Map<string, WorkoutSchedule>();
+    byGym.set(E2E_GYM_ID, buildE2eWorkoutSchedule());
+    return byGym;
+});
+
+export const e2eWorkoutStreakByGym = e2eShared('workoutStreakByGym', () => {
+    const byGym = new Map<string, WorkoutStreak>();
+    byGym.set(E2E_GYM_ID, {
+        asOf: isoDateLocal(),
+        currentStreak: 3,
+        longestStreak: 12,
+        lookbackDays: 366,
+    });
+    return byGym;
 });
 
 export const e2eRenewals = e2eShared('renewals', (): RenewalDueItem[] => [

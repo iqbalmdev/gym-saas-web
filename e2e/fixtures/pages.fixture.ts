@@ -4,10 +4,12 @@ import { encodeClientSessionCookie } from './client-session';
 import { encodeStaffSessionCookie, encodeStaffSessionCookieNoGym } from './staff-session';
 import { AdminShellPage } from '../pages/admin-shell.page';
 import { AttendancePage } from '../pages/attendance.page';
+import { ClientDietPage } from '../pages/client-diet.page';
 import { ClientHealthPage } from '../pages/client-health.page';
 import { ClientHomePage } from '../pages/client-home.page';
 import { ClientNutritionPage } from '../pages/client-nutrition.page';
 import { ClientProfilePage } from '../pages/client-profile.page';
+import { ClientWorkoutsPage } from '../pages/client-workouts.page';
 import { CrmPage } from '../pages/crm.page';
 import { LoginPage } from '../pages/login.page';
 import { MembersPage } from '../pages/members.page';
@@ -22,6 +24,8 @@ type Pages = {
     clientProfilePage: ClientProfilePage;
     clientHealthPage: ClientHealthPage;
     clientNutritionPage: ClientNutritionPage;
+    clientDietPage: ClientDietPage;
+    clientWorkoutsPage: ClientWorkoutsPage;
     settingsPage: SettingsPage;
     membersPage: MembersPage;
     attendancePage: AttendancePage;
@@ -43,6 +47,10 @@ type AuthFixtures = {
     clientHealth: ClientHealthPage;
     /** Client cookie; food diary + catalog. */
     clientNutrition: ClientNutritionPage;
+    /** Client cookie; assigned diet plan. */
+    clientDiet: ClientDietPage;
+    /** Client cookie; workout schedule + streak. */
+    clientWorkouts: ClientWorkoutsPage;
 };
 
 export const test = base.extend<Pages & AuthFixtures>({
@@ -68,6 +76,14 @@ export const test = base.extend<Pages & AuthFixtures>({
 
     clientNutritionPage: async ({ page }, use) => {
         await use(new ClientNutritionPage(page));
+    },
+
+    clientDietPage: async ({ page }, use) => {
+        await use(new ClientDietPage(page));
+    },
+
+    clientWorkoutsPage: async ({ page }, use) => {
+        await use(new ClientWorkoutsPage(page));
     },
 
     settingsPage: async ({ page }, use) => {
@@ -136,6 +152,20 @@ export const test = base.extend<Pages & AuthFixtures>({
         const nutrition = new ClientNutritionPage(page);
         await nutrition.goto();
         await use(nutrition);
+    },
+
+    clientDiet: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const diet = new ClientDietPage(page);
+        await diet.goto();
+        await use(diet);
+    },
+
+    clientWorkouts: async ({ context, page }, use) => {
+        await context.addCookies([encodeClientSessionCookie()]);
+        const workouts = new ClientWorkoutsPage(page);
+        await workouts.goto();
+        await use(workouts);
     },
 });
 

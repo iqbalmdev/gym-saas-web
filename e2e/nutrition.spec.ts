@@ -6,6 +6,8 @@ import { expect, test } from './fixtures/pages.fixture';
  * across two that would race for it.
  */
 test.describe('Nutrition', () => {
+    test.describe.configure({ mode: 'serial' });
+
     test("CLIENT reads today's diary and removes an extra line", async ({ clientNutrition }) => {
         await expect(clientNutrition.heading).toBeVisible();
         await expect(clientNutrition.diary).toBeVisible();
@@ -24,13 +26,17 @@ test.describe('Nutrition', () => {
         await expect(clientNutrition.diary.getByText('Nothing logged.').first()).toBeVisible();
     });
 
-    test('CLIENT searches the food catalog', async ({ clientNutrition }) => {
+    test('CLIENT searches the food catalog and logs an extra', async ({ clientNutrition }) => {
         await expect(clientNutrition.catalogRow('Chapati')).toBeVisible();
 
-        await clientNutrition.foodSearchInput.fill('idl');
+        await clientNutrition.foodSearchInput.fill('chap');
 
-        await expect(clientNutrition.catalogRow('Idli')).toBeVisible();
-        await expect(clientNutrition.catalogRow('Chapati')).toHaveCount(0);
+        await expect(clientNutrition.catalogRow('Chapati')).toBeVisible();
+        await expect(clientNutrition.catalogRow('Idli')).toHaveCount(0);
+
+        await clientNutrition.logButton('Chapati', 'Breakfast').click();
+
+        await expect(clientNutrition.diaryRow('Chapati')).toBeVisible();
     });
 
     test('Admin sees not-shared diary for a member without the CALORIES grant', async ({

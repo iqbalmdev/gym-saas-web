@@ -27,8 +27,19 @@ const IDLI = {
     fatGPer100g: 0.5,
     defaultUnit: 'PIECE',
     units: [
-        { unit: 'G', label: 'g', grams: 1, calories: 1.35, proteinG: 0.04, carbsG: 0.27, fatG: 0.01, isDefault: false },
         {
+            id: 'f00d5e04-0000-4000-8000-000000010001',
+            unit: 'G',
+            label: 'g',
+            grams: 1,
+            calories: 1.35,
+            proteinG: 0.04,
+            carbsG: 0.27,
+            fatG: 0.01,
+            isDefault: false,
+        },
+        {
+            id: 'f00d5e04-0000-4000-8000-000000010003',
             unit: 'PIECE',
             label: 'piece',
             grams: 30,
@@ -85,6 +96,7 @@ describe('nutrition adapter (Postman examples)', () => {
         expect(calls[0]?.path).toBe('/foods/search?q=idli');
         expect(foods[0]?.name).toBe('Idli');
         expect(foods[0]?.aliases).toEqual(['idly']);
+        expect(foods[0]?.units.find((unit) => unit.isDefault)?.id).toBe('f00d5e04-0000-4000-8000-000000010003');
         expect(foods[0]?.units.find((unit) => unit.isDefault)?.label).toBe('piece');
     });
 
@@ -164,6 +176,28 @@ describe('nutrition adapter (Postman examples)', () => {
         expect(item?.dietPlanMealItemId).toBe('plan-item-1');
         // Plan-linked line: isExtra is false even though the key was absent.
         expect(item?.isExtra).toBe(false);
+    });
+
+    it('posts Log Extra Food and returns the refreshed day', async () => {
+        const { http, calls } = stubHttp(DAY);
+
+        const { calorieLog } = await createNutritionAdapter(http).logExtraFood({
+            accessToken: 'token',
+            foodItemId: IDLI.id,
+            servingId: 'f00d5e04-0000-4000-8000-000000010003',
+            quantity: 1,
+            mealSlot: 'LUNCH',
+        });
+
+        expect(calls[0]?.path).toBe('/me/calorie-logs/items');
+        expect(calls[0]?.method).toBe('POST');
+        expect(calls[0]?.body).toEqual({
+            foodItemId: IDLI.id,
+            servingId: 'f00d5e04-0000-4000-8000-000000010003',
+            quantity: 1,
+            mealSlot: 'LUNCH',
+        });
+        expect(calorieLog.logDate).toBe('2026-08-17');
     });
 
     it('targets the item path on Unlog Extra Food and returns the refreshed day', async () => {

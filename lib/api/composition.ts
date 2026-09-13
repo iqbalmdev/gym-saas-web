@@ -1,6 +1,7 @@
 import { createHttpClient, getApiBaseUrl } from '@/lib/api/client';
 import { attendanceServices } from '@/modules/attendance/attendance-services';
 import { authServices } from '@/modules/auth/auth-services';
+import { coachingServices } from '@/modules/coaching/coaching-services';
 import { gymOrgsServices } from '@/modules/gym-orgs/gym-orgs-services';
 import { healthSyncServices } from '@/modules/health-sync/health-sync-services';
 import { leadsServices } from '@/modules/leads/leads-services';
@@ -35,6 +36,7 @@ export function createAppServices() {
         ...subscriptionsServices(http),
         ...healthSyncServices(http),
         ...nutritionServices(http),
+        ...coachingServices(http),
     };
 }
 

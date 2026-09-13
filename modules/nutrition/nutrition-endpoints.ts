@@ -2,6 +2,7 @@
 export const endpoints = {
     foodsSearch: '/foods/search',
     meCalorieLogs: '/me/calorie-logs',
+    meCalorieLogItems: '/me/calorie-logs/items',
     meCalorieLogItem: (itemId: string) => `/me/calorie-logs/items/${encodeURIComponent(itemId)}`,
     gymOrgClientCalorieLogs: (gymOrgId: string, clientUserId: string) =>
         `/gym-orgs/${encodeURIComponent(gymOrgId)}/clients/${encodeURIComponent(clientUserId)}/calorie-logs`,

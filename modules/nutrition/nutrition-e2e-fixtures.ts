@@ -83,6 +83,38 @@ export function createE2eNutritionAdapter(): NutritionReader & NutritionWriter {
             return { calorieLog: buildLog(userId, date ?? isoDateLocal()) };
         },
 
+        async logExtraFood({ accessToken, foodItemId, servingId, quantity, mealSlot, logDate }) {
+            const userId = clientUserIdForToken(accessToken);
+            const date = logDate ?? isoDateLocal();
+            const food = e2eFoodCatalog.find((row) => row.id === foodItemId);
+            const serving = food?.units.find((unit) => unit.id === servingId);
+            if (!food || !serving) {
+                throw new ApiClientError({ code: 'NOT_FOUND', message: 'Food or serving not found', status: 404 });
+            }
+            if (!Number.isFinite(quantity) || quantity <= 0 || quantity > 100) {
+                throw new ApiClientError({ code: 'VALIDATION_ERROR', message: 'Invalid quantity', status: 422 });
+            }
+
+            const key = `${userId}:${date}`;
+            const items = e2eCalorieLogItems.get(key) ?? [];
+            const round = (value: number): number => Math.round(value * 100) / 100;
+            items.push({
+                id: `c${crypto.randomUUID().slice(1)}`,
+                foodItemId,
+                servingId,
+                quantity,
+                mealSlot,
+                dietPlanMealItemId: null,
+                calories: round(serving.calories * quantity),
+                proteinG: round(serving.proteinG * quantity),
+                carbsG: round(serving.carbsG * quantity),
+                fatG: round(serving.fatG * quantity),
+                isExtra: true,
+            });
+            e2eCalorieLogItems.set(key, items);
+            return { calorieLog: buildLog(userId, date) };
+        },
+
         async unlogExtraFood({ accessToken, itemId }) {
             const userId = clientUserIdForToken(accessToken);
             for (const [key, items] of e2eCalorieLogItems.entries()) {

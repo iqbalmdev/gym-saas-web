@@ -5,6 +5,7 @@ import { createE2eNutritionAdapter } from '@/modules/nutrition/nutrition-e2e-fix
 import {
     createGetMyCalorieLog,
     createGetStaffClientCalorieLog,
+    createLogExtraFood,
     createSearchFoods,
     createUnlogExtraFood,
 } from '@/modules/nutrition/nutrition-use-cases';
@@ -17,6 +18,7 @@ export function nutritionServices(http: HttpClient) {
         searchFoods: createSearchFoods({ nutrition }),
         getMyCalorieLog: createGetMyCalorieLog({ nutrition }),
         getStaffClientCalorieLog: createGetStaffClientCalorieLog({ nutrition }),
+        logExtraFood: createLogExtraFood({ nutrition }),
         unlogExtraFood: createUnlogExtraFood({ nutrition }),
     };
 }

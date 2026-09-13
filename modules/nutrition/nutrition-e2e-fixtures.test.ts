@@ -45,16 +45,32 @@ describe('nutrition e2e fixtures', () => {
         expect(calorieLog.slots.find((slot) => slot.mealSlot === 'DINNER')?.items[0]?.quantity).toBe(2);
     });
 
+    it('logs an extra diary line and refreshes totals', async () => {
+        const before = await adapter.getMyCalorieLog({ accessToken: E2E_CLIENT_TOKEN });
+        expect(before.calorieLog.totalCalories).toBe(81);
+
+        const { calorieLog } = await adapter.logExtraFood({
+            accessToken: E2E_CLIENT_TOKEN,
+            foodItemId: 'f00d0000-0000-4000-8000-000000000002',
+            servingId: 'f00d5e04-0000-4000-8000-000000020003',
+            quantity: 1,
+            mealSlot: 'DINNER',
+        });
+
+        expect(calorieLog.totalCalories).toBeCloseTo(199.8, 1);
+        expect(calorieLog.slots.find((slot) => slot.mealSlot === 'DINNER')?.items[0]?.quantity).toBe(1);
+    });
+
     it('removes an extra diary line and refreshes totals', async () => {
         const before = await adapter.getMyCalorieLog({ accessToken: E2E_CLIENT_TOKEN });
-        expect(before.calorieLog.totalCalories).toBeGreaterThan(0);
+        expect(before.calorieLog.slots.find((slot) => slot.mealSlot === 'BREAKFAST')?.items).toHaveLength(1);
 
         const { calorieLog } = await adapter.unlogExtraFood({
             accessToken: E2E_CLIENT_TOKEN,
             itemId: 'c1111111-1111-4111-8111-111111111111',
         });
 
-        expect(calorieLog.totalCalories).toBe(0);
-        expect(calorieLog.slots.every((slot) => slot.items.length === 0)).toBe(true);
+        expect(calorieLog.slots.find((slot) => slot.mealSlot === 'BREAKFAST')?.items).toHaveLength(0);
+        expect(calorieLog.slots.find((slot) => slot.mealSlot === 'DINNER')?.items[0]?.quantity).toBe(1);
     });
 });

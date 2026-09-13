@@ -12,6 +12,7 @@ export type ServingUnit = 'G' | 'ML' | 'PIECE' | 'KATORI' | 'CUP' | 'GLASS' | 'T
 
 /** Macros for a quantity of 1 of this serving. The API sends the same eight units on every food. */
 export type FoodServing = {
+    id: string;
     unit: ServingUnit;
     label: string;
     grams: number;
@@ -80,6 +81,14 @@ export type NutritionReader = {
 };
 
 export type NutritionWriter = {
+    logExtraFood: (input: {
+        accessToken: string;
+        foodItemId: string;
+        servingId: string;
+        quantity: number;
+        mealSlot: MealSlot;
+        logDate?: string;
+    }) => Promise<{ calorieLog: CalorieLog }>;
     /** Extras only — plan-linked lines answer 422 and must be uncompleted on the diet plan. */
     unlogExtraFood: (input: { accessToken: string; itemId: string }) => Promise<{ calorieLog: CalorieLog }>;
 };

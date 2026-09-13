@@ -11,6 +11,7 @@ import {
     e2eGymTrainers,
     e2eOwnerTokens,
 } from '@/lib/api/e2e/store';
+import { ApiClientError } from '@/lib/api/errors';
 
 export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
     return {
@@ -31,6 +32,31 @@ export function createE2eGymOrgsAdapter(): GymOrgsReader & GymOrgsWriter {
                 };
             }
             return { gymOrgs: [] };
+        },
+
+        async getMyGym({ accessToken }) {
+            if (accessToken !== E2E_CLIENT_TOKEN) {
+                throw new ApiClientError({
+                    code: 'GYM_ORG_READ_FORBIDDEN',
+                    message: 'Only CLIENT lane may call GET /me/gym',
+                    status: 403,
+                });
+            }
+            return {
+                gymOrg: {
+                    id: E2E_GYM_ID,
+                    name: 'E2E Gym',
+                    timezone: 'Asia/Kolkata',
+                    isOwner: false,
+                    address: null,
+                    contactPhone: null,
+                    contactEmail: null,
+                    logoUrl: null,
+                    ownerUserId: 'e2e-user-1',
+                    createdAt: '2026-08-05T00:00:00.000Z',
+                    updatedAt: '2026-08-05T00:00:00.000Z',
+                },
+            };
         },
 
         async listTrainers({ gymOrgId, limit = 20, offset = 0 }) {

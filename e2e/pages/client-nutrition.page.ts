@@ -30,6 +30,10 @@ export class ClientNutritionPage {
         return this.catalog.getByRole('listitem').filter({ hasText: foodName });
     }
 
+    logButton(foodName: string, mealSlotLabel: string): Locator {
+        return this.catalog.getByRole('button', { name: `Log ${foodName} to ${mealSlotLabel}` });
+    }
+
     /** Matches the row button's aria-label, e.g. `Remove Idli from Breakfast`. */
     removeButton(foodName: string, mealSlotLabel: string): Locator {
         return this.diary.getByRole('button', { name: `Remove ${foodName} from ${mealSlotLabel}` });

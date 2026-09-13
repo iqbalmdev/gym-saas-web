@@ -28,6 +28,7 @@ const mealSlotSchema = z.enum(['BREAKFAST', 'MORNING_SNACK', 'LUNCH', 'EVENING_S
 const servingUnitSchema = z.enum(['G', 'ML', 'PIECE', 'KATORI', 'CUP', 'GLASS', 'TBSP', 'TSP']);
 
 const servingSchema = z.object({
+    id: z.string().min(1),
     unit: servingUnitSchema,
     label: z.string().min(1),
     grams: numberish,
@@ -98,6 +99,7 @@ function normalizeServing(raw: unknown): unknown {
     }
     const row = raw as Record<string, unknown>;
     return {
+        id: row.id,
         unit: row.unit,
         label: row.label,
         grams: row.grams,
@@ -181,6 +183,7 @@ function normalizeLog(raw: unknown): unknown {
 function toServing(raw: unknown): FoodServing {
     const parsed = servingSchema.parse(normalizeServing(raw));
     return {
+        id: parsed.id,
         unit: parsed.unit,
         label: parsed.label,
         grams: parsed.grams,
@@ -269,6 +272,22 @@ export function createNutritionAdapter(http: HttpClient): NutritionReader & Nutr
                 path: `${endpoints.meCalorieLogs}${dateQuery(date)}`,
                 method: 'GET',
                 accessToken,
+            });
+            return { calorieLog: toCalorieLog(calorieLogEnvelopeSchema.parse(raw).calorieLog) };
+        },
+
+        async logExtraFood({ accessToken, foodItemId, servingId, quantity, mealSlot, logDate }) {
+            const raw = await http.request<unknown>({
+                path: endpoints.meCalorieLogItems,
+                method: 'POST',
+                accessToken,
+                body: {
+                    foodItemId,
+                    servingId,
+                    quantity,
+                    mealSlot,
+                    ...(logDate ? { logDate } : {}),
+                },
             });
             return { calorieLog: toCalorieLog(calorieLogEnvelopeSchema.parse(raw).calorieLog) };
         },

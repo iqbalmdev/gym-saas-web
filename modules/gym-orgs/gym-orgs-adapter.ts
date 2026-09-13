@@ -38,6 +38,10 @@ const createSchema = z.object({
     gymOrg: createGymOrgDetailSchema,
 });
 
+const myGymSchema = z.object({
+    gymOrg: createGymOrgDetailSchema,
+});
+
 const gymTrainerSchema = z.object({
     trainerProfileId: z.string().min(1),
     userId: z.string().min(1),
@@ -94,6 +98,21 @@ export function createGymOrgsAdapter(http: HttpClient): GymOrgsReader & GymOrgsW
                 accessToken,
             });
             return listSchema.parse(raw);
+        },
+
+        async getMyGym({ accessToken }) {
+            const raw = await http.request<unknown>({
+                path: endpoints.meGym,
+                method: 'GET',
+                accessToken,
+            });
+            const parsed = myGymSchema.parse(raw);
+            return {
+                gymOrg: {
+                    ...parsed.gymOrg,
+                    isOwner: parsed.gymOrg.isOwner ?? false,
+                },
+            };
         },
 
         async listTrainers({ accessToken, gymOrgId, limit, offset }) {

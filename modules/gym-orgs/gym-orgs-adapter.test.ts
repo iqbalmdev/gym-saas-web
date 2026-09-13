@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
+import type { HttpClient } from '@/lib/api/client';
+import { createGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-adapter';
+
+function stubHttp(response: unknown): HttpClient {
+    return {
+        request: async <T>(): Promise<T> => response as T,
+    };
+}
+
 /**
  * Mirrors create response parse rules in gym-orgs-adapter (Postman 201 example).
  * Keeps the create/list schema split from regressing.
@@ -54,6 +63,31 @@ describe('POST /gym-orgs create response schema', () => {
                 },
             }),
         ).toThrow();
+    });
+});
+
+describe('GET /me/gym adapter (Postman 200)', () => {
+    it('parses CLIENT current gym with isOwner false', async () => {
+        const { gymOrg } = await createGymOrgsAdapter(
+            stubHttp({
+                gymOrg: {
+                    id: '33333333-3333-4333-8333-333333333333',
+                    name: 'Iron Temple',
+                    address: '12 Lift St',
+                    contactPhone: '+15550001111',
+                    contactEmail: 'desk@irontemple.example',
+                    logoUrl: null,
+                    timezone: 'Asia/Kolkata',
+                    ownerUserId: '22222222-2222-4222-8222-222222222222',
+                    isOwner: false,
+                    createdAt: '2026-08-03T00:00:00.000Z',
+                    updatedAt: '2026-08-03T00:00:00.000Z',
+                },
+            }),
+        ).getMyGym({ accessToken: 'client-token' });
+
+        expect(gymOrg.name).toBe('Iron Temple');
+        expect(gymOrg.isOwner).toBe(false);
     });
 });
 

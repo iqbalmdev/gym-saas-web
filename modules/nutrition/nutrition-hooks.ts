@@ -4,7 +4,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import type { GrantAware } from '@/lib/domain/grant-aware';
 import { BffError, getJson } from '@/lib/query/api-fetch';
-import { unlogExtraFoodAction } from '@/modules/nutrition/nutrition-actions';
+import { logExtraFoodAction, unlogExtraFoodAction } from '@/modules/nutrition/nutrition-actions';
+import type { MealSlot } from '@/modules/nutrition/nutrition-ports';
 import { isCaloriesGrantMissing, nutritionErrorMessage } from '@/modules/nutrition/nutrition-errors';
 import type { CalorieLog, FoodSearchResult } from '@/modules/nutrition/nutrition-ports';
 import { nutritionKeys } from '@/modules/nutrition/nutrition-query-keys';
@@ -76,6 +77,27 @@ export function useUnlogExtraFood() {
     return useMutation({
         mutationFn: async (itemId: string) => {
             const result = await unlogExtraFoodAction({ itemId });
+            if (!result.ok) {
+                throw new Error(result.message);
+            }
+            return result;
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries({ queryKey: nutritionKeys.all });
+        },
+    });
+}
+
+export function useLogExtraFood() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (input: { foodItemId: string; servingId: string; quantity: number; mealSlot: MealSlot }) => {
+            const result = await logExtraFoodAction({
+                foodItemId: input.foodItemId,
+                servingId: input.servingId,
+                quantity: String(input.quantity),
+                mealSlot: input.mealSlot,
+            });
             if (!result.ok) {
                 throw new Error(result.message);
             }

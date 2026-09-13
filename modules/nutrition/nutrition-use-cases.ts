@@ -23,3 +23,9 @@ export function createUnlogExtraFood(deps: { nutrition: NutritionWriter }) {
         return deps.nutrition.unlogExtraFood(input);
     };
 }
+
+export function createLogExtraFood(deps: { nutrition: NutritionWriter }) {
+    return async function logExtraFood(input: Parameters<NutritionWriter['logExtraFood']>[0]) {
+        return deps.nutrition.logExtraFood(input);
+    };
+}
