@@ -16,6 +16,6 @@ export class ClientDietPage {
     }
 
     dietItemCheckbox(foodName: string): Locator {
-        return this.page.getByRole('checkbox', { name: new RegExp(`Mark ${foodName}`, 'i') });
+        return this.planPanel.getByRole('listitem').filter({ hasText: foodName }).getByRole('checkbox');
     }
 }

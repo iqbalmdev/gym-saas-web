@@ -18,6 +18,6 @@ export class ClientWorkoutsPage {
     }
 
     exerciseCheckbox(exerciseName: string): Locator {
-        return this.page.getByRole('checkbox', { name: new RegExp(`Mark ${exerciseName} complete`, 'i') });
+        return this.schedulePanel.getByRole('listitem').filter({ hasText: exerciseName }).getByRole('checkbox');
     }
 }

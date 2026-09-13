@@ -21,7 +21,7 @@ test.describe('Coaching', () => {
         await expect(clientWorkouts.streakPanel.getByText('3 days')).toBeVisible();
         await expect(clientWorkouts.schedulePanel.getByText('Push A')).toBeVisible();
 
-        const checkbox = clientWorkouts.exerciseCheckbox('Bench Press (Barbell)');
+        const checkbox = clientWorkouts.exerciseCheckbox('Bench Press');
         await expect(checkbox).not.toBeChecked();
         await checkbox.click();
         await expect(checkbox).toBeChecked();
