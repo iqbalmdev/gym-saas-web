@@ -110,20 +110,20 @@ Then set Dev `baseUrl` to prod and `lane` to `STAFF`.
 
 | Field | Value |
 |---|---|
-| Upstream tip | `9b0b561` (2026-08-19 — Convert Lead; Create/Update Lead email refresh; plus Nutrition, Coaching, Health Sync, List Gym Trainers) |
-| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — tip `9b0b561` |
+| Upstream tip | `5c3ee88` (2026-09-11 — Attendance check-out/present; `GET /me/gym`; Nutrition search `units[].id` for `servingId`) |
+| Sibling clone | `/Users/iqbal/Projects/gym-backend-postman` — tip `5c3ee88` |
 | Cursor workspace | `gym-saas.code-workspace` (web + postman roots) |
-| GitHub / sibling pull | **OK** — `8d54a09..9b0b561` ff-only on 2026-08-19 |
-| Postman inject | **Blocked** — Postman MCP still `401 Invalid API Key` (2026-08-19). Local JSON is current; cloud needs Desktop Import or a working Postman MCP login. |
+| GitHub / sibling pull | **OK** — `git pull` 2026-09-11 → `5c3ee88` |
+| Postman inject | **Blocked** — Postman MCP still `401 Invalid API Key` (re-tested 2026-09-03). `mcp_auth` reports success; `getWorkspaces` still 401s. `.cursor/mcp.json` → `postman` is a bare `https://mcp.postman.com/mcp` URL with no API key. Fix by adding a valid Postman API key, or Desktop Import. |
 | Local `postman/` in web repo | **Forbidden** — cloud + sibling only |
 | Auth guide | `docs/api/client-auth.md` — OTP / Google contracts unchanged this tip |
 | Staff invites guide | `docs/api/staff-invites.md` — unchanged this tip |
-| New this tip | **Leads → Convert Lead** (`POST`); List Gym Trainers still in Gym Orgs |
-| Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` `{"status":"ok"}` (2026-08-19) |
+| New this tip | **Attendance** — self check-in/out, desk check-out, present list, my-attendances, client attendances list. **Gym Orgs** — `GET /me/gym`. **Nutrition** — search `units[]` now includes serving `id` (unblocks log extra). Coaching workout rewrite from `6fbd4aa` unchanged. |
+| Prod API check | `GET https://gym-backend-lovat-mu.vercel.app/health` → `200` `{"status":"ok"}` (2026-09-03) |
 | Examples caveat | MCP inject may strip nested Examples / long scripts; sibling tip remains Examples SSOT. Desktop Import from tip raw URLs below if needed. |
 
 ### Tip raw URLs (Desktop Import)
 
-- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/9b0b561/Gym-Backend-API.postman_collection.json`
-- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/9b0b561/Gym-Backend-Dev.postman_environment.json`
-- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/9b0b561/Gym-Backend-Local.postman_environment.json`
+- Collection: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/5c3ee88/Gym-Backend-API.postman_collection.json`
+- Dev env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/5c3ee88/Gym-Backend-Dev.postman_environment.json`
+- Local env: `https://raw.githubusercontent.com/abdulhasibn/gym-backend-postman/5c3ee88/Gym-Backend-Local.postman_environment.json`

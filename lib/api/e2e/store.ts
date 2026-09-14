@@ -10,8 +10,20 @@
  */
 import type { Attendance } from '@/modules/attendance/attendance-ports';
 import type { GymTrainer } from '@/modules/gym-orgs/gym-orgs-ports';
+import type { WearableConnection, WearableMetric } from '@/modules/health-sync/health-sync-ports';
 import type { Lead } from '@/modules/leads/leads-ports';
 import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
+import type { CalorieLogItem, FoodSearchResult } from '@/modules/nutrition/nutrition-ports';
+import type {
+    DietPlan,
+    DietPlanTemplate,
+    ExerciseItem,
+    StaffDietPlan,
+    StaffWorkoutScheduleDay,
+    WorkoutPlanTemplate,
+    WorkoutSchedule,
+    WorkoutStreak,
+} from '@/modules/coaching/coaching-ports';
 import type { MembershipPlan } from '@/modules/plans/plans-ports';
 import type { ClientProfile, ProgressLog } from '@/modules/profile/profile-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -27,6 +39,12 @@ export const E2E_CLIENT_TOKEN = 'e2e-client-access';
 export const E2E_GYM_ID = 'gym-e2e-1';
 export const E2E_PENDING_INBOX_ID = 'invite-e2e-inbox-1';
 export const E2E_TRAINER_PROFILE_ID = 'trainer-profile-e2e-1';
+
+export const E2E_DIET_PLAN_ITEM_ID = 'd1111111-1111-4111-8111-111111111111';
+export const E2E_SCHEDULE_EXERCISE_ID = 'c1111111-1111-4111-8111-111111111111';
+export const E2E_DIET_TEMPLATE_ID = 't1111111-1111-4111-8111-111111111111';
+export const E2E_WORKOUT_TEMPLATE_ID = 'b1111111-1111-4111-8111-111111111111';
+export const E2E_EXERCISE_BENCH_ID = 'e0e00000-0000-4000-8000-000000000001';
 
 /**
  * Process-wide store for the mutable fixture state below.
@@ -371,12 +389,61 @@ export const e2eProgressLogs = e2eShared('progressLogs', (): ProgressLog[] => [
     },
 ]);
 
+/** Wearable connections per client. The member persona arrives with Health Connect already linked. */
+export const e2eWearableConnections = e2eShared('wearableConnections', () => {
+    const byClient = new Map<string, WearableConnection[]>();
+    byClient.set('e2e-client-1', [
+        {
+            id: 'wearable-conn-e2e-1',
+            provider: 'HEALTH_CONNECT',
+            lastSyncedAt: '2026-08-18T04:00:00.000Z',
+            active: true,
+            createdAt: '2026-08-12T04:00:00.000Z',
+        },
+    ]);
+    return byClient;
+});
+
+/** Daily metrics per client. Ada has history so a WEARABLES grant has something to reveal. */
+export const e2eWearableMetrics = e2eShared('wearableMetrics', () => {
+    const byClient = new Map<string, WearableMetric[]>();
+    byClient.set('e2e-client-1', [
+        {
+            id: 'wearable-metric-e2e-1',
+            provider: 'HEALTH_CONNECT',
+            metricOn: '2026-08-18',
+            steps: 8420,
+            activeKcal: 410.5,
+            workoutMinutes: 45,
+            weightKg: 72.3,
+            ingestedAt: '2026-08-18T04:00:00.000Z',
+        },
+    ]);
+    byClient.set('e2e-client-roster-1', [
+        {
+            id: 'wearable-metric-e2e-ada-1',
+            provider: 'HEALTH_CONNECT',
+            metricOn: '2026-08-17',
+            steps: 6120,
+            activeKcal: 320,
+            workoutMinutes: 30,
+            weightKg: 60,
+            ingestedAt: '2026-08-17T04:00:00.000Z',
+        },
+    ]);
+    return byClient;
+});
+
 /** Staff-visible grants per gym+client. Ada shares required vitals only — not PROGRESS. */
 export const e2eStaffClientGrants = e2eShared(
     'staffClientGrants',
     () =>
         new Map<string, { profileAttributes: string[]; classGrants: string[] }>([
             [`${E2E_GYM_ID}:e2e-client-roster-1`, { profileAttributes: ['DOB', 'HEIGHT', 'WEIGHT'], classGrants: [] }],
+            [
+                `${E2E_GYM_ID}:e2e-client-roster-2`,
+                { profileAttributes: ['DOB', 'HEIGHT', 'WEIGHT'], classGrants: ['CALORIES'] },
+            ],
         ]),
 );
 
@@ -388,6 +455,373 @@ export function isoDateOffset(days: number): string {
     date.setUTCDate(date.getUTCDate() + days);
     return date.toISOString().slice(0, 10);
 }
+
+/**
+ * Local calendar day, not UTC. The real API resolves an omitted diary `date` in
+ * Asia/Kolkata, so the fixture has to pick a civil day too — using UTC here
+ * would desync the seeded diary from "today" for half of every day.
+ */
+export function isoDateLocal(): string {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${now.getFullYear()}-${month}-${day}`;
+}
+
+const E2E_IDLI_ID = 'f00d0000-0000-4000-8000-000000000001';
+const E2E_IDLI_SERVING_ID = 'f00d5e04-0000-4000-8000-000000010003';
+
+/** Seed slice of the owned Indian food catalog. Same shape as `GET /foods/search`. */
+export const e2eFoodCatalog = e2eShared('foodCatalog', (): FoodSearchResult[] => [
+    {
+        id: E2E_IDLI_ID,
+        name: 'Idli',
+        aliases: ['idly'],
+        caloriesPer100g: 135,
+        proteinGPer100g: 4,
+        carbsGPer100g: 27,
+        fatGPer100g: 0.5,
+        defaultUnit: 'PIECE',
+        units: [
+            {
+                id: 'f00d5e04-0000-4000-8000-000000010001',
+                unit: 'G',
+                label: 'g',
+                grams: 1,
+                calories: 1.35,
+                proteinG: 0.04,
+                carbsG: 0.27,
+                fatG: 0.01,
+                isDefault: false,
+            },
+            {
+                id: E2E_IDLI_SERVING_ID,
+                unit: 'PIECE',
+                label: 'piece',
+                grams: 30,
+                calories: 40.5,
+                proteinG: 1.2,
+                carbsG: 8.1,
+                fatG: 0.15,
+                isDefault: true,
+            },
+            {
+                id: 'f00d5e04-0000-4000-8000-000000010005',
+                unit: 'KATORI',
+                label: 'katori',
+                grams: 150,
+                calories: 202.5,
+                proteinG: 6,
+                carbsG: 40.5,
+                fatG: 0.75,
+                isDefault: false,
+            },
+        ],
+    },
+    {
+        id: 'f00d0000-0000-4000-8000-000000000002',
+        name: 'Chapati',
+        aliases: ['roti'],
+        caloriesPer100g: 297,
+        proteinGPer100g: 11,
+        carbsGPer100g: 46,
+        fatGPer100g: 7,
+        defaultUnit: 'PIECE',
+        units: [
+            {
+                id: 'f00d5e04-0000-4000-8000-000000020001',
+                unit: 'G',
+                label: 'g',
+                grams: 1,
+                calories: 2.97,
+                proteinG: 0.11,
+                carbsG: 0.46,
+                fatG: 0.07,
+                isDefault: false,
+            },
+            {
+                id: 'f00d5e04-0000-4000-8000-000000020003',
+                unit: 'PIECE',
+                label: 'piece',
+                grams: 40,
+                calories: 118.8,
+                proteinG: 4.4,
+                carbsG: 18.4,
+                fatG: 2.8,
+                isDefault: true,
+            },
+        ],
+    },
+]);
+
+/** Diary lines keyed `clientUserId:logDate`. Ada has a day so a CALORIES grant has something to reveal. */
+export const e2eCalorieLogItems = e2eShared('calorieLogItems', () => {
+    const byClientDay = new Map<string, CalorieLogItem[]>();
+    const today = isoDateLocal();
+    byClientDay.set(`e2e-client-1:${today}`, [
+        {
+            id: 'c1111111-1111-4111-8111-111111111111',
+            foodItemId: E2E_IDLI_ID,
+            servingId: E2E_IDLI_SERVING_ID,
+            quantity: 2,
+            mealSlot: 'BREAKFAST',
+            dietPlanMealItemId: null,
+            calories: 81,
+            proteinG: 2.4,
+            carbsG: 16.2,
+            fatG: 0.3,
+            isExtra: true,
+        },
+    ]);
+    byClientDay.set(`e2e-client-roster-1:${today}`, [
+        {
+            id: 'c2222222-2222-4222-8222-222222222222',
+            foodItemId: E2E_IDLI_ID,
+            servingId: E2E_IDLI_SERVING_ID,
+            quantity: 1,
+            mealSlot: 'LUNCH',
+            dietPlanMealItemId: null,
+            calories: 40.5,
+            proteinG: 1.2,
+            carbsG: 8.1,
+            fatG: 0.15,
+            isExtra: true,
+        },
+    ]);
+    byClientDay.set(`e2e-client-roster-2:${today}`, [
+        {
+            id: 'c3333333-3333-4333-8333-333333333333',
+            foodItemId: 'f00d0000-0000-4000-8000-000000000002',
+            servingId: 'f00d5e04-0000-4000-8000-000000020003',
+            quantity: 2,
+            mealSlot: 'DINNER',
+            dietPlanMealItemId: null,
+            calories: 237.6,
+            proteinG: 8.8,
+            carbsG: 36.8,
+            fatG: 5.6,
+            isExtra: true,
+        },
+    ]);
+    return byClientDay;
+});
+
+/** Assigned diet plan for the E2E client member. */
+export const e2eDietPlan = e2eShared('dietPlan', (): DietPlan => ({
+    id: 'e1111111-1111-4111-8111-111111111111',
+    title: 'Cut week',
+    notes: null,
+    status: 'ACTIVE',
+    writable: true,
+    logDate: isoDateLocal(),
+    meals: [
+        {
+            id: 'e2222222-2222-4222-8222-222222222222',
+            mealSlot: 'BREAKFAST',
+            items: [
+                {
+                    id: E2E_DIET_PLAN_ITEM_ID,
+                    foodItemId: 'f00d0000-0000-4000-8000-000000000001',
+                    servingId: 'f00d5e04-0000-4000-8000-000000010003',
+                    quantity: 2,
+                    mealSlot: 'BREAKFAST',
+                    logged: false,
+                },
+            ],
+        },
+    ],
+}));
+
+function buildE2eWorkoutSchedule(): WorkoutSchedule {
+    const today = isoDateLocal();
+    return {
+        today,
+        writable: true,
+        days: [
+            {
+                scheduleDate: today,
+                kind: 'TRAINING',
+                dayDone: false,
+                adherencePercent: 0,
+                sessions: [
+                    {
+                        id: 's1111111-1111-4111-8111-111111111111',
+                        slot: 'MORNING',
+                        title: 'Push A',
+                        exercises: [
+                            {
+                                id: E2E_SCHEDULE_EXERCISE_ID,
+                                name: 'Bench Press (Barbell)',
+                                sets: 3,
+                                reps: '8-10',
+                                completed: false,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+/** Mutable workout schedule keyed by gym for the E2E client. */
+export const e2eWorkoutScheduleByGym = e2eShared('workoutScheduleByGym', () => {
+    const byGym = new Map<string, WorkoutSchedule>();
+    byGym.set(E2E_GYM_ID, buildE2eWorkoutSchedule());
+    return byGym;
+});
+
+export const e2eWorkoutStreakByGym = e2eShared('workoutStreakByGym', () => {
+    const byGym = new Map<string, WorkoutStreak>();
+    byGym.set(E2E_GYM_ID, {
+        asOf: isoDateLocal(),
+        currentStreak: 3,
+        longestStreak: 12,
+        lookbackDays: 366,
+    });
+    return byGym;
+});
+
+/** Gym-owned diet template library (Idli breakfast seed). */
+export const e2eDietPlanTemplates = e2eShared('dietPlanTemplates', (): DietPlanTemplate[] => [
+    {
+        id: E2E_DIET_TEMPLATE_ID,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        title: 'Idli breakfast',
+        notes: null,
+        clonedFromId: null,
+        meals: [
+            {
+                id: 't2222222-2222-4222-8222-222222222222',
+                mealSlot: 'BREAKFAST',
+                items: [
+                    {
+                        id: 't3333333-3333-4333-8333-333333333333',
+                        foodItemId: E2E_IDLI_ID,
+                        servingId: E2E_IDLI_SERVING_ID,
+                        quantity: 2,
+                    },
+                ],
+            },
+        ],
+        createdAt: '2026-08-17T10:00:00.000Z',
+        updatedAt: '2026-08-17T10:00:00.000Z',
+    },
+]);
+
+/** Gym-owned workout template library (Push A seed). */
+export const e2eWorkoutPlanTemplates = e2eShared('workoutPlanTemplates', (): WorkoutPlanTemplate[] => [
+    {
+        id: E2E_WORKOUT_TEMPLATE_ID,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        title: 'Push A',
+        notes: null,
+        clonedFromId: null,
+        exercises: [
+            {
+                id: 'e1111111-1111-4111-8111-111111111111',
+                exerciseItemId: E2E_EXERCISE_BENCH_ID,
+                name: 'Bench Press (Barbell)',
+                primaryMuscle: 'CHEST',
+                equipment: 'BARBELL',
+                sets: 3,
+                reps: '8-10',
+                notes: null,
+                sortOrder: 0,
+            },
+        ],
+        createdAt: '2026-09-01T10:00:00.000Z',
+        updatedAt: '2026-09-01T10:00:00.000Z',
+    },
+]);
+
+/** Platform exercise catalog bootstrap list. */
+export const e2eExerciseCatalog = e2eShared('exerciseCatalog', (): ExerciseItem[] => [
+    {
+        id: E2E_EXERCISE_BENCH_ID,
+        name: 'Barbell Bench Press',
+        aliases: ['bench'],
+        primaryMuscle: 'CHEST',
+        equipment: 'BARBELL',
+        measurement: 'WEIGHT_REPS',
+        illustration: null,
+    },
+]);
+
+function buildStaffScheduleDay(clientUserId: string, scheduleDate: string): StaffWorkoutScheduleDay {
+    return {
+        id: 'd1111111-1111-4111-8111-111111111111',
+        clientUserId,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        scheduleDate,
+        kind: 'TRAINING',
+        morningTemplateId: E2E_WORKOUT_TEMPLATE_ID,
+        eveningTemplateId: null,
+        sessions: [
+            {
+                id: 's1111111-1111-4111-8111-111111111111',
+                slot: 'MORNING',
+                title: 'Push A',
+                clonedFromTemplateId: E2E_WORKOUT_TEMPLATE_ID,
+                exercises: [
+                    {
+                        id: E2E_SCHEDULE_EXERCISE_ID,
+                        exerciseItemId: E2E_EXERCISE_BENCH_ID,
+                        name: 'Bench Press (Barbell)',
+                        sets: 3,
+                        reps: '8-10',
+                        notes: null,
+                        sortOrder: 0,
+                        completed: false,
+                    },
+                ],
+            },
+        ],
+        dayDone: false,
+        adherencePercent: 0,
+        createdAt: '2026-09-02T00:00:00.000Z',
+        updatedAt: '2026-09-02T00:00:00.000Z',
+    };
+}
+
+/** Staff view of assigned diet plans keyed by client user id. */
+export const e2eStaffClientDietPlans = e2eShared('staffClientDietPlans', () => {
+    const byClient = new Map<string, StaffDietPlan>();
+    byClient.set('e2e-client-1', {
+        id: 'e1111111-1111-4111-8111-111111111111',
+        title: 'Cut week',
+        notes: null,
+        status: 'ACTIVE',
+        writable: false,
+        meals: [
+            {
+                id: 'e2222222-2222-4222-8222-222222222222',
+                mealSlot: 'BREAKFAST',
+                items: [
+                    {
+                        id: E2E_DIET_PLAN_ITEM_ID,
+                        foodItemId: E2E_IDLI_ID,
+                        servingId: E2E_IDLI_SERVING_ID,
+                        quantity: 2,
+                        mealSlot: 'BREAKFAST',
+                    },
+                ],
+            },
+        ],
+    });
+    return byClient;
+});
+
+/** Staff workout schedule keyed `gymOrgId:clientUserId`. */
+export const e2eStaffClientWorkoutSchedules = e2eShared('staffClientWorkoutSchedules', () => {
+    const byKey = new Map<string, StaffWorkoutScheduleDay[]>();
+    const today = isoDateLocal();
+    byKey.set(`${E2E_GYM_ID}:e2e-client-1`, [buildStaffScheduleDay('e2e-client-1', today)]);
+    return byKey;
+});
 
 export const e2eRenewals = e2eShared('renewals', (): RenewalDueItem[] => [
     {

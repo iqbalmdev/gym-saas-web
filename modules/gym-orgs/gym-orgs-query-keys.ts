@@ -10,5 +10,6 @@
  */
 export const gymOrgsKeys = {
     all: ['gym-orgs'] as const,
+    myGym: () => [...gymOrgsKeys.all, 'me', 'gym'] as const,
     trainers: () => [...gymOrgsKeys.all, 'trainers'] as const,
 };

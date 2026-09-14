@@ -49,6 +49,8 @@ export type GymTrainersPage = {
 
 export type GymOrgsReader = {
     list: (input: { accessToken: string }) => Promise<{ gymOrgs: GymOrgSummary[] }>;
+    /** CLIENT ACTIVE membership gym — GET /me/gym. */
+    getMyGym: (input: { accessToken: string }) => Promise<{ gymOrg: GymOrgDetail }>;
     listTrainers: (input: {
         accessToken: string;
         gymOrgId: string;

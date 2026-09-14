@@ -3,6 +3,7 @@ import { areE2eFixturesEnabled } from '@/lib/api/e2e/store';
 import { createE2eGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-e2e-fixtures';
 import { createCreateGymOrg } from '@/modules/gym-orgs/create-gym-org';
 import { createGymOrgsAdapter } from '@/modules/gym-orgs/gym-orgs-adapter';
+import { createGetMyGym } from '@/modules/gym-orgs/get-my-gym';
 import { createListGymOrgs } from '@/modules/gym-orgs/list-gym-orgs';
 import { createListGymTrainers } from '@/modules/gym-orgs/list-gym-trainers';
 
@@ -12,6 +13,7 @@ export function gymOrgsServices(http: HttpClient) {
     return {
         gymOrgs,
         listGymOrgs: createListGymOrgs({ gymOrgs }),
+        getMyGym: createGetMyGym({ gymOrgs }),
         listGymTrainers: createListGymTrainers({ gymOrgs }),
         createGymOrg: createCreateGymOrg({ gymOrgs }),
     };

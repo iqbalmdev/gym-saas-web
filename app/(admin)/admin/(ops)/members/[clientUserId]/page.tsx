@@ -7,6 +7,23 @@ import { getSession, isStaffSession } from '@/lib/auth/session';
 import { getQueryClient } from '@/lib/query/query-client';
 import { listGymTrainersForGym } from '@/modules/gym-orgs/gym-orgs-queries';
 import { listStaffGymOrgs } from '@/modules/gym-orgs/list-staff-gym-orgs';
+import { StaffClientWearablesPanel } from '@/modules/health-sync/components/staff-client-wearables-panel';
+import { healthSyncKeys } from '@/modules/health-sync/health-sync-query-keys';
+import { listStaffClientWearableMetricsForGym } from '@/modules/health-sync/health-sync-queries';
+import { StaffClientDietPlanPanel } from '@/modules/coaching/components/staff-client-diet-plan-panel';
+import { StaffClientWorkoutSchedulePanel } from '@/modules/coaching/components/staff-client-workout-schedule-panel';
+import { StaffClientWorkoutScheduleUpsert } from '@/modules/coaching/components/staff-client-workout-schedule-upsert';
+import { isoWeekRangeLocal } from '@/modules/coaching/coaching-week-range';
+import { coachingKeys } from '@/modules/coaching/coaching-query-keys';
+import {
+    getStaffClientDietPlanForGym,
+    getStaffClientWorkoutScheduleForGym,
+    getStaffClientWorkoutStreakForGym,
+} from '@/modules/coaching/coaching-queries';
+import { StaffClientCalorieLogPanel } from '@/modules/nutrition/components/staff-client-calorie-log-panel';
+import { toFoodNameMap } from '@/modules/nutrition/nutrition-food-names';
+import { nutritionKeys } from '@/modules/nutrition/nutrition-query-keys';
+import { getStaffClientCalorieLogForGym, searchFoodsForSession } from '@/modules/nutrition/nutrition-queries';
 import { StaffClientProfilePanel } from '@/modules/profile/components/staff-client-profile-panel';
 import { StaffClientProgressPanel } from '@/modules/profile/components/staff-client-progress-panel';
 import { profileKeys } from '@/modules/profile/profile-query-keys';
@@ -68,13 +85,34 @@ async function MemberDetailWorkspace({
         assignedTrainerId: member?.assignedTrainerId ?? null,
     });
 
-    const [profileResult, progressResult] = await Promise.all([
-        getStaffClientProfileForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
-        listStaffClientProgressLogsForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
-    ]);
+    const { from: weekFrom, to: weekTo } = isoWeekRangeLocal();
+
+    const [profileResult, progressResult, wearablesResult, diaryResult, foods, dietPlan, scheduleResult, streakResult] =
+        await Promise.all([
+            getStaffClientProfileForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+            listStaffClientProgressLogsForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+            listStaffClientWearableMetricsForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+            getStaffClientCalorieLogForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+            // Diary lines carry food ids only; the catalog is what makes them readable.
+            searchFoodsForSession({ accessToken, query: '' }),
+            getStaffClientDietPlanForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+            getStaffClientWorkoutScheduleForGym({
+                accessToken,
+                gymOrgId: gym.id,
+                clientUserId,
+                from: weekFrom,
+                to: weekTo,
+            }),
+            getStaffClientWorkoutStreakForGym({ accessToken, gymOrgId: gym.id, clientUserId }),
+        ]);
 
     queryClient.setQueryData(profileKeys.staffClient(clientUserId), profileResult);
     queryClient.setQueryData(profileKeys.staffClientLogs(clientUserId), progressResult);
+    queryClient.setQueryData(healthSyncKeys.staffClientMetrics(clientUserId), wearablesResult);
+    queryClient.setQueryData(nutritionKeys.staffClientLog(clientUserId), diaryResult);
+    queryClient.setQueryData(coachingKeys.staffClientDietPlan(clientUserId), dietPlan);
+    queryClient.setQueryData(coachingKeys.staffClientWorkoutSchedule(clientUserId, weekFrom, weekTo), scheduleResult);
+    queryClient.setQueryData(coachingKeys.staffClientWorkoutStreak(clientUserId), streakResult);
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
@@ -89,8 +127,9 @@ async function MemberDetailWorkspace({
                         {member?.clientName ?? 'Member'}
                     </h1>
                     <p className="mt-2 max-w-2xl text-sm text-(--color-fg-muted)">
-                        Client-owned profile and progress. Missing grants show as not shared — never as invented values.
-                        Progress requires the member to enable Progress under Data sharing.
+                        Client-owned profile, progress, health sync, food diary, and coaching. Missing grants show as
+                        not shared — never as invented values. Workout adherence and streak require the member to enable
+                        Workout plans under Data sharing.
                     </p>
                 </div>
                 <MemberAssignmentSummary
@@ -99,6 +138,21 @@ async function MemberDetailWorkspace({
                 />
                 <StaffClientProfilePanel clientUserId={clientUserId} />
                 <StaffClientProgressPanel clientUserId={clientUserId} initial={progressResult} />
+                <StaffClientWearablesPanel clientUserId={clientUserId} initial={wearablesResult} />
+                <StaffClientCalorieLogPanel
+                    clientUserId={clientUserId}
+                    foodNames={toFoodNameMap(foods)}
+                    initial={diaryResult}
+                />
+                <StaffClientDietPlanPanel clientUserId={clientUserId} initial={dietPlan} />
+                <StaffClientWorkoutScheduleUpsert clientUserId={clientUserId} />
+                <StaffClientWorkoutSchedulePanel
+                    clientUserId={clientUserId}
+                    weekFrom={weekFrom}
+                    weekTo={weekTo}
+                    initialSchedule={scheduleResult}
+                    initialStreak={streakResult}
+                />
             </div>
         </HydrationBoundary>
     );

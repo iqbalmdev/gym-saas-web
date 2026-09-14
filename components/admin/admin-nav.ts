@@ -1,5 +1,6 @@
 import {
     CalendarCheck2,
+    Dumbbell,
     LayoutDashboard,
     RefreshCw,
     Settings2,
@@ -9,7 +10,7 @@ import {
     type LucideIcon,
 } from 'lucide-react';
 
-export type AdminNavIcon = 'home' | 'renewals' | 'leads' | 'members' | 'attendance' | 'plans' | 'settings';
+export type AdminNavIcon = 'home' | 'renewals' | 'leads' | 'members' | 'attendance' | 'coaching' | 'plans' | 'settings';
 
 export type AdminNavItem = {
     href: string;
@@ -26,6 +27,7 @@ export const ADMIN_NAV_ICONS: Readonly<Record<AdminNavIcon, LucideIcon>> = {
     leads: Users2,
     members: Users,
     attendance: CalendarCheck2,
+    coaching: Dumbbell,
     plans: Wallet,
     settings: Settings2,
 };
@@ -36,6 +38,7 @@ const ALL_ADMIN_NAV: ReadonlyArray<AdminNavItem> = [
     { href: '/admin/crm', label: 'Leads', icon: 'leads' },
     { href: '/admin/members', label: 'Members', icon: 'members' },
     { href: '/admin/attendance', label: 'Attendance', icon: 'attendance' },
+    { href: '/admin/coaching', label: 'Coaching', icon: 'coaching' },
     { href: '/admin/plans', label: 'Plans', icon: 'plans' },
     { href: '/admin/settings', label: 'Settings', icon: 'settings' },
 ];

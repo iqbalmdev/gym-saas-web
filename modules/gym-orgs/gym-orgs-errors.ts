@@ -3,6 +3,8 @@ const GYM_ORG_ERROR_COPY: Record<string, string> = {
     AUTHENTICATION_FAILED: 'Your session expired. Sign in again.',
     FORBIDDEN: 'You need Admin access at this gym to view this list.',
     GYM_ORG_ADMIN_FORBIDDEN: 'You need Admin access at this gym to view this list.',
+    GYM_ORG_READ_FORBIDDEN: 'This action is only available to gym members.',
+    NOT_FOUND: 'Active membership gym not found.',
     VALIDATION_ERROR: 'Check the details and try again.',
     NETWORK_OR_UNKNOWN: 'Could not reach the server. Check your connection.',
 };

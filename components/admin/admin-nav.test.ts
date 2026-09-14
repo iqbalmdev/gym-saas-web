@@ -17,6 +17,7 @@ describe('adminNavItems', () => {
             'Leads',
             'Members',
             'Attendance',
+            'Coaching',
             'Plans',
             'Settings',
         ]);
