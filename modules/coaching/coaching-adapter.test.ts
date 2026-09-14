@@ -110,6 +110,83 @@ describe('coaching adapter (Postman examples)', () => {
         expect(streak.lookbackDays).toBe(366);
     });
 
+    it('parses List Diet Plan Templates', async () => {
+        const { http } = stubHttp({
+            dietPlanTemplates: {
+                items: [
+                    {
+                        id: 't1111111-1111-4111-8111-111111111111',
+                        gymOrgId: 'gym-1',
+                        trainerId: 'trainer-1',
+                        title: 'Idli breakfast',
+                        notes: null,
+                        clonedFromId: null,
+                        meals: [
+                            {
+                                id: 't2222222-2222-4222-8222-222222222222',
+                                mealSlot: 'BREAKFAST',
+                                items: [
+                                    {
+                                        id: 't3333333-3333-4333-8333-333333333333',
+                                        foodItemId: 'f00d0000-0000-4000-8000-000000000001',
+                                        servingId: 'f00d5e04-0000-4000-8000-000000010003',
+                                        quantity: 2,
+                                    },
+                                ],
+                            },
+                        ],
+                        createdAt: '2026-08-17T10:00:00.000Z',
+                        updatedAt: '2026-08-17T10:00:00.000Z',
+                    },
+                ],
+                total: 1,
+                limit: 20,
+                offset: 0,
+            },
+        });
+        const { dietPlanTemplates } = await createCoachingAdapter(http).listDietPlanTemplates({
+            accessToken: 'token',
+            gymOrgId: 'gym-1',
+        });
+        expect(dietPlanTemplates.items[0]?.title).toBe('Idli breakfast');
+        expect(dietPlanTemplates.total).toBe(1);
+    });
+
+    it('PUTs client workout schedule upsert entries', async () => {
+        const { http, calls } = stubHttp({
+            days: [
+                {
+                    id: 'd1111111-1111-4111-8111-111111111111',
+                    clientUserId: 'client-1',
+                    gymOrgId: 'gym-1',
+                    trainerId: 'trainer-1',
+                    scheduleDate: '2026-09-02',
+                    kind: 'TRAINING',
+                    morningTemplateId: 'b1111111-1111-4111-8111-111111111111',
+                    eveningTemplateId: null,
+                    sessions: [],
+                    createdAt: '2026-09-02T00:00:00.000Z',
+                    updatedAt: '2026-09-02T00:00:00.000Z',
+                },
+            ],
+        });
+        const { days } = await createCoachingAdapter(http).upsertClientWorkoutSchedule({
+            accessToken: 'token',
+            gymOrgId: 'gym-1',
+            clientUserId: 'client-1',
+            entries: [
+                {
+                    date: '2026-09-02',
+                    kind: 'TRAINING',
+                    morningTemplateId: 'b1111111-1111-4111-8111-111111111111',
+                },
+            ],
+        });
+        expect(calls[0]?.method).toBe('PUT');
+        expect(calls[0]?.path).toBe('/gym-orgs/gym-1/clients/client-1/workout-schedule');
+        expect(days[0]?.kind).toBe('TRAINING');
+    });
+
     it('POSTs diet item complete and DELETEs uncomplete on the same path', async () => {
         const completeStub = stubHttp(null);
         await createCoachingAdapter(completeStub.http).completeDietItem({

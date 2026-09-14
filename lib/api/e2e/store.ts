@@ -14,7 +14,16 @@ import type { WearableConnection, WearableMetric } from '@/modules/health-sync/h
 import type { Lead } from '@/modules/leads/leads-ports';
 import type { MembershipInvite, MyDataGrants } from '@/modules/membership-invites/membership-invites-ports';
 import type { CalorieLogItem, FoodSearchResult } from '@/modules/nutrition/nutrition-ports';
-import type { DietPlan, WorkoutSchedule, WorkoutStreak } from '@/modules/coaching/coaching-ports';
+import type {
+    DietPlan,
+    DietPlanTemplate,
+    ExerciseItem,
+    StaffDietPlan,
+    StaffWorkoutScheduleDay,
+    WorkoutPlanTemplate,
+    WorkoutSchedule,
+    WorkoutStreak,
+} from '@/modules/coaching/coaching-ports';
 import type { MembershipPlan } from '@/modules/plans/plans-ports';
 import type { ClientProfile, ProgressLog } from '@/modules/profile/profile-ports';
 import type { RosterMember } from '@/modules/roster/roster-ports';
@@ -33,6 +42,9 @@ export const E2E_TRAINER_PROFILE_ID = 'trainer-profile-e2e-1';
 
 export const E2E_DIET_PLAN_ITEM_ID = 'd1111111-1111-4111-8111-111111111111';
 export const E2E_SCHEDULE_EXERCISE_ID = 'c1111111-1111-4111-8111-111111111111';
+export const E2E_DIET_TEMPLATE_ID = 't1111111-1111-4111-8111-111111111111';
+export const E2E_WORKOUT_TEMPLATE_ID = 'b1111111-1111-4111-8111-111111111111';
+export const E2E_EXERCISE_BENCH_ID = 'e0e00000-0000-4000-8000-000000000001';
 
 /**
  * Process-wide store for the mutable fixture state below.
@@ -668,6 +680,147 @@ export const e2eWorkoutStreakByGym = e2eShared('workoutStreakByGym', () => {
         lookbackDays: 366,
     });
     return byGym;
+});
+
+/** Gym-owned diet template library (Idli breakfast seed). */
+export const e2eDietPlanTemplates = e2eShared('dietPlanTemplates', (): DietPlanTemplate[] => [
+    {
+        id: E2E_DIET_TEMPLATE_ID,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        title: 'Idli breakfast',
+        notes: null,
+        clonedFromId: null,
+        meals: [
+            {
+                id: 't2222222-2222-4222-8222-222222222222',
+                mealSlot: 'BREAKFAST',
+                items: [
+                    {
+                        id: 't3333333-3333-4333-8333-333333333333',
+                        foodItemId: E2E_IDLI_ID,
+                        servingId: E2E_IDLI_SERVING_ID,
+                        quantity: 2,
+                    },
+                ],
+            },
+        ],
+        createdAt: '2026-08-17T10:00:00.000Z',
+        updatedAt: '2026-08-17T10:00:00.000Z',
+    },
+]);
+
+/** Gym-owned workout template library (Push A seed). */
+export const e2eWorkoutPlanTemplates = e2eShared('workoutPlanTemplates', (): WorkoutPlanTemplate[] => [
+    {
+        id: E2E_WORKOUT_TEMPLATE_ID,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        title: 'Push A',
+        notes: null,
+        clonedFromId: null,
+        exercises: [
+            {
+                id: 'e1111111-1111-4111-8111-111111111111',
+                exerciseItemId: E2E_EXERCISE_BENCH_ID,
+                name: 'Bench Press (Barbell)',
+                primaryMuscle: 'CHEST',
+                equipment: 'BARBELL',
+                sets: 3,
+                reps: '8-10',
+                notes: null,
+                sortOrder: 0,
+            },
+        ],
+        createdAt: '2026-09-01T10:00:00.000Z',
+        updatedAt: '2026-09-01T10:00:00.000Z',
+    },
+]);
+
+/** Platform exercise catalog bootstrap list. */
+export const e2eExerciseCatalog = e2eShared('exerciseCatalog', (): ExerciseItem[] => [
+    {
+        id: E2E_EXERCISE_BENCH_ID,
+        name: 'Barbell Bench Press',
+        aliases: ['bench'],
+        primaryMuscle: 'CHEST',
+        equipment: 'BARBELL',
+        measurement: 'WEIGHT_REPS',
+        illustration: null,
+    },
+]);
+
+function buildStaffScheduleDay(clientUserId: string, scheduleDate: string): StaffWorkoutScheduleDay {
+    return {
+        id: 'd1111111-1111-4111-8111-111111111111',
+        clientUserId,
+        gymOrgId: E2E_GYM_ID,
+        trainerId: E2E_TRAINER_PROFILE_ID,
+        scheduleDate,
+        kind: 'TRAINING',
+        morningTemplateId: E2E_WORKOUT_TEMPLATE_ID,
+        eveningTemplateId: null,
+        sessions: [
+            {
+                id: 's1111111-1111-4111-8111-111111111111',
+                slot: 'MORNING',
+                title: 'Push A',
+                clonedFromTemplateId: E2E_WORKOUT_TEMPLATE_ID,
+                exercises: [
+                    {
+                        id: E2E_SCHEDULE_EXERCISE_ID,
+                        exerciseItemId: E2E_EXERCISE_BENCH_ID,
+                        name: 'Bench Press (Barbell)',
+                        sets: 3,
+                        reps: '8-10',
+                        notes: null,
+                        sortOrder: 0,
+                        completed: false,
+                    },
+                ],
+            },
+        ],
+        dayDone: false,
+        adherencePercent: 0,
+        createdAt: '2026-09-02T00:00:00.000Z',
+        updatedAt: '2026-09-02T00:00:00.000Z',
+    };
+}
+
+/** Staff view of assigned diet plans keyed by client user id. */
+export const e2eStaffClientDietPlans = e2eShared('staffClientDietPlans', () => {
+    const byClient = new Map<string, StaffDietPlan>();
+    byClient.set('e2e-client-1', {
+        id: 'e1111111-1111-4111-8111-111111111111',
+        title: 'Cut week',
+        notes: null,
+        status: 'ACTIVE',
+        writable: false,
+        meals: [
+            {
+                id: 'e2222222-2222-4222-8222-222222222222',
+                mealSlot: 'BREAKFAST',
+                items: [
+                    {
+                        id: E2E_DIET_PLAN_ITEM_ID,
+                        foodItemId: E2E_IDLI_ID,
+                        servingId: E2E_IDLI_SERVING_ID,
+                        quantity: 2,
+                        mealSlot: 'BREAKFAST',
+                    },
+                ],
+            },
+        ],
+    });
+    return byClient;
+});
+
+/** Staff workout schedule keyed `gymOrgId:clientUserId`. */
+export const e2eStaffClientWorkoutSchedules = e2eShared('staffClientWorkoutSchedules', () => {
+    const byKey = new Map<string, StaffWorkoutScheduleDay[]>();
+    const today = isoDateLocal();
+    byKey.set(`${E2E_GYM_ID}:e2e-client-1`, [buildStaffScheduleDay('e2e-client-1', today)]);
+    return byKey;
 });
 
 export const e2eRenewals = e2eShared('renewals', (): RenewalDueItem[] => [
